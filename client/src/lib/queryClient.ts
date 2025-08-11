@@ -47,11 +47,17 @@ export const queryClient = new QueryClient({
       queryFn: getQueryFn({ on401: "throw" }),
       refetchInterval: false,
       refetchOnWindowFocus: false,
-      staleTime: Infinity,
-      retry: false,
+      staleTime: 5 * 60 * 1000, // 5 minutes for PWA caching
+      gcTime: 24 * 60 * 60 * 1000, // 24 hours cache time for offline access
+      retry: (failureCount, error) => {
+        if (error?.message?.includes('Offline')) return false;
+        return failureCount < 2;
+      },
+      networkMode: 'offlineFirst', // PWA offline support
     },
     mutations: {
       retry: false,
+      networkMode: 'offlineFirst', // PWA offline support
     },
   },
 });

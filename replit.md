@@ -8,6 +8,17 @@ Asset Tracker is a modern data management platform designed for professional ass
 
 Preferred communication style: Simple, everyday language.
 
+## Recent Changes
+
+### PWA Implementation (August 2025)
+Added Progressive Web App capabilities with comprehensive offline support:
+- Service Worker for caching and offline functionality
+- Web App Manifest for installable app experience
+- Offline storage using IndexedDB for data persistence
+- Install prompt with user-friendly interface
+- Network status indicator with offline mode alerts
+- Enhanced query client with offline-first strategy
+
 ## System Architecture
 
 ### Frontend Architecture
@@ -58,6 +69,17 @@ The application uses a hybrid approach to state management:
 - **Client State**: React Context for user preferences, sidebar state, and global UI state
 - **Local Storage**: Persistent storage for user preferences and UI state
 - **Real-time Updates**: Query invalidation patterns for data consistency
+- **Offline Storage**: IndexedDB for offline data caching and pending action queuing
+
+### Progressive Web App (PWA) Features
+Comprehensive PWA implementation with offline-first approach:
+
+- **Service Worker**: Advanced caching strategy with static asset caching and API response caching
+- **Offline Support**: Full application functionality when disconnected from internet
+- **Installation**: Native app-like installation on desktop and mobile devices
+- **Background Sync**: Queues offline actions for synchronization when connection returns
+- **Cache Management**: Intelligent cache invalidation and cleanup for optimal performance
+- **Network Detection**: Real-time network status monitoring with user notifications
 
 ### Data Import/Export System
 Comprehensive data management capabilities:

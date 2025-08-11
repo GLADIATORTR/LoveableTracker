@@ -13,6 +13,10 @@ import Investments from "@/pages/Investments";
 import Reports from "@/pages/Reports";
 import Settings from "@/pages/Settings";
 import NotFound from "@/pages/not-found";
+import { InstallPrompt } from "@/components/ui/install-prompt";
+import { OfflineIndicator } from "@/components/ui/offline-indicator";
+import { useEffect } from "react";
+import { offlineStorage } from "@/utils/offline-storage";
 
 function Router() {
   return (
@@ -29,12 +33,19 @@ function Router() {
 }
 
 function App() {
+  // Initialize offline storage on app load
+  useEffect(() => {
+    offlineStorage.init().catch(console.error);
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <TooltipProvider>
           <AppContextProvider>
             <Toaster />
+            <InstallPrompt />
+            <OfflineIndicator />
             <div className="h-screen flex bg-background">
               <Sidebar />
               <div className="flex-1 flex flex-col min-w-0">
