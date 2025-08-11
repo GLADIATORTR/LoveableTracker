@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
+import { InvestmentForm } from "@/components/ui/investment-form";
+import { CSVImport } from "@/components/ui/csv-import";
 import { 
   Home, 
   DollarSign, 
@@ -14,7 +16,8 @@ import {
   Calendar,
   Plus,
   Search,
-  Filter
+  Filter,
+  Upload
 } from "lucide-react";
 import type { RealEstateInvestmentWithCategory } from "@shared/schema";
 
@@ -40,10 +43,10 @@ export default function Investments() {
     queryKey: ["/api/investments", { search: searchTerm, group: selectedGroup }],
   });
 
-  const handleAddInvestment = () => {
+  const handleImportSuccess = () => {
     toast({
-      title: "Add Investment",
-      description: "Investment form functionality would be implemented here.",
+      title: "Import Complete",
+      description: "Investments have been imported successfully.",
     });
   };
 
@@ -70,10 +73,10 @@ export default function Investments() {
             Manage your real estate investment portfolio
           </p>
         </div>
-        <Button onClick={handleAddInvestment} className="gap-2">
-          <Plus className="h-4 w-4" />
-          Add Investment
-        </Button>
+        <div className="flex gap-2">
+          <InvestmentForm />
+          <CSVImport onSuccess={handleImportSuccess} />
+        </div>
       </div>
 
       {/* Search and Filters */}
@@ -197,10 +200,7 @@ export default function Investments() {
             <p className="text-muted-foreground mb-6">
               Start building your real estate portfolio by adding your first investment.
             </p>
-            <Button onClick={handleAddInvestment} className="gap-2">
-              <Plus className="h-4 w-4" />
-              Add Your First Investment
-            </Button>
+            <InvestmentForm />
           </div>
         )}
       </div>

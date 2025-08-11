@@ -229,6 +229,83 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // CSV Import endpoint for investments
+  app.post("/api/investments/import", async (req, res) => {
+    try {
+      const { csvData } = req.body;
+      
+      if (!csvData) {
+        return res.status(400).json({ error: "CSV data is required" });
+      }
+
+      const lines = csvData.trim().split('\n');
+      const headers = lines[0].split(',').map((h: string) => h.trim());
+      
+      const results = {
+        success: 0,
+        errors: [] as string[],
+        data: [] as any[]
+      };
+
+      // Process each data row (skip header)
+      for (let i = 1; i < lines.length; i++) {
+        try {
+          const values = lines[i].split(',').map((v: string) => v.trim());
+          
+          if (values.length !== headers.length) {
+            results.errors.push(`Row ${i + 1}: Invalid number of columns`);
+            continue;
+          }
+
+          // Map CSV columns to our schema
+          const investmentData = {
+            propertyName: values[0] || '',
+            address: values[1] || '',
+            propertyType: values[2] || 'Single Family',
+            purchasePrice: Math.round(parseFloat(values[3]) * 100) || 0, // Convert to cents
+            currentValue: Math.round(parseFloat(values[4]) * 100) || 0,
+            purchaseDate: new Date(values[5] || new Date()),
+            monthlyRent: Math.round(parseFloat(values[6]) * 100) || 0,
+            monthlyExpenses: Math.round(parseFloat(values[7]) * 100) || 0,
+            netEquity: Math.round(parseFloat(values[8]) * 100) || 0,
+            description: values[9] || '',
+            categoryId: undefined,
+            downPayment: 0,
+            loanAmount: 0,
+            interestRate: 0,
+            loanTerm: 0,
+            monthlyMortgage: 0,
+            annualRent: Math.round(parseFloat(values[6]) * 100 * 12) || 0,
+            annualExpenses: Math.round(parseFloat(values[7]) * 100 * 12) || 0,
+            netCashFlow: Math.round((parseFloat(values[6]) - parseFloat(values[7])) * 100 * 12) || 0,
+            capRate: 0,
+            cashOnCashReturn: 0,
+            totalReturn: 0,
+          };
+
+          // Validate required fields
+          if (!investmentData.propertyName || !investmentData.address) {
+            results.errors.push(`Row ${i + 1}: Property name and address are required`);
+            continue;
+          }
+
+          // Create the investment
+          const newInvestment = await storage.createInvestment(investmentData);
+          results.data.push(newInvestment);
+          results.success++;
+
+        } catch (error) {
+          results.errors.push(`Row ${i + 1}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+      }
+
+      res.json(results);
+    } catch (error) {
+      console.error("Import error:", error);
+      res.status(500).json({ error: "Import failed" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
