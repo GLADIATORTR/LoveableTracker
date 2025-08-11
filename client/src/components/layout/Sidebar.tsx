@@ -21,7 +21,7 @@ const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Investments", href: "/investments", icon: Home },
   { name: "Future Projections", href: "/projections", icon: Calculator },
-  { name: "Reports", href: "/reports", icon: BarChart3 },
+  { name: "TimeSeries Projections", href: "/reports", icon: BarChart3 },
   { name: "Settings", href: "/settings", icon: Settings },
 ];
 

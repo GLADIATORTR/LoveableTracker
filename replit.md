@@ -19,6 +19,16 @@ Added Progressive Web App capabilities with comprehensive offline support:
 - Network status indicator with offline mode alerts
 - Enhanced query client with offline-first strategy
 
+### TimeSeries Projections & Global Settings (August 2025)
+Enhanced reporting capabilities with advanced financial modeling:
+- Renamed "Reports" to "TimeSeries Projections" for clarity
+- Inflation adjustment toggle to convert values to today's dollars
+- Global Settings dialog for country-specific financial parameters
+- Country-based inheritance of rates (Real Estate Appreciation, Inflation, etc.)
+- Support for USA, Turkey, Canada, and UK with customizable parameters
+- Persistent settings storage with localStorage integration
+- Dynamic projection calculations using global country settings
+
 ## System Architecture
 
 ### Frontend Architecture

@@ -13,6 +13,7 @@ interface ProjectionData {
 
 interface InvestmentProjectionsTableProps {
   investment: RealEstateInvestmentWithCategory;
+  inflationAdjusted?: boolean;
 }
 
 function formatCurrency(cents: number): string {
@@ -28,11 +29,41 @@ function formatPercent(value: number): string {
   return `${value.toFixed(2)}%`;
 }
 
+// Get global settings from localStorage
+function getGlobalSettings() {
+  try {
+    const saved = localStorage.getItem('global-settings');
+    if (saved) {
+      return JSON.parse(saved);
+    }
+  } catch (error) {
+    console.error('Failed to parse global settings:', error);
+  }
+  
+  // Default settings
+  return {
+    selectedCountry: 'USA',
+    countrySettings: {
+      USA: {
+        realEstateAppreciationRate: 3.5,
+        inflationRate: 2.8,
+        sellingCosts: 6.0,
+        capitalGainsTax: 25.0,
+        currentMortgageRate: 6.5,
+      }
+    }
+  };
+}
+
 // Generate projection data for a property
-function generateProjections(investment: RealEstateInvestmentWithCategory): ProjectionData[] {
+function generateProjections(investment: RealEstateInvestmentWithCategory, inflationAdjusted: boolean = false): ProjectionData[] {
   const years = [0, 1, 2, 3, 4, 5, 10, 15, 25, 30];
-  const appreciationRate = 0.03; // 3% annual appreciation
-  const rentGrowthRate = 0.025; // 2.5% annual rent growth
+  const globalSettings = getGlobalSettings();
+  const countrySettings = globalSettings.countrySettings[globalSettings.selectedCountry];
+  
+  const appreciationRate = countrySettings.realEstateAppreciationRate / 100; // Use global setting
+  const inflationRate = countrySettings.inflationRate / 100; // Use global setting
+  const rentGrowthRate = appreciationRate * 0.7; // Rent growth is typically 70% of appreciation
   
   return years.map(year => {
     const marketValue = investment.currentValue * Math.pow(1 + appreciationRate, year);
@@ -42,19 +73,22 @@ function generateProjections(investment: RealEstateInvestmentWithCategory): Proj
     const netCashFlow = annualRent - totalExpenses;
     const netEquity = marketValue - (investment.currentValue - investment.netEquity); // Assuming no additional principal payments
     
+    // Apply inflation adjustment if requested
+    const inflationAdjustment = inflationAdjusted ? Math.pow(1 + inflationRate, -year) : 1;
+    
     return {
       year,
-      marketValue,
-      monthlyRent,
-      netCashFlow,
-      netEquity,
-      capRate: (annualRent / marketValue) * 100,
+      marketValue: marketValue * inflationAdjustment,
+      monthlyRent: monthlyRent * inflationAdjustment,
+      netCashFlow: netCashFlow * inflationAdjustment,
+      netEquity: netEquity * inflationAdjustment,
+      capRate: (annualRent / marketValue) * 100, // Cap rate doesn't adjust for inflation
     };
   });
 }
 
-export function InvestmentProjectionsTable({ investment }: InvestmentProjectionsTableProps) {
-  const projections = generateProjections(investment);
+export function InvestmentProjectionsTable({ investment, inflationAdjusted = false }: InvestmentProjectionsTableProps) {
+  const projections = generateProjections(investment, inflationAdjusted);
   
   return (
     <Card>
@@ -64,6 +98,11 @@ export function InvestmentProjectionsTable({ investment }: InvestmentProjections
           <span className="text-sm font-normal text-muted-foreground">
             ({investment.propertyType})
           </span>
+          {inflationAdjusted && (
+            <span className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded-full">
+              Inflation Adjusted
+            </span>
+          )}
         </CardTitle>
       </CardHeader>
       <CardContent>
