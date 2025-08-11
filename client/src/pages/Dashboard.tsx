@@ -5,6 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
+import { InvestmentForm } from "@/components/ui/investment-form";
+import { CSVImport } from "@/components/ui/csv-import";
 import { 
   Package, 
   CheckCircle, 
@@ -33,10 +35,10 @@ export default function Dashboard() {
     queryKey: ["/api/dashboard/stats"],
   });
 
-  const handleQuickAction = (action: string) => {
+  const handleQuickActionSuccess = () => {
     toast({
-      title: `${action} Action`,
-      description: `${action} functionality would be implemented here.`,
+      title: "Success",
+      description: "Action completed successfully.",
     });
   };
 
@@ -173,38 +175,25 @@ export default function Dashboard() {
               <CardTitle className="text-lg font-semibold">Quick Actions</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Button
-                variant="ghost"
-                className="w-full justify-between p-3 h-auto text-left hover:bg-accent/50"
-                onClick={() => handleQuickAction("Add Asset")}
-              >
-                <span className="flex items-center">
-                  <Plus className="w-4 h-4 mr-3" />
-                  Add Investment
-                </span>
-                <TrendingUp className="w-4 h-4 text-muted-foreground" />
-              </Button>
+              <div className="w-full">
+                <InvestmentForm onSuccess={handleQuickActionSuccess} />
+              </div>
+
+              <div className="w-full">
+                <CSVImport onSuccess={handleQuickActionSuccess} />
+              </div>
 
               <Button
                 variant="ghost"
                 className="w-full justify-between p-3 h-auto text-left hover:bg-accent/50"
-                onClick={() => handleQuickAction("Import Assets")}
-              >
-                <span className="flex items-center">
-                  <Upload className="w-4 h-4 mr-3" />
-                  Import Properties
-                </span>
-                <TrendingUp className="w-4 h-4 text-muted-foreground" />
-              </Button>
-
-              <Button
-                variant="ghost"
-                className="w-full justify-between p-3 h-auto text-left hover:bg-accent/50"
-                onClick={() => handleQuickAction("Generate Report")}
+                onClick={() => {
+                  // Navigate to Reports page
+                  window.location.href = '/reports';
+                }}
               >
                 <span className="flex items-center">
                   <FileText className="w-4 h-4 mr-3" />
-                  Generate Report
+                  View Reports
                 </span>
                 <TrendingUp className="w-4 h-4 text-muted-foreground" />
               </Button>
