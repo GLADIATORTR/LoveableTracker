@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { InvestmentForm } from "@/components/ui/investment-form";
 import { CSVImport } from "@/components/ui/csv-import";
+import { CSVTemplate } from "@/components/ui/csv-template";
 import { queryClient } from "@/lib/queryClient";
 import { 
   Plus,
@@ -203,6 +204,7 @@ export default function Investments() {
           </p>
         </div>
         <div className="flex gap-2">
+          <CSVTemplate />
           <Button variant="outline" size="sm" onClick={exportInvestments}>
             <Download className="w-4 h-4 mr-2" />
             Export
