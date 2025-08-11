@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -10,6 +10,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Edit } from "lucide-react";
+import { z } from "zod";
 import { insertRealEstateInvestmentSchema, type InsertRealEstateInvestment, type Category, type RealEstateInvestmentWithCategory } from "@shared/schema";
 
 // Create a simpler form schema for the UI
@@ -54,13 +55,6 @@ export function InvestmentForm({ onSuccess, existingInvestment, onClose }: Inves
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Handle editing mode
-  useState(() => {
-    if (existingInvestment) {
-      setOpen(true);
-    }
-  });
-
   const { data: categories } = useQuery<Category[]>({
     queryKey: ["/api/categories"],
   });
@@ -93,7 +87,42 @@ export function InvestmentForm({ onSuccess, existingInvestment, onClose }: Inves
       description: "",
       categoryId: undefined,
     },
+    resolver: zodResolver(z.object({
+      propertyName: z.string().min(1, "Property name is required"),
+      address: z.string().min(1, "Address is required"),
+      propertyType: z.string(),
+      purchasePrice: z.number().min(0, "Purchase price must be positive"),
+      currentValue: z.number().min(0, "Current value must be positive"),
+      purchaseDate: z.string(),
+      monthlyRent: z.number().min(0, "Monthly rent must be positive"),
+      monthlyExpenses: z.number().min(0, "Monthly expenses must be positive"),
+      netEquity: z.number(),
+      description: z.string().optional(),
+      categoryId: z.string().optional(),
+    })),
   });
+
+  // Handle editing mode
+  useEffect(() => {
+    if (existingInvestment) {
+      setOpen(true);
+      form.reset({
+        propertyName: existingInvestment.propertyName,
+        address: existingInvestment.address,
+        propertyType: existingInvestment.propertyType,
+        purchasePrice: existingInvestment.purchasePrice / 100,
+        currentValue: existingInvestment.currentValue / 100,
+        purchaseDate: typeof existingInvestment.purchaseDate === 'string' 
+          ? existingInvestment.purchaseDate.split('T')[0] 
+          : existingInvestment.purchaseDate.toISOString().split('T')[0],
+        monthlyRent: existingInvestment.monthlyRent / 100,
+        monthlyExpenses: existingInvestment.monthlyExpenses / 100,
+        netEquity: existingInvestment.netEquity / 100,
+        description: existingInvestment.description || "",
+        categoryId: existingInvestment.categoryId?.toString() || "",
+      });
+    }
+  }, [existingInvestment, form]);
 
   const saveInvestment = useMutation({
     mutationFn: async (data: FormData) => {

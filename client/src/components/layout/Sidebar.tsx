@@ -20,7 +20,7 @@ import {
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Investments", href: "/investments", icon: Home },
-  { name: "Scenarios", href: "/scenarios", icon: Calculator },
+  { name: "Future Projections", href: "/projections", icon: Calculator },
   { name: "Reports", href: "/reports", icon: BarChart3 },
   { name: "Settings", href: "/settings", icon: Settings },
 ];
