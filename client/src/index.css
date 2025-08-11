@@ -53,21 +53,42 @@
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
 }
 
-/* Dialog overlay and content styling */
-[data-radix-dialog-overlay] {
-  background-color: rgba(0, 0, 0, 0.5) !important;
-  backdrop-filter: blur(4px);
+/* Dialog overlay and content styling - targeting multiple selectors */
+[data-state="open"][data-radix-popper-content-wrapper],
+[data-state="open"] [role="dialog"],
+.fixed.inset-0.z-50,
+[data-radix-dialog-overlay],
+[data-overlay-id] {
+  background-color: rgba(0, 0, 0, 0.8) !important;
+  backdrop-filter: blur(4px) !important;
 }
 
-[data-radix-dialog-content] {
-  background-color: hsl(var(--background)) !important;
-  border: 1px solid hsl(var(--border)) !important;
+[data-radix-dialog-content],
+[data-state="open"] [role="dialog"] > div,
+.relative.z-50,
+.grid.gap-4.border.bg-background.p-6.shadow-lg {
+  background-color: white !important;
+  background: white !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+  color: #1a202c !important;
+}
+
+/* More specific targeting for shadcn dialog components */
+.fixed.left-[50%].top-[50%].z-50 {
+  background-color: white !important;
+  background: white !important;
+  border: 1px solid #e2e8f0 !important;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
 }
 
-.dark [data-radix-dialog-content] {
+/* Dark mode */
+.dark [data-radix-dialog-content],
+.dark .fixed.left-[50%].top-[50%].z-50 {
   background-color: hsl(var(--background)) !important;
+  background: hsl(var(--background)) !important;
   border: 1px solid hsl(var(--border)) !important;
+  color: hsl(var(--foreground)) !important;
 }
 
 .dark {
