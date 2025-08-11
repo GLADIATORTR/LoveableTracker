@@ -28,7 +28,7 @@ export function CSVTemplate() {
       [
         'Sample Property',
         '123 Main Street',
-        'Condo',
+        'single-family',
         'USA',
         '500000',
         '550000',

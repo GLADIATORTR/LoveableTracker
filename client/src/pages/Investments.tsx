@@ -121,13 +121,21 @@ export default function Investments() {
     const csvHeaders = [
       'Property Name',
       'Address',
-      'Property Type',
+      'Investment Property Type',
+      'Country',
       'Purchase Price',
       'Current Value',
-      'Purchase Date',
       'Monthly Rent',
       'Monthly Expenses',
+      'Purchase Date',
+      'Down Payment',
+      'Loan Amount',
+      'Interest Rate',
+      'Loan Term',
+      'Outstanding Balance',
+      'Monthly Mortgage',
       'Net Cash Flow',
+      'Net Equity',
       'ROI %'
     ];
 
@@ -135,12 +143,20 @@ export default function Investments() {
       inv.propertyName,
       inv.address,
       inv.propertyType,
+      inv.country || 'USA',
       (inv.purchasePrice / 100).toString(),
       (inv.currentValue / 100).toString(),
-      formatDate(inv.purchaseDate),
       (inv.monthlyRent / 100).toString(),
       (inv.monthlyExpenses / 100).toString(),
+      formatDate(inv.purchaseDate),
+      ((inv.downPayment || 0) / 100).toString(),
+      ((inv.loanAmount || 0) / 100).toString(),
+      ((inv.interestRate || 0) / 100).toFixed(2),
+      Math.round((inv.loanTerm || 0) / 12).toString(),
+      ((inv.outstandingBalance || 0) / 100).toString(),
+      ((inv.monthlyMortgage || 0) / 100).toString(),
       (calculateCashFlow(inv.monthlyRent, inv.monthlyExpenses) / 100).toString(),
+      ((inv.netEquity || 0) / 100).toString(),
       calculateROI(inv.currentValue, inv.purchasePrice).toFixed(2)
     ]);
 
@@ -310,6 +326,54 @@ export default function Investments() {
                   </div>
                 </div>
 
+                {/* Loan Details */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <div className="text-xs text-muted-foreground mb-1">Down Payment</div>
+                    <div className="font-medium text-foreground">
+                      {formatCurrency(investment.downPayment || 0)}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-xs text-muted-foreground mb-1">Loan Amount</div>
+                    <div className="font-medium text-foreground">
+                      {formatCurrency(investment.loanAmount || 0)}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Interest & Terms */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <div className="text-xs text-muted-foreground mb-1">Interest Rate</div>
+                    <div className="font-medium text-foreground">
+                      {((investment.interestRate || 0) / 100).toFixed(2)}%
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-xs text-muted-foreground mb-1">Loan Term</div>
+                    <div className="font-medium text-foreground">
+                      {Math.round((investment.loanTerm || 0) / 12)} years
+                    </div>
+                  </div>
+                </div>
+
+                {/* Outstanding Balance & Monthly Mortgage */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <div className="text-xs text-muted-foreground mb-1">Outstanding Balance</div>
+                    <div className="font-medium text-orange-600">
+                      {formatCurrency(investment.outstandingBalance || 0)}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-xs text-muted-foreground mb-1">Monthly Mortgage</div>
+                    <div className="font-medium text-destructive">
+                      {formatCurrency(investment.monthlyMortgage || 0)}
+                    </div>
+                  </div>
+                </div>
+
                 {/* Cash Flow */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
@@ -339,6 +403,12 @@ export default function Investments() {
                     </span>
                   </div>
                   <div className="flex justify-between items-center mt-1">
+                    <span className="text-sm font-medium text-muted-foreground">Net Equity</span>
+                    <span className="font-semibold text-blue-600">
+                      {formatCurrency(investment.netEquity || 0)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center mt-1">
                     <span className="text-sm font-medium text-muted-foreground">ROI</span>
                     <span className={`font-semibold ${
                       calculateROI(investment.currentValue, investment.purchasePrice) >= 0 
@@ -350,11 +420,18 @@ export default function Investments() {
                   </div>
                 </div>
 
-                {/* Purchase Date */}
+                {/* Purchase Date & Country */}
                 <div className="pt-2 border-t">
-                  <div className="flex items-center text-xs text-muted-foreground">
-                    <Calendar className="w-3 h-3 mr-1" />
-                    Purchased {formatDate(investment.purchaseDate)}
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <div className="flex items-center">
+                      <Calendar className="w-3 h-3 mr-1" />
+                      Purchased {formatDate(investment.purchaseDate)}
+                    </div>
+                    {investment.country && (
+                      <div className="text-xs text-muted-foreground">
+                        {investment.country}
+                      </div>
+                    )}
                   </div>
                 </div>
               </CardContent>

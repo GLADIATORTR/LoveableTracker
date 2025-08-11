@@ -273,17 +273,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
           };
 
           // Map CSV columns based on the user's format:
-          // Property Name | Address | Investment Property Type | Country | Purchase Price | Current Value | Monthly Rent | Monthly Expenses | Purchase Date | etc.
+          // Property Name | Address | Investment Property Type | Country | Purchase Price | Current Value | Monthly Rent | Monthly Expenses | Purchase Date | Down Payment | Loan Amount | Interest Rate | Loan Term | Outstanding Balance | Monthly Mortgage
           const investmentData = {
             propertyName: values[0] || '',
             address: values[1] || '',
-            propertyType: values[2] || 'Single Family', // Column 2 is Investment Property Type
+            propertyType: values[2] || 'single-family', // Column 2 is Investment Property Type
+            country: values[3] || 'USA', // Column 3 is Country
             purchasePrice: Math.round(parseFloat(values[4] || '0') * 100) || 0, // Column 4 is Purchase Price
             currentValue: Math.round(parseFloat(values[5] || '0') * 100) || 0, // Column 5 is Current Value
             monthlyRent: Math.round(parseFloat(values[6] || '0') * 100) || 0, // Column 6 is Monthly Rent
             monthlyExpenses: Math.round(parseFloat(values[7] || '0') * 100) || 0, // Column 7 is Monthly Expenses
             purchaseDate: parsePurchaseDate(values[8] || ''), // Column 8 is Purchase Date
-            netEquity: Math.round((parseFloat(values[5] || '0') - parseFloat(values[4] || '0')) * 100) || 0, // Current Value - Purchase Price
+            downPayment: Math.round(parseFloat(values[9] || '0') * 100) || 0, // Column 9 is Down Payment
+            loanAmount: Math.round(parseFloat(values[10] || '0') * 100) || 0, // Column 10 is Loan Amount
+            interestRate: Math.round(parseFloat(values[11] || '0') * 100) || 0, // Column 11 is Interest Rate (in basis points)
+            loanTerm: Math.round(parseFloat(values[12] || '0') * 12) || 0, // Column 12 is Loan Term (convert years to months)
+            outstandingBalance: Math.round(parseFloat(values[13] || '0') * 100) || 0, // Column 13 is Outstanding Balance
+            monthlyMortgage: Math.round(parseFloat(values[14] || '0') * 100) || 0, // Column 14 is Monthly Mortgage
+            netEquity: Math.round((parseFloat(values[5] || '0') - parseFloat(values[13] || '0')) * 100) || 0, // Current Value - Outstanding Balance
             description: `${values[3] || ''} property`, // Column 3 is Country
             categoryId: undefined,
             downPayment: 0,
