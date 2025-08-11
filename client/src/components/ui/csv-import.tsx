@@ -95,9 +95,9 @@ export function CSVImport({ onSuccess }: CSVImportProps) {
   };
 
   const downloadTemplate = () => {
-    const template = `Property Name,Address,Property Type,Purchase Price,Current Value,Purchase Date,Monthly Rent,Monthly Expenses,Net Equity,Description,Category
-Sample Property,123 Main St,Single Family,300000,350000,2023-01-15,2500,800,50000,Sample investment property,Residential
-Another Property,456 Oak Ave,Condo,200000,220000,2023-03-20,1800,600,20000,Downtown condo investment,Residential`;
+    const template = `Property Name,Address,Investment Property Type,Country,Purchase Price,Current Value,Monthly Rent,Monthly Expenses,Purchase Date,Down Payment,Loan Amount,Interest Rate,Loan Term,Outstanding Balance,Monthly Mortgage
+Sample Property,123 Main Street,Condo,USA,300000,350000,2500,800,01/15/2023,60000,240000,4.5,30,220000,1800
+Another Property,456 Oak Avenue,Single Family,USA,200000,220000,1800,600,03/10/2022,40000,160000,3.8,30,150000,1200`;
 
     const blob = new Blob([template], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
