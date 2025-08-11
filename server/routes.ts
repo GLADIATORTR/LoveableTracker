@@ -292,18 +292,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             monthlyMortgage: Math.round(parseFloat(values[14] || '0') * 100) || 0, // Column 14 is Monthly Mortgage
             netEquity: Math.round((parseFloat(values[5] || '0') - parseFloat(values[13] || '0')) * 100) || 0, // Current Value - Outstanding Balance
             description: `${values[3] || ''} property`, // Column 3 is Country
-            categoryId: undefined,
-            downPayment: 0,
-            loanAmount: 0,
-            interestRate: 0,
-            loanTerm: 0,
-            monthlyMortgage: 0,
-            annualRent: Math.round(parseFloat(values[6]) * 100 * 12) || 0,
-            annualExpenses: Math.round(parseFloat(values[7]) * 100 * 12) || 0,
-            netCashFlow: Math.round((parseFloat(values[6]) - parseFloat(values[7])) * 100 * 12) || 0,
-            capRate: 0,
-            cashOnCashReturn: 0,
-            totalReturn: 0,
+            categoryId: null,
           };
 
           // Validate required fields

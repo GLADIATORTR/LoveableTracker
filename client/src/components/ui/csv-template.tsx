@@ -8,7 +8,7 @@ export function CSVTemplate() {
   const downloadTemplate = () => {
     const headers = [
       'Property Name',
-      'Address', 
+      'Address',
       'Investment Property Type',
       'Country',
       'Purchase Price',
@@ -28,19 +28,36 @@ export function CSVTemplate() {
       [
         'Sample Property',
         '123 Main Street',
-        'single-family',
+        'Condo',
         'USA',
-        '500000',
-        '550000',
-        '3000',
-        '1200',
+        '300000',
+        '350000',
+        '2500',
+        '800',
         '01/15/2023',
-        '100000',
-        '400000',
+        '60000',
+        '240000',
         '4.5',
         '30',
-        '380000',
-        '2000'
+        '220000',
+        '1800'
+      ],
+      [
+        'Another Property',
+        '456 Oak Avenue',
+        'Single Family',
+        'USA',
+        '200000',
+        '220000',
+        '1800',
+        '600',
+        '03/10/2022',
+        '40000',
+        '160000',
+        '3.8',
+        '30',
+        '150000',
+        '1200'
       ]
     ];
 
