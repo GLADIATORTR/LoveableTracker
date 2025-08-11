@@ -172,16 +172,18 @@ export function InvestmentForm({ onSuccess, existingInvestment, onClose }: Inves
     saveInvestment.mutate(data);
   };
 
-  const handleClose = () => {
-    setOpen(false);
-    onClose?.();
+  const handleClose = (isOpen: boolean) => {
+    setOpen(isOpen);
+    if (!isOpen) {
+      onClose?.();
+    }
   };
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       {!existingInvestment && (
         <DialogTrigger asChild>
-          <Button className="gap-2">
+          <Button className="gap-2" onClick={() => setOpen(true)}>
             <Plus className="h-4 w-4" />
             Add Investment
           </Button>
