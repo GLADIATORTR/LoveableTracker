@@ -252,23 +252,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
         try {
           const values = lines[i].split(',').map((v: string) => v.trim());
           
-          if (values.length !== headers.length) {
-            results.errors.push(`Row ${i + 1}: Invalid number of columns`);
+          if (values.length < 10) {
+            results.errors.push(`Row ${i + 1}: Missing required columns`);
             continue;
           }
 
-          // Map CSV columns to our schema
+          // Parse the purchase date from MM/DD/YYYY format
+          const parsePurchaseDate = (dateStr: string) => {
+            if (!dateStr) return new Date();
+            const [month, day, year] = dateStr.split('/');
+            return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+          };
+
+          // Map CSV columns to our schema based on the provided format
           const investmentData = {
             propertyName: values[0] || '',
             address: values[1] || '',
-            propertyType: values[2] || 'Single Family',
-            purchasePrice: Math.round(parseFloat(values[3]) * 100) || 0, // Convert to cents
-            currentValue: Math.round(parseFloat(values[4]) * 100) || 0,
-            purchaseDate: new Date(values[5] || new Date()),
-            monthlyRent: Math.round(parseFloat(values[6]) * 100) || 0,
-            monthlyExpenses: Math.round(parseFloat(values[7]) * 100) || 0,
-            netEquity: Math.round(parseFloat(values[8]) * 100) || 0,
-            description: values[9] || '',
+            propertyType: values[3] || 'Single Family', // Column 3 is Property Type
+            purchasePrice: Math.round(parseFloat(values[5]) * 100) || 0, // Column 5 is Purchase Price
+            currentValue: Math.round(parseFloat(values[6]) * 100) || 0, // Column 6 is Current Value
+            purchaseDate: parsePurchaseDate(values[9]), // Column 9 is Purchase Date
+            monthlyRent: Math.round(parseFloat(values[7]) * 100) || 0, // Column 7 is Monthly Rent Income
+            monthlyExpenses: Math.round(parseFloat(values[8]) * 100) || 0, // Column 8 is Monthly Expenses
+            netEquity: Math.round((parseFloat(values[6]) - parseFloat(values[5])) * 100) || 0, // Current Value - Purchase Price
+            description: `${values[4] || ''} property`, // Column 4 is Country
             categoryId: undefined,
             downPayment: 0,
             loanAmount: 0,

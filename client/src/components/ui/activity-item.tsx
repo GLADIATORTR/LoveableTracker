@@ -23,9 +23,10 @@ const activityColors: Record<string, string> = {
   deleted: "text-destructive bg-destructive/10",
 };
 
-function formatTimeAgo(date: Date): string {
+function formatTimeAgo(date: Date | string): string {
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
   const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
+  const diffMs = now.getTime() - dateObj.getTime();
   const diffMins = Math.floor(diffMs / (1000 * 60));
   const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
@@ -35,7 +36,7 @@ function formatTimeAgo(date: Date): string {
   if (diffHours < 24) return `${diffHours} hours ago`;
   if (diffDays < 7) return `${diffDays} days ago`;
   
-  return date.toLocaleDateString();
+  return dateObj.toLocaleDateString();
 }
 
 export function ActivityItem({ activity, className }: ActivityItemProps) {

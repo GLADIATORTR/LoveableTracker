@@ -1,0 +1,14 @@
+Property Name,Address,Investment,Property Type,Country,Purchase Price,Current Value,Monthly Rent Income,Monthly Expenses,Purchase Date,Down Payment,Loan Amount,Interest Rate,Loan Term,Outstanding Balance,Monthly Mortgage
+Levent,"Besiktas, Levent, Menekseli S No8",Yes,Condo,Turkey,930000,2200000,4500,333.33,10/01/2005,0,0,0,0,0,0
+Eyup,"Eyup, Topcular C, No 40",Yes,Condo,Turkey,700000,2000000,5750,300,11/01/2007,0,0,0,0,0,0
+Sisli_Gulbahar,"Sisli, Mecidiyekoy, Gulbahar M, Buyukdere C, Oya S, Tumer Plaza, No 7/6",Yes,Condo,Turkey,400000,600000,1100,91.67,09/01/2016,0,0,0,0,0,0
+Sisli_Halaskargazi,"Sisli, 19 Mayis M, Halaskargazi C, 226/1",Yes,Condo,Turkey,110000,550000,1050,91.67,01/01/2002,0,0,0,0,0,0
+Sisli_HirantDink,"Sisli, 19 Mayis M, Hirant Dink, 96/4",Yes,Condo,Turkey,60000,300000,825,41.67,01/01/1995,0,0,0,0,0,0
+KocaMustafa_AptiIpekci,"KocaMustafaPasa, Apti Ipekci M, Mercan Balik S No 4/2",Yes,Condo,Turkey,9000,120000,300,20,01/01/1990,0,0,0,0,0,0
+KocaMustafa_Marmara,"KocaMustafaPasa, Marmara C, 116/6",Yes,Condo,Turkey,3000,120000,313,20,01/01/1970,0,0,0,0,0,0
+Sisli_Siracevizler,"Sisli, Merkez M, Siracevizler C, Marmara Ap, 132/7",Yes,Condo,Turkey,11840,300000,600,50,01/01/1982,0,0,0,0,0,0
+Atakoy,"Bakirkoy, Atakoy, Karanfil S No 1/KB A/7-Bl 13/143",Yes,Condo,Turkey,32200,300000,875,50,01/01/1995,0,0,0,0,0,0
+ErsoySahil,"Kadikoy, Suadiye, Zihni Sakaryali S 7/2",No,Condo,Turkey,300000,450000,0,66.67,12/01/2018,0,0,0,0,0,0
+12 Hillcrest,"12 Hillcrest Ct, South San Francisco, CA 94080",Yes,Single Family,USA,675000,1250000,4450,2910,03/01/2014,230000,445000,3.75,360,330608,2030
+Boca 219,"500 SW Avenue, Boca Raton, Florida",Yes,Single Family,USA,212500,225000,1950,936.3333333,05/01/2024,0,0,0,0,0,0
+Lupin way,925 Lupin way San Carlos CA,No,Single Family,USA,1375000,2300000,0,1600,03/01/2020,704165,670835,2.5,360,583712,3054
