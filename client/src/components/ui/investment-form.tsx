@@ -9,8 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Plus } from "lucide-react";
-import { insertRealEstateInvestmentSchema, type InsertRealEstateInvestment, type Category } from "@shared/schema";
+import { Plus, Edit } from "lucide-react";
+import { insertRealEstateInvestmentSchema, type InsertRealEstateInvestment, type Category, type RealEstateInvestmentWithCategory } from "@shared/schema";
 
 // Create a simpler form schema for the UI
 const formSchema = insertRealEstateInvestmentSchema.omit({ id: true, createdAt: true, updatedAt: true }).extend({
@@ -45,19 +45,42 @@ const propertyTypes = [
 
 interface InvestmentFormProps {
   onSuccess?: () => void;
+  existingInvestment?: RealEstateInvestmentWithCategory | null;
+  onClose?: () => void;
 }
 
-export function InvestmentForm({ onSuccess }: InvestmentFormProps) {
+export function InvestmentForm({ onSuccess, existingInvestment, onClose }: InvestmentFormProps) {
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  // Handle editing mode
+  useState(() => {
+    if (existingInvestment) {
+      setOpen(true);
+    }
+  });
 
   const { data: categories } = useQuery<Category[]>({
     queryKey: ["/api/categories"],
   });
 
   const form = useForm<FormData>({
-    defaultValues: {
+    defaultValues: existingInvestment ? {
+      propertyName: existingInvestment.propertyName,
+      address: existingInvestment.address,
+      propertyType: existingInvestment.propertyType,
+      purchasePrice: existingInvestment.purchasePrice / 100,
+      currentValue: existingInvestment.currentValue / 100,
+      purchaseDate: typeof existingInvestment.purchaseDate === 'string' 
+        ? existingInvestment.purchaseDate.split('T')[0] 
+        : existingInvestment.purchaseDate.toISOString().split('T')[0],
+      monthlyRent: existingInvestment.monthlyRent / 100,
+      monthlyExpenses: existingInvestment.monthlyExpenses / 100,
+      netEquity: existingInvestment.netEquity / 100,
+      description: existingInvestment.description || "",
+      categoryId: existingInvestment.categoryId?.toString() || "",
+    } : {
       propertyName: "",
       address: "",
       propertyType: "Single Family",
@@ -72,60 +95,75 @@ export function InvestmentForm({ onSuccess }: InvestmentFormProps) {
     },
   });
 
-  const createInvestment = useMutation({
+  const saveInvestment = useMutation({
     mutationFn: async (data: FormData) => {
-      const response = await fetch("/api/investments", {
-        method: "POST",
+      const payload = {
+        ...data,
+        purchasePrice: Math.round(data.purchasePrice * 100), // Convert to cents
+        currentValue: Math.round(data.currentValue * 100),
+        monthlyRent: Math.round(data.monthlyRent * 100),
+        monthlyExpenses: Math.round(data.monthlyExpenses * 100),
+        netEquity: Math.round(data.netEquity * 100),
+        purchaseDate: new Date(data.purchaseDate),
+      };
+
+      const url = existingInvestment ? `/api/investments/${existingInvestment.id}` : "/api/investments";
+      const method = existingInvestment ? "PATCH" : "POST";
+
+      const response = await fetch(url, {
+        method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...data,
-          purchasePrice: Math.round(data.purchasePrice * 100), // Convert to cents
-          currentValue: Math.round(data.currentValue * 100),
-          monthlyRent: Math.round(data.monthlyRent * 100),
-          monthlyExpenses: Math.round(data.monthlyExpenses * 100),
-          netEquity: Math.round(data.netEquity * 100),
-          purchaseDate: new Date(data.purchaseDate),
-        }),
+        body: JSON.stringify(payload),
       });
-      if (!response.ok) throw new Error('Failed to create investment');
+      if (!response.ok) throw new Error(`Failed to ${existingInvestment ? 'update' : 'create'} investment`);
       return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/investments"] });
       queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
       toast({
-        title: "Investment Added",
-        description: "Real estate investment has been added successfully.",
+        title: existingInvestment ? "Investment Updated" : "Investment Added",
+        description: `Real estate investment has been ${existingInvestment ? 'updated' : 'added'} successfully.`,
       });
       form.reset();
       setOpen(false);
       onSuccess?.();
+      onClose?.();
     },
     onError: () => {
       toast({
         title: "Error",
-        description: "Failed to add investment. Please try again.",
+        description: `Failed to ${existingInvestment ? 'update' : 'add'} investment. Please try again.`,
         variant: "destructive",
       });
     },
   });
 
   const onSubmit = (data: FormData) => {
-    createInvestment.mutate(data);
+    saveInvestment.mutate(data);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+    onClose?.();
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button className="gap-2">
-          <Plus className="h-4 w-4" />
-          Add Investment
-        </Button>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={handleClose}>
+      {!existingInvestment && (
+        <DialogTrigger asChild>
+          <Button className="gap-2">
+            <Plus className="h-4 w-4" />
+            Add Investment
+          </Button>
+        </DialogTrigger>
+      )}
       
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" style={{ backgroundColor: 'white', border: '1px solid #e2e8f0', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' }}>
         <DialogHeader>
-          <DialogTitle>Add Real Estate Investment</DialogTitle>
+          <DialogTitle>
+            {existingInvestment ? 'Edit' : 'Add'} Real Estate Investment
+          </DialogTitle>
         </DialogHeader>
         
         <Form {...form}>
@@ -352,9 +390,12 @@ export function InvestmentForm({ onSuccess }: InvestmentFormProps) {
               </Button>
               <Button 
                 type="submit" 
-                disabled={createInvestment.isPending}
+                disabled={saveInvestment.isPending}
               >
-                {createInvestment.isPending ? "Adding..." : "Add Investment"}
+                {saveInvestment.isPending 
+                  ? (existingInvestment ? "Updating..." : "Adding...") 
+                  : (existingInvestment ? "Update Investment" : "Add Investment")
+                }
               </Button>
             </div>
           </form>

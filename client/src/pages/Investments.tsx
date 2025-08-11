@@ -1,24 +1,34 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { InvestmentForm } from "@/components/ui/investment-form";
 import { CSVImport } from "@/components/ui/csv-import";
+import { queryClient } from "@/lib/queryClient";
 import { 
-  Home, 
-  DollarSign, 
-  TrendingUp,
-  MapPin,
-  Calendar,
   Plus,
-  Search,
-  Filter,
-  Upload
+  Edit,
+  Trash2,
+  Home,
+  MapPin,
+  DollarSign,
+  Calendar,
+  TrendingUp,
+  Download
 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import type { RealEstateInvestmentWithCategory } from "@shared/schema";
 
 function formatCurrency(cents: number): string {
@@ -30,180 +40,324 @@ function formatCurrency(cents: number): string {
   }).format(cents / 100);
 }
 
-function formatPercentage(basisPoints: number): string {
-  return `${(basisPoints / 100).toFixed(2)}%`;
+function formatDate(date: string | Date): string {
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  return dateObj.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
+}
+
+function calculateCashFlow(monthlyRent: number, monthlyExpenses: number): number {
+  return monthlyRent - monthlyExpenses;
+}
+
+function calculateROI(currentValue: number, purchasePrice: number): number {
+  if (purchasePrice === 0) return 0;
+  return ((currentValue - purchasePrice) / purchasePrice) * 100;
 }
 
 export default function Investments() {
   const { toast } = useToast();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedGroup, setSelectedGroup] = useState<string>("");
+  const [editingInvestment, setEditingInvestment] = useState<RealEstateInvestmentWithCategory | null>(null);
 
-  const { data: investments, isLoading, error } = useQuery<RealEstateInvestmentWithCategory[]>({
-    queryKey: ["/api/investments", { search: searchTerm, group: selectedGroup }],
+  const { data: investments, isLoading } = useQuery<RealEstateInvestmentWithCategory[]>({
+    queryKey: ["/api/investments"],
   });
 
-  const handleImportSuccess = () => {
+  const deleteInvestment = useMutation({
+    mutationFn: async (id: number) => {
+      const response = await fetch(`/api/investments/${id}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) {
+        throw new Error('Failed to delete investment');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/investments"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
+      toast({
+        title: "Investment Deleted",
+        description: "Investment property has been removed from your portfolio.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to delete investment. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleSuccess = () => {
+    setEditingInvestment(null);
     toast({
-      title: "Import Complete",
-      description: "Investments have been imported successfully.",
+      title: "Success",
+      description: "Investment updated successfully.",
     });
   };
 
-  if (error) {
+  const handleDelete = (investment: RealEstateInvestmentWithCategory) => {
+    deleteInvestment.mutate(Number(investment.id));
+  };
+
+  const exportInvestments = () => {
+    if (!investments || investments.length === 0) {
+      toast({
+        title: "No Data",
+        description: "No investments to export.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const csvHeaders = [
+      'Property Name',
+      'Address',
+      'Property Type',
+      'Purchase Price',
+      'Current Value',
+      'Purchase Date',
+      'Monthly Rent',
+      'Monthly Expenses',
+      'Net Cash Flow',
+      'ROI %'
+    ];
+
+    const csvData = investments.map(inv => [
+      inv.propertyName,
+      inv.address,
+      inv.propertyType,
+      (inv.purchasePrice / 100).toString(),
+      (inv.currentValue / 100).toString(),
+      formatDate(inv.purchaseDate),
+      (inv.monthlyRent / 100).toString(),
+      (inv.monthlyExpenses / 100).toString(),
+      (calculateCashFlow(inv.monthlyRent, inv.monthlyExpenses) / 100).toString(),
+      calculateROI(inv.currentValue, inv.purchasePrice).toFixed(2)
+    ]);
+
+    const csvContent = [csvHeaders, ...csvData]
+      .map(row => row.map(field => `"${field}"`).join(','))
+      .join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `investments_${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    toast({
+      title: "Export Complete",
+      description: "Investment data has been exported to CSV.",
+    });
+  };
+
+  if (isLoading) {
     return (
-      <div className="animate-fade-in">
-        <div className="text-center py-12">
-          <p className="text-destructive">Failed to load investments</p>
-          <Button onClick={() => window.location.reload()} className="mt-4">
-            Retry
-          </Button>
+      <div className="animate-fade-in space-y-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <div className="h-8 w-48 bg-muted rounded animate-pulse mb-2" />
+            <div className="h-4 w-96 bg-muted rounded animate-pulse" />
+          </div>
+          <div className="flex gap-2">
+            <div className="h-10 w-24 bg-muted rounded animate-pulse" />
+            <div className="h-10 w-24 bg-muted rounded animate-pulse" />
+          </div>
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Card key={i} className="p-6">
+              <div className="h-6 w-32 bg-muted rounded animate-pulse mb-4" />
+              <div className="space-y-2">
+                <div className="h-4 w-full bg-muted rounded animate-pulse" />
+                <div className="h-4 w-3/4 bg-muted rounded animate-pulse" />
+                <div className="h-4 w-1/2 bg-muted rounded animate-pulse" />
+              </div>
+            </Card>
+          ))}
         </div>
       </div>
     );
   }
 
   return (
-    <div className="animate-fade-in space-y-6">
+    <div className="animate-fade-in space-y-8">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Real Estate Investments</h1>
+          <h1 className="text-3xl font-bold text-foreground">Investment Properties</h1>
           <p className="text-muted-foreground mt-2">
             Manage your real estate investment portfolio
           </p>
         </div>
         <div className="flex gap-2">
-          <InvestmentForm />
-          <CSVImport onSuccess={handleImportSuccess} />
-        </div>
-      </div>
-
-      {/* Search and Filters */}
-      <div className="flex gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-          <Input
-            placeholder="Search investments..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
+          <Button variant="outline" size="sm" onClick={exportInvestments}>
+            <Download className="w-4 h-4 mr-2" />
+            Export
+          </Button>
+          <InvestmentForm 
+            onSuccess={handleSuccess}
+            existingInvestment={editingInvestment}
+            onClose={() => setEditingInvestment(null)}
           />
+          <CSVImport onSuccess={handleSuccess} />
         </div>
-        <Button variant="outline" className="gap-2">
-          <Filter className="h-4 w-4" />
-          Filters
-        </Button>
       </div>
 
       {/* Investments Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {isLoading ? (
-          Array.from({ length: 6 }).map((_, i) => (
-            <Card key={i} className="p-6">
-              <Skeleton className="h-6 w-32 mb-4" />
-              <Skeleton className="h-4 w-24 mb-2" />
-              <Skeleton className="h-4 w-20 mb-4" />
-              <div className="space-y-2">
-                <Skeleton className="h-3 w-full" />
-                <Skeleton className="h-3 w-3/4" />
-                <Skeleton className="h-3 w-1/2" />
-              </div>
-            </Card>
-          ))
-        ) : investments && investments.length > 0 ? (
-          investments.map((investment) => (
-            <Card key={investment.id} className="hover:shadow-lg transition-shadow cursor-pointer">
-              <CardHeader className="pb-3">
+      {!investments || investments.length === 0 ? (
+        <div className="text-center py-12">
+          <Home className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-foreground mb-2">No investments yet</h3>
+          <p className="text-muted-foreground mb-6">
+            Start building your real estate portfolio by adding your first investment property.
+          </p>
+          <InvestmentForm onSuccess={handleSuccess} />
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+          {investments.map((investment) => (
+            <Card key={investment.id} className="group hover:shadow-lg transition-all duration-200">
+              <CardHeader className="pb-4">
                 <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-2">
-                    <Home className="h-5 w-5 text-primary" />
-                    <CardTitle className="text-lg">{investment.propertyName}</CardTitle>
+                  <div className="flex-1">
+                    <CardTitle className="text-lg font-semibold text-foreground mb-1">
+                      {investment.propertyName}
+                    </CardTitle>
+                    <div className="flex items-center text-sm text-muted-foreground mb-2">
+                      <MapPin className="w-4 h-4 mr-1 flex-shrink-0" />
+                      <span className="truncate">{investment.address}</span>
+                    </div>
+                    <Badge variant="secondary" className="text-xs">
+                      {investment.propertyType}
+                    </Badge>
                   </div>
-                  <Badge variant="outline" className="text-xs">
-                    {investment.propertyType}
-                  </Badge>
-                </div>
-                <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                  <MapPin className="h-3 w-3" />
-                  {investment.address}
+                  <div className="flex gap-1 ml-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setEditingInvestment(investment)}
+                      className="opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <Edit className="w-4 h-4" />
+                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete Investment</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to delete "{investment.propertyName}"? This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => handleDelete(investment)}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          >
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
                 </div>
               </CardHeader>
               
               <CardContent className="space-y-4">
-                {/* Financial Summary */}
+                {/* Financial Overview */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-xs text-muted-foreground">Current Value</p>
-                    <p className="font-semibold text-green-600">
-                      {formatCurrency(investment.currentValue)}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Monthly Rent</p>
-                    <p className="font-semibold">
-                      {formatCurrency(investment.monthlyRent)}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-xs text-muted-foreground">Net Equity</p>
-                    <p className="font-semibold">
-                      {formatCurrency(investment.netEquity)}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Cap Rate</p>
-                    <p className="font-semibold text-blue-600">
-                      {((investment.monthlyRent * 12) / investment.currentValue * 100).toFixed(2)}%
-                    </p>
-                  </div>
-                </div>
-
-                {/* Purchase Info */}
-                <div className="pt-2 border-t">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Purchased</span>
-                    <div className="flex items-center gap-1">
-                      <Calendar className="h-3 w-3" />
-                      {new Date(investment.purchaseDate).toLocaleDateString()}
+                    <div className="flex items-center text-xs text-muted-foreground mb-1">
+                      <DollarSign className="w-3 h-3 mr-1" />
+                      Purchase Price
+                    </div>
+                    <div className="font-semibold text-foreground">
+                      {formatCurrency(investment.purchasePrice)}
                     </div>
                   </div>
-                  <div className="flex items-center justify-between text-sm mt-1">
-                    <span className="text-muted-foreground">Purchase Price</span>
-                    <span>{formatCurrency(investment.purchasePrice)}</span>
+                  <div>
+                    <div className="flex items-center text-xs text-muted-foreground mb-1">
+                      <TrendingUp className="w-3 h-3 mr-1" />
+                      Current Value
+                    </div>
+                    <div className="font-semibold text-foreground">
+                      {formatCurrency(investment.currentValue)}
+                    </div>
                   </div>
                 </div>
 
                 {/* Cash Flow */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <div className="text-xs text-muted-foreground mb-1">Monthly Rent</div>
+                    <div className="font-medium text-success">
+                      +{formatCurrency(investment.monthlyRent)}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-xs text-muted-foreground mb-1">Monthly Expenses</div>
+                    <div className="font-medium text-destructive">
+                      -{formatCurrency(investment.monthlyExpenses)}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Net Cash Flow */}
                 <div className="pt-2 border-t">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Monthly Cash Flow</span>
-                    <span className={`font-medium ${
-                      (investment.monthlyRent - investment.monthlyExpenses) > 0 
-                        ? 'text-green-600' 
-                        : 'text-red-600'
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium text-muted-foreground">Net Cash Flow</span>
+                    <span className={`font-semibold ${
+                      calculateCashFlow(investment.monthlyRent, investment.monthlyExpenses) >= 0 
+                        ? 'text-success' 
+                        : 'text-destructive'
                     }`}>
-                      {formatCurrency(investment.monthlyRent - investment.monthlyExpenses)}
+                      {formatCurrency(calculateCashFlow(investment.monthlyRent, investment.monthlyExpenses))}
                     </span>
+                  </div>
+                  <div className="flex justify-between items-center mt-1">
+                    <span className="text-sm font-medium text-muted-foreground">ROI</span>
+                    <span className={`font-semibold ${
+                      calculateROI(investment.currentValue, investment.purchasePrice) >= 0 
+                        ? 'text-success' 
+                        : 'text-destructive'
+                    }`}>
+                      {calculateROI(investment.currentValue, investment.purchasePrice).toFixed(1)}%
+                    </span>
+                  </div>
+                </div>
+
+                {/* Purchase Date */}
+                <div className="pt-2 border-t">
+                  <div className="flex items-center text-xs text-muted-foreground">
+                    <Calendar className="w-3 h-3 mr-1" />
+                    Purchased {formatDate(investment.purchaseDate)}
                   </div>
                 </div>
               </CardContent>
             </Card>
-          ))
-        ) : (
-          <div className="col-span-full text-center py-12">
-            <Home className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-foreground mb-2">No investments found</h3>
-            <p className="text-muted-foreground mb-6">
-              Start building your real estate portfolio by adding your first investment.
-            </p>
-            <InvestmentForm />
-          </div>
-        )}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
