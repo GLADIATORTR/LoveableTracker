@@ -8,8 +8,8 @@ import { AppContextProvider } from "@/contexts/AppContext";
 import Sidebar from "@/components/layout/Sidebar";
 import TopBar from "@/components/layout/TopBar";
 import Dashboard from "@/pages/Dashboard";
-import Dictionary from "@/pages/Dictionary";
-import Assets from "@/pages/Assets";
+import Scenarios from "@/pages/Scenarios";
+import Investments from "@/pages/Investments";
 import Reports from "@/pages/Reports";
 import Settings from "@/pages/Settings";
 import NotFound from "@/pages/not-found";
@@ -19,8 +19,8 @@ function Router() {
     <Switch>
       <Route path="/" component={Dashboard} />
       <Route path="/dashboard" component={Dashboard} />
-      <Route path="/dictionary" component={Dictionary} />
-      <Route path="/assets" component={Assets} />
+      <Route path="/scenarios" component={Scenarios} />
+      <Route path="/investments" component={Investments} />
       <Route path="/reports" component={Reports} />
       <Route path="/settings" component={Settings} />
       <Route component={NotFound} />

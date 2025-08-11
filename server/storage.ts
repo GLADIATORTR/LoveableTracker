@@ -1,16 +1,16 @@
 import { 
   type User, 
   type InsertUser, 
-  type Asset, 
-  type InsertAsset,
+  type RealEstateInvestment, 
+  type InsertRealEstateInvestment,
   type Category,
   type InsertCategory,
-  type DictionaryEntry,
-  type InsertDictionaryEntry,
+  type InvestmentScenario,
+  type InsertInvestmentScenario,
   type Activity,
   type InsertActivity,
-  type AssetWithCategory,
-  type DictionaryEntryWithCategory,
+  type RealEstateInvestmentWithCategory,
+  type InvestmentScenarioWithCategory,
   type DashboardStats
 } from "@shared/schema";
 import { randomUUID } from "crypto";
@@ -29,19 +29,19 @@ export interface IStorage {
   updateCategory(id: string, updates: Partial<Category>): Promise<Category>;
   deleteCategory(id: string): Promise<boolean>;
 
-  // Assets
-  getAssets(filters?: { categoryId?: string; status?: string; search?: string }): Promise<AssetWithCategory[]>;
-  getAsset(id: string): Promise<AssetWithCategory | undefined>;
-  createAsset(asset: InsertAsset): Promise<Asset>;
-  updateAsset(id: string, updates: Partial<Asset>): Promise<Asset>;
-  deleteAsset(id: string): Promise<boolean>;
+  // Real Estate Investments
+  getInvestments(filters?: { categoryId?: string; group?: string; search?: string }): Promise<RealEstateInvestmentWithCategory[]>;
+  getInvestment(id: string): Promise<RealEstateInvestmentWithCategory | undefined>;
+  createInvestment(investment: InsertRealEstateInvestment): Promise<RealEstateInvestment>;
+  updateInvestment(id: string, updates: Partial<RealEstateInvestment>): Promise<RealEstateInvestment>;
+  deleteInvestment(id: string): Promise<boolean>;
 
-  // Dictionary
-  getDictionaryEntries(filters?: { categoryId?: string; search?: string }): Promise<DictionaryEntryWithCategory[]>;
-  getDictionaryEntry(id: string): Promise<DictionaryEntryWithCategory | undefined>;
-  createDictionaryEntry(entry: InsertDictionaryEntry): Promise<DictionaryEntry>;
-  updateDictionaryEntry(id: string, updates: Partial<DictionaryEntry>): Promise<DictionaryEntry>;
-  deleteDictionaryEntry(id: string): Promise<boolean>;
+  // Investment Scenarios
+  getScenarios(filters?: { categoryId?: string; search?: string }): Promise<InvestmentScenarioWithCategory[]>;
+  getScenario(id: string): Promise<InvestmentScenarioWithCategory | undefined>;
+  createScenario(scenario: InsertInvestmentScenario): Promise<InvestmentScenario>;
+  updateScenario(id: string, updates: Partial<InvestmentScenario>): Promise<InvestmentScenario>;
+  deleteScenario(id: string): Promise<boolean>;
 
   // Activities
   getActivities(limit?: number): Promise<Activity[]>;
@@ -51,16 +51,16 @@ export interface IStorage {
   getDashboardStats(): Promise<DashboardStats>;
 
   // Data management
-  exportData(): Promise<{ assets: AssetWithCategory[]; dictionary: DictionaryEntryWithCategory[]; categories: Category[] }>;
-  importAssets(assets: InsertAsset[]): Promise<Asset[]>;
+  exportData(): Promise<{ investments: RealEstateInvestmentWithCategory[]; scenarios: InvestmentScenarioWithCategory[]; categories: Category[] }>;
+  importInvestments(investments: InsertRealEstateInvestment[]): Promise<RealEstateInvestment[]>;
   clearAllData(): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
   private users: Map<string, User> = new Map();
   private categories: Map<string, Category> = new Map();
-  private assets: Map<string, Asset> = new Map();
-  private dictionaryEntries: Map<string, DictionaryEntry> = new Map();
+  private investments: Map<string, RealEstateInvestment> = new Map();
+  private scenarios: Map<string, InvestmentScenario> = new Map();
   private activities: Map<string, Activity> = new Map();
 
   constructor() {
@@ -68,12 +68,11 @@ export class MemStorage implements IStorage {
   }
 
   private initializeDefaultData() {
-    // Create default categories
+    // Create default categories for real estate
     const defaultCategories: InsertCategory[] = [
-      { name: "Electronics", description: "Electronic devices and equipment", color: "#3b82f6", icon: "monitor" },
-      { name: "Furniture", description: "Office and workspace furniture", color: "#10b981", icon: "chair" },
-      { name: "Equipment", description: "Tools and machinery", color: "#f59e0b", icon: "tool" },
-      { name: "Vehicles", description: "Transportation assets", color: "#ef4444", icon: "car" },
+      { name: "Residential", description: "Single-family homes, condos, and townhouses", color: "#3b82f6", icon: "home" },
+      { name: "Commercial", description: "Office buildings, retail spaces", color: "#10b981", icon: "building" },
+      { name: "Multi-Family", description: "Apartment buildings and duplexes", color: "#f59e0b", icon: "building-2" },
     ];
 
     defaultCategories.forEach(category => {
@@ -85,89 +84,47 @@ export class MemStorage implements IStorage {
       });
     });
 
-    // Create default dictionary entries
-    const electronicsCategory = Array.from(this.categories.values()).find(c => c.name === "Electronics");
-    const furnitureCategory = Array.from(this.categories.values()).find(c => c.name === "Furniture");
-    const equipmentCategory = Array.from(this.categories.values()).find(c => c.name === "Equipment");
+    // Create sample real estate investments
+    const residentialCategory = Array.from(this.categories.values()).find(c => c.name === "Residential");
+    const commercialCategory = Array.from(this.categories.values()).find(c => c.name === "Commercial");
 
-    if (electronicsCategory) {
-      const macbookEntry: InsertDictionaryEntry = {
-        name: "MacBook Pro",
-        description: "Professional laptop computer designed for high-performance computing tasks, creative work, and software development.",
-        categoryId: electronicsCategory.id,
-        type: "M3 Max",
-        specifications: {
-          processor: "Apple M3 Max",
-          memory: "32GB unified memory",
-          storage: "1TB SSD",
-          display: "16-inch Liquid Retina XDR",
+    if (residentialCategory) {
+      const sampleProperty: InsertRealEstateInvestment = {
+        propertyName: "123 Main Street",
+        address: "123 Main Street, San Francisco, CA 94102",
+        purchasePrice: 75000000, // $750,000.00
+        currentValue: 85000000, // $850,000.00
+        netEquity: 55000000, // $550,000.00
+        downPayment: 25000000, // $250,000.00
+        loanAmount: 50000000, // $500,000.00
+        interestRate: 375, // 3.75%
+        loanTerm: 360, // 30 years
+        monthlyMortgage: 231600, // $2,316.00
+        monthlyRent: 350000, // $3,500.00
+        isInvestmentProperty: true,
+        monthlyExpenses: 185000, // $1,850.00
+        expenseDetails: {
+          annualPropertyTaxes: 900000, // $9,000.00 annual
+          annualInsurance: 120000, // $1,200.00 annual
+          monthlyManagementFees: 17500, // $175.00
+          monthlyMaintenance: 50000, // $500.00
         },
-        estimatedValue: 320000, // $3,200.00
-        expectedLifecycle: "4-5 years",
-        maintenanceRequirements: "Regular software updates, battery calibration, screen cleaning",
-        relatedAssets: [],
-        usageCount: 47,
+        monthlyEscrow: 75000, // $750.00
+        avgAppreciationRate: 350, // 3.5%
+        outstandingBalance: 48500000, // $485,000.00
+        currentTerm: 24, // 2 years since purchase
+        propertyType: "single-family",
+        purchaseDate: new Date("2022-01-15"),
+        group: "Bay_Area",
+        country: "USA",
+        zipCode: "94102",
+        taxRate: 2200, // 22%
+        costBasis: 75000000,
       };
 
       const id = randomUUID();
-      this.dictionaryEntries.set(id, {
-        ...macbookEntry,
-        id,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
-    }
-
-    if (furnitureCategory) {
-      const chairEntry: InsertDictionaryEntry = {
-        name: "Office Chair",
-        description: "Ergonomic office seating designed for extended work periods with adjustable height, lumbar support, and mobility.",
-        categoryId: furnitureCategory.id,
-        type: "Ergonomic",
-        specifications: {
-          material: "Mesh back, fabric seat",
-          adjustability: "Height, armrests, lumbar",
-          weightCapacity: "300 lbs",
-          warranty: "5 years",
-        },
-        estimatedValue: 45000, // $450.00
-        expectedLifecycle: "7-10 years",
-        maintenanceRequirements: "Regular cleaning, occasional wheel replacement, mechanism lubrication",
-        relatedAssets: [],
-        usageCount: 234,
-      };
-
-      const id = randomUUID();
-      this.dictionaryEntries.set(id, {
-        ...chairEntry,
-        id,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
-    }
-
-    if (equipmentCategory) {
-      const printerEntry: InsertDictionaryEntry = {
-        name: "Industrial Printer",
-        description: "High-capacity printing equipment for large-volume document production with advanced paper handling and finishing options.",
-        categoryId: equipmentCategory.id,
-        type: "Commercial",
-        specifications: {
-          printSpeed: "50,000 pages/month",
-          paperSize: "Up to A3",
-          connectivity: "Ethernet, WiFi, USB",
-          features: "Duplex, stapling, hole punching",
-        },
-        estimatedValue: 1280000, // $12,800.00
-        expectedLifecycle: "5-7 years",
-        maintenanceRequirements: "Monthly cleaning, quarterly servicing, annual calibration",
-        relatedAssets: [],
-        usageCount: 12,
-      };
-
-      const id = randomUUID();
-      this.dictionaryEntries.set(id, {
-        ...printerEntry,
+      this.investments.set(id, {
+        ...sampleProperty,
         id,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -257,204 +214,209 @@ export class MemStorage implements IStorage {
     return this.categories.delete(id);
   }
 
-  // Assets
-  async getAssets(filters?: { categoryId?: string; status?: string; search?: string }): Promise<AssetWithCategory[]> {
-    let assets = Array.from(this.assets.values());
+  // Real Estate Investments
+  async getInvestments(filters?: { categoryId?: string; group?: string; search?: string }): Promise<RealEstateInvestmentWithCategory[]> {
+    let investments = Array.from(this.investments.values());
 
     if (filters?.categoryId) {
-      assets = assets.filter(asset => asset.categoryId === filters.categoryId);
+      // For real estate, we might not always have categories, so handle this gracefully
+      investments = investments.filter(investment => {
+        // Since real estate doesn't have categoryId in our schema, we might need to add it
+        // For now, skip this filter
+        return true;
+      });
     }
 
-    if (filters?.status) {
-      assets = assets.filter(asset => asset.status === filters.status);
+    if (filters?.group) {
+      investments = investments.filter(investment => investment.group === filters.group);
     }
 
     if (filters?.search) {
       const search = filters.search.toLowerCase();
-      assets = assets.filter(asset => 
-        asset.name.toLowerCase().includes(search) ||
-        asset.description?.toLowerCase().includes(search) ||
-        asset.model?.toLowerCase().includes(search) ||
-        asset.manufacturer?.toLowerCase().includes(search)
+      investments = investments.filter(investment => 
+        investment.propertyName.toLowerCase().includes(search) ||
+        investment.address.toLowerCase().includes(search) ||
+        investment.propertyType.toLowerCase().includes(search) ||
+        investment.country?.toLowerCase().includes(search)
       );
     }
 
-    return assets.map(asset => ({
-      ...asset,
-      category: asset.categoryId ? this.categories.get(asset.categoryId) : undefined,
+    return investments.map(investment => ({
+      ...investment,
+      category: undefined, // Real estate investments don't have categories in our current schema
     }));
   }
 
-  async getAsset(id: string): Promise<AssetWithCategory | undefined> {
-    const asset = this.assets.get(id);
-    if (!asset) return undefined;
+  async getInvestment(id: string): Promise<RealEstateInvestmentWithCategory | undefined> {
+    const investment = this.investments.get(id);
+    if (!investment) return undefined;
 
     return {
-      ...asset,
-      category: asset.categoryId ? this.categories.get(asset.categoryId) : undefined,
+      ...investment,
+      category: undefined,
     };
   }
 
-  async createAsset(insertAsset: InsertAsset): Promise<Asset> {
+  async createInvestment(insertInvestment: InsertRealEstateInvestment): Promise<RealEstateInvestment> {
     const id = randomUUID();
-    const asset: Asset = {
-      ...insertAsset,
+    const investment: RealEstateInvestment = {
+      ...insertInvestment,
       id,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
-    this.assets.set(id, asset);
+    this.investments.set(id, investment);
 
     // Create activity
     await this.createActivity({
       type: "created",
-      entityType: "asset",
+      entityType: "property",
       entityId: id,
-      entityName: asset.name,
-      description: `New asset "${asset.name}" added to inventory`,
+      entityName: investment.propertyName,
+      description: `New property "${investment.propertyName}" added to portfolio`,
       userId: undefined,
-      metadata: { categoryId: asset.categoryId },
+      metadata: { group: investment.group, propertyType: investment.propertyType },
     });
 
-    return asset;
+    return investment;
   }
 
-  async updateAsset(id: string, updates: Partial<Asset>): Promise<Asset> {
-    const asset = this.assets.get(id);
-    if (!asset) throw new Error("Asset not found");
+  async updateInvestment(id: string, updates: Partial<RealEstateInvestment>): Promise<RealEstateInvestment> {
+    const investment = this.investments.get(id);
+    if (!investment) throw new Error("Investment not found");
     
-    const updatedAsset = { 
-      ...asset, 
+    const updatedInvestment = { 
+      ...investment, 
       ...updates, 
       updatedAt: new Date(),
     };
-    this.assets.set(id, updatedAsset);
+    this.investments.set(id, updatedInvestment);
 
     // Create activity
     await this.createActivity({
       type: "updated",
-      entityType: "asset",
+      entityType: "property",
       entityId: id,
-      entityName: updatedAsset.name,
-      description: `Asset "${updatedAsset.name}" updated`,
+      entityName: updatedInvestment.propertyName,
+      description: `Property "${updatedInvestment.propertyName}" updated`,
       userId: undefined,
       metadata: { changes: Object.keys(updates) },
     });
 
-    return updatedAsset;
+    return updatedInvestment;
   }
 
-  async deleteAsset(id: string): Promise<boolean> {
-    const asset = this.assets.get(id);
-    if (asset) {
+  async deleteInvestment(id: string): Promise<boolean> {
+    const investment = this.investments.get(id);
+    if (investment) {
       await this.createActivity({
         type: "deleted",
-        entityType: "asset",
+        entityType: "property",
         entityId: id,
-        entityName: asset.name,
-        description: `Asset "${asset.name}" removed from inventory`,
+        entityName: investment.propertyName,
+        description: `Property "${investment.propertyName}" removed from portfolio`,
         userId: undefined,
         metadata: {},
       });
     }
-    return this.assets.delete(id);
+    return this.investments.delete(id);
   }
 
-  // Dictionary
-  async getDictionaryEntries(filters?: { categoryId?: string; search?: string }): Promise<DictionaryEntryWithCategory[]> {
-    let entries = Array.from(this.dictionaryEntries.values());
+  // Investment Scenarios
+  async getScenarios(filters?: { categoryId?: string; search?: string }): Promise<InvestmentScenarioWithCategory[]> {
+    let scenarios = Array.from(this.scenarios.values());
 
     if (filters?.categoryId) {
-      entries = entries.filter(entry => entry.categoryId === filters.categoryId);
+      scenarios = scenarios.filter(scenario => scenario.categoryId === filters.categoryId);
     }
 
     if (filters?.search) {
       const search = filters.search.toLowerCase();
-      entries = entries.filter(entry => 
-        entry.name.toLowerCase().includes(search) ||
-        entry.description.toLowerCase().includes(search) ||
-        entry.type?.toLowerCase().includes(search)
+      scenarios = scenarios.filter(scenario => 
+        scenario.name.toLowerCase().includes(search) ||
+        scenario.description.toLowerCase().includes(search) ||
+        scenario.type?.toLowerCase().includes(search)
       );
     }
 
-    return entries.map(entry => ({
-      ...entry,
-      category: entry.categoryId ? this.categories.get(entry.categoryId) : undefined,
+    return scenarios.map(scenario => ({
+      ...scenario,
+      category: scenario.categoryId ? this.categories.get(scenario.categoryId) : undefined,
     }));
   }
 
-  async getDictionaryEntry(id: string): Promise<DictionaryEntryWithCategory | undefined> {
-    const entry = this.dictionaryEntries.get(id);
-    if (!entry) return undefined;
+  async getScenario(id: string): Promise<InvestmentScenarioWithCategory | undefined> {
+    const scenario = this.scenarios.get(id);
+    if (!scenario) return undefined;
 
     return {
-      ...entry,
-      category: entry.categoryId ? this.categories.get(entry.categoryId) : undefined,
+      ...scenario,
+      category: scenario.categoryId ? this.categories.get(scenario.categoryId) : undefined,
     };
   }
 
-  async createDictionaryEntry(insertEntry: InsertDictionaryEntry): Promise<DictionaryEntry> {
+  async createScenario(insertScenario: InsertInvestmentScenario): Promise<InvestmentScenario> {
     const id = randomUUID();
-    const entry: DictionaryEntry = {
-      ...insertEntry,
+    const scenario: InvestmentScenario = {
+      ...insertScenario,
       id,
       usageCount: 0,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
-    this.dictionaryEntries.set(id, entry);
+    this.scenarios.set(id, scenario);
 
     await this.createActivity({
       type: "created",
-      entityType: "dictionary",
+      entityType: "scenario",
       entityId: id,
-      entityName: entry.name,
-      description: `New dictionary entry "${entry.name}" added`,
+      entityName: scenario.name,
+      description: `New investment scenario "${scenario.name}" created`,
       userId: undefined,
-      metadata: { categoryId: entry.categoryId },
+      metadata: { categoryId: scenario.categoryId, type: scenario.type },
     });
 
-    return entry;
+    return scenario;
   }
 
-  async updateDictionaryEntry(id: string, updates: Partial<DictionaryEntry>): Promise<DictionaryEntry> {
-    const entry = this.dictionaryEntries.get(id);
-    if (!entry) throw new Error("Dictionary entry not found");
+  async updateScenario(id: string, updates: Partial<InvestmentScenario>): Promise<InvestmentScenario> {
+    const scenario = this.scenarios.get(id);
+    if (!scenario) throw new Error("Investment scenario not found");
     
-    const updatedEntry = { 
-      ...entry, 
+    const updatedScenario = { 
+      ...scenario, 
       ...updates, 
       updatedAt: new Date(),
     };
-    this.dictionaryEntries.set(id, updatedEntry);
+    this.scenarios.set(id, updatedScenario);
 
     await this.createActivity({
       type: "updated",
-      entityType: "dictionary",
+      entityType: "scenario",
       entityId: id,
-      entityName: updatedEntry.name,
-      description: `Dictionary entry "${updatedEntry.name}" updated`,
+      entityName: updatedScenario.name,
+      description: `Investment scenario "${updatedScenario.name}" updated`,
       userId: undefined,
       metadata: { changes: Object.keys(updates) },
     });
 
-    return updatedEntry;
+    return updatedScenario;
   }
 
-  async deleteDictionaryEntry(id: string): Promise<boolean> {
-    const entry = this.dictionaryEntries.get(id);
-    if (entry) {
+  async deleteScenario(id: string): Promise<boolean> {
+    const scenario = this.scenarios.get(id);
+    if (scenario) {
       await this.createActivity({
         type: "deleted",
-        entityType: "dictionary",
+        entityType: "scenario",
         entityId: id,
-        entityName: entry.name,
-        description: `Dictionary entry "${entry.name}" removed`,
+        entityName: scenario.name,
+        description: `Investment scenario "${scenario.name}" removed`,
         userId: undefined,
         metadata: {},
       });
     }
-    return this.dictionaryEntries.delete(id);
+    return this.scenarios.delete(id);
   }
 
   // Activities
@@ -477,70 +439,70 @@ export class MemStorage implements IStorage {
 
   // Dashboard
   async getDashboardStats(): Promise<DashboardStats> {
-    const totalAssets = this.assets.size;
-    const activeItems = Array.from(this.assets.values()).filter(a => a.status === "active").length;
-    const pendingReviews = Math.floor(totalAssets * 0.05); // 5% pending reviews
+    const investments = Array.from(this.investments.values());
     
-    const totalValue = Array.from(this.assets.values())
-      .reduce((sum, asset) => sum + (asset.currentValue || asset.purchasePrice || 0), 0);
-
-    const categories = Array.from(this.categories.values()).map(category => ({
-      id: category.id,
-      name: category.name,
-      color: category.color,
-      count: Array.from(this.assets.values()).filter(a => a.categoryId === category.id).length,
-    }));
-
+    const totalProperties = investments.length;
+    const totalPortfolioValue = investments.reduce((sum, inv) => sum + inv.currentValue, 0);
+    const totalNetEquity = investments.reduce((sum, inv) => sum + inv.netEquity, 0);
+    const totalMonthlyIncome = investments.reduce((sum, inv) => sum + inv.monthlyRent, 0);
+    const totalMonthlyExpenses = investments.reduce((sum, inv) => sum + inv.monthlyExpenses, 0);
+    const netCashFlow = totalMonthlyIncome - totalMonthlyExpenses;
+    
+    // Calculate average cap rate
+    const averageCapRate = investments.length > 0 
+      ? (totalMonthlyIncome * 12) / totalPortfolioValue * 100 
+      : 0;
+    
+    // Calculate total tax benefits (placeholder calculation)
+    const totalTaxBenefits = investments.reduce((sum, inv) => 
+      sum + (inv.totalTaxBenefits || 0), 0);
+    
+    const activeProperties = investments.filter(inv => inv.isInvestmentProperty).length;
     const recentActivity = await this.getActivities(10);
 
     return {
-      totalAssets,
-      activeItems,
-      pendingReviews,
-      totalValue,
-      categories,
+      totalProperties,
+      totalPortfolioValue,
+      totalNetEquity,
+      totalMonthlyIncome,
+      totalMonthlyExpenses,
+      netCashFlow,
+      averageCapRate,
+      totalTaxBenefits,
+      activeProperties,
       recentActivity,
     };
   }
 
   // Data management
   async exportData() {
-    const assets = await this.getAssets();
-    const dictionary = await this.getDictionaryEntries();
+    const investments = await this.getInvestments();
+    const scenarios = await this.getScenarios();
     const categories = await this.getCategories();
 
-    return { assets, dictionary, categories };
+    return { investments, scenarios, categories };
   }
 
-  async importAssets(assetsData: InsertAsset[]): Promise<Asset[]> {
-    const importedAssets: Asset[] = [];
+  async importInvestments(investmentsData: InsertRealEstateInvestment[]): Promise<RealEstateInvestment[]> {
+    const importedInvestments: RealEstateInvestment[] = [];
     
-    for (const assetData of assetsData) {
-      const asset = await this.createAsset(assetData);
-      importedAssets.push(asset);
+    for (const investmentData of investmentsData) {
+      try {
+        const investment = await this.createInvestment(investmentData);
+        importedInvestments.push(investment);
+      } catch (error) {
+        console.error(`Failed to import investment: ${investmentData.propertyName}`, error);
+      }
     }
-
-    return importedAssets;
+    
+    return importedInvestments;
   }
 
   async clearAllData(): Promise<boolean> {
-    this.assets.clear();
-    this.dictionaryEntries.clear();
+    this.investments.clear();
+    this.scenarios.clear();
     this.activities.clear();
-    
-    // Keep categories and reinitialize
-    this.initializeDefaultData();
-    
-    await this.createActivity({
-      type: "system",
-      entityType: "system",
-      entityId: "system",
-      entityName: "Data Management",
-      description: "All data cleared and system reset",
-      userId: undefined,
-      metadata: {},
-    });
-
+    // Keep categories and users
     return true;
   }
 }

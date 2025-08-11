@@ -59,7 +59,7 @@ export default function Dashboard() {
       <div>
         <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
         <p className="text-muted-foreground mt-2">
-          Welcome back! Here's an overview of your asset management system.
+          Welcome back! Here's an overview of your real estate investment portfolio.
         </p>
       </div>
 
@@ -76,8 +76,8 @@ export default function Dashboard() {
         ) : (
           <>
             <StatsCard
-              title="Total Assets"
-              value={stats?.totalAssets.toLocaleString() || "0"}
+              title="Total Properties"
+              value={stats?.totalProperties?.toLocaleString() || "0"}
               change={{
                 value: "12%",
                 trend: "up",
@@ -87,37 +87,37 @@ export default function Dashboard() {
               iconColor="text-primary"
             />
             <StatsCard
-              title="Active Items"
-              value={stats?.activeItems.toLocaleString() || "0"}
+              title="Portfolio Value"
+              value={stats?.totalPortfolioValue ? formatCurrency(stats.totalPortfolioValue) : "$0"}
               change={{
                 value: "8%",
                 trend: "up",
                 period: "vs last month"
               }}
-              icon={CheckCircle}
+              icon={DollarSign}
               iconColor="text-success"
             />
             <StatsCard
-              title="Pending Reviews"
-              value={stats?.pendingReviews.toLocaleString() || "0"}
-              change={{
-                value: "23%",
-                trend: "up",
-                period: "vs last month"
-              }}
-              icon={Clock}
-              iconColor="text-warning"
-            />
-            <StatsCard
-              title="Total Value"
-              value={stats ? formatCurrency(stats.totalValue) : "$0"}
+              title="Net Equity"
+              value={stats?.totalNetEquity ? formatCurrency(stats.totalNetEquity) : "$0"}
               change={{
                 value: "15%",
                 trend: "up",
                 period: "vs last month"
               }}
-              icon={DollarSign}
+              icon={TrendingUp}
               iconColor="text-success"
+            />
+            <StatsCard
+              title="Monthly Cash Flow"
+              value={stats?.netCashFlow ? formatCurrency(stats.netCashFlow) : "$0"}
+              change={{
+                value: stats?.netCashFlow && stats.netCashFlow > 0 ? "5%" : "-3%",
+                trend: stats?.netCashFlow && stats.netCashFlow > 0 ? "up" : "down",
+                period: "vs last month"
+              }}
+              icon={CheckCircle}
+              iconColor={stats?.netCashFlow && stats.netCashFlow > 0 ? "text-success" : "text-destructive"}
             />
           </>
         )}
@@ -148,7 +148,7 @@ export default function Dashboard() {
                     </div>
                   ))}
                 </div>
-              ) : stats?.recentActivity.length ? (
+              ) : stats?.recentActivity && stats.recentActivity.length > 0 ? (
                 <div className="space-y-2">
                   {stats.recentActivity.map((activity) => (
                     <ActivityItem key={activity.id} activity={activity} />
@@ -180,7 +180,7 @@ export default function Dashboard() {
               >
                 <span className="flex items-center">
                   <Plus className="w-4 h-4 mr-3" />
-                  Add New Asset
+                  Add Investment
                 </span>
                 <TrendingUp className="w-4 h-4 text-muted-foreground" />
               </Button>
@@ -192,7 +192,7 @@ export default function Dashboard() {
               >
                 <span className="flex items-center">
                   <Upload className="w-4 h-4 mr-3" />
-                  Import Assets
+                  Import Properties
                 </span>
                 <TrendingUp className="w-4 h-4 text-muted-foreground" />
               </Button>
@@ -211,10 +211,10 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          {/* Asset Categories */}
+          {/* Investment Categories */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg font-semibold">Categories</CardTitle>
+              <CardTitle className="text-lg font-semibold">Property Categories</CardTitle>
             </CardHeader>
             <CardContent>
               {isLoading ? (
@@ -229,29 +229,10 @@ export default function Dashboard() {
                     </div>
                   ))}
                 </div>
-              ) : stats?.categories.length ? (
-                <div className="space-y-3">
-                  {stats.categories.map((category) => (
-                    <div key={category.id} className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
-                        <div 
-                          className="w-3 h-3 rounded-full"
-                          style={{ backgroundColor: category.color }}
-                        />
-                        <span className="text-sm font-medium text-foreground">
-                          {category.name}
-                        </span>
-                      </div>
-                      <span className="text-sm text-muted-foreground">
-                        {category.count.toLocaleString()}
-                      </span>
-                    </div>
-                  ))}
-                </div>
               ) : (
                 <div className="text-center py-4 text-muted-foreground">
                   <Package className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                  <p className="text-sm">No categories</p>
+                  <p className="text-sm">Property categories will appear here</p>
                 </div>
               )}
             </CardContent>

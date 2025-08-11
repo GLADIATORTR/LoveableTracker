@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertAssetSchema, insertDictionaryEntrySchema, insertCategorySchema } from "@shared/schema";
+import { insertRealEstateInvestmentSchema, insertInvestmentScenarioSchema, insertCategorySchema } from "@shared/schema";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -40,77 +40,78 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Assets
-  app.get("/api/assets", async (req, res) => {
+  // Real Estate Investments
+  app.get("/api/investments", async (req, res) => {
     try {
-      const { categoryId, status, search } = req.query;
+      const { group, search } = req.query;
       const filters = {
-        categoryId: categoryId as string | undefined,
-        status: status as string | undefined,
+        group: group as string | undefined,
         search: search as string | undefined,
       };
       
-      const assets = await storage.getAssets(filters);
-      res.json(assets);
+      const investments = await storage.getInvestments(filters);
+      res.json(investments);
     } catch (error) {
-      res.status(500).json({ message: "Failed to fetch assets" });
+      res.status(500).json({ message: "Failed to fetch investments" });
     }
   });
 
-  app.get("/api/assets/:id", async (req, res) => {
+  app.get("/api/investments/:id", async (req, res) => {
     try {
-      const asset = await storage.getAsset(req.params.id);
-      if (!asset) {
-        return res.status(404).json({ message: "Asset not found" });
+      const investment = await storage.getInvestment(req.params.id);
+      if (!investment) {
+        return res.status(404).json({ message: "Investment not found" });
       }
-      res.json(asset);
+      res.json(investment);
     } catch (error) {
-      res.status(500).json({ message: "Failed to fetch asset" });
+      res.status(500).json({ message: "Failed to fetch investment" });
     }
   });
 
-  app.post("/api/assets", async (req, res) => {
+  app.post("/api/investments", async (req, res) => {
     try {
-      const validatedData = insertAssetSchema.parse(req.body);
-      const asset = await storage.createAsset(validatedData);
-      res.status(201).json(asset);
+      const validatedData = insertRealEstateInvestmentSchema.parse(req.body);
+      const investment = await storage.createInvestment(validatedData);
+      res.status(201).json(investment);
     } catch (error) {
       if (error instanceof z.ZodError) {
         res.status(400).json({ message: "Invalid data", errors: error.errors });
       } else {
-        res.status(500).json({ message: "Failed to create asset" });
+        res.status(500).json({ message: "Failed to create investment" });
       }
     }
   });
 
-  app.patch("/api/assets/:id", async (req, res) => {
+  app.put("/api/investments/:id", async (req, res) => {
     try {
-      const updates = insertAssetSchema.partial().parse(req.body);
-      const asset = await storage.updateAsset(req.params.id, updates);
-      res.json(asset);
+      const validatedData = insertRealEstateInvestmentSchema.partial().parse(req.body);
+      const investment = await storage.updateInvestment(req.params.id, validatedData);
+      res.json(investment);
     } catch (error) {
       if (error instanceof z.ZodError) {
         res.status(400).json({ message: "Invalid data", errors: error.errors });
+      } else if (error instanceof Error && error.message === "Investment not found") {
+        res.status(404).json({ message: "Investment not found" });
       } else {
-        res.status(500).json({ message: "Failed to update asset" });
+        res.status(500).json({ message: "Failed to update investment" });
       }
     }
   });
 
-  app.delete("/api/assets/:id", async (req, res) => {
+  app.delete("/api/investments/:id", async (req, res) => {
     try {
-      const success = await storage.deleteAsset(req.params.id);
-      if (!success) {
-        return res.status(404).json({ message: "Asset not found" });
+      const deleted = await storage.deleteInvestment(req.params.id);
+      if (!deleted) {
+        return res.status(404).json({ message: "Investment not found" });
       }
-      res.status(204).send();
+      res.json({ message: "Investment deleted successfully" });
     } catch (error) {
-      res.status(500).json({ message: "Failed to delete asset" });
+      res.status(500).json({ message: "Failed to delete investment" });
     }
   });
 
-  // Dictionary
-  app.get("/api/dictionary", async (req, res) => {
+  // Investment Scenarios
+  app.get("/api/scenarios", async (req, res) => {
     try {
       const { categoryId, search } = req.query;
       const filters = {
@@ -118,62 +119,64 @@ export async function registerRoutes(app: Express): Promise<Server> {
         search: search as string | undefined,
       };
       
-      const entries = await storage.getDictionaryEntries(filters);
-      res.json(entries);
+      const scenarios = await storage.getScenarios(filters);
+      res.json(scenarios);
     } catch (error) {
-      res.status(500).json({ message: "Failed to fetch dictionary entries" });
+      res.status(500).json({ message: "Failed to fetch investment scenarios" });
     }
   });
 
-  app.get("/api/dictionary/:id", async (req, res) => {
+  app.get("/api/scenarios/:id", async (req, res) => {
     try {
-      const entry = await storage.getDictionaryEntry(req.params.id);
-      if (!entry) {
-        return res.status(404).json({ message: "Dictionary entry not found" });
+      const scenario = await storage.getScenario(req.params.id);
+      if (!scenario) {
+        return res.status(404).json({ message: "Investment scenario not found" });
       }
-      res.json(entry);
+      res.json(scenario);
     } catch (error) {
-      res.status(500).json({ message: "Failed to fetch dictionary entry" });
+      res.status(500).json({ message: "Failed to fetch investment scenario" });
     }
   });
 
-  app.post("/api/dictionary", async (req, res) => {
+  app.post("/api/scenarios", async (req, res) => {
     try {
-      const validatedData = insertDictionaryEntrySchema.parse(req.body);
-      const entry = await storage.createDictionaryEntry(validatedData);
-      res.status(201).json(entry);
+      const validatedData = insertInvestmentScenarioSchema.parse(req.body);
+      const scenario = await storage.createScenario(validatedData);
+      res.status(201).json(scenario);
     } catch (error) {
       if (error instanceof z.ZodError) {
         res.status(400).json({ message: "Invalid data", errors: error.errors });
       } else {
-        res.status(500).json({ message: "Failed to create dictionary entry" });
+        res.status(500).json({ message: "Failed to create investment scenario" });
       }
     }
   });
 
-  app.patch("/api/dictionary/:id", async (req, res) => {
+  app.put("/api/scenarios/:id", async (req, res) => {
     try {
-      const updates = insertDictionaryEntrySchema.partial().parse(req.body);
-      const entry = await storage.updateDictionaryEntry(req.params.id, updates);
-      res.json(entry);
+      const validatedData = insertInvestmentScenarioSchema.partial().parse(req.body);
+      const scenario = await storage.updateScenario(req.params.id, validatedData);
+      res.json(scenario);
     } catch (error) {
       if (error instanceof z.ZodError) {
         res.status(400).json({ message: "Invalid data", errors: error.errors });
+      } else if (error instanceof Error && error.message === "Investment scenario not found") {
+        res.status(404).json({ message: "Investment scenario not found" });
       } else {
-        res.status(500).json({ message: "Failed to update dictionary entry" });
+        res.status(500).json({ message: "Failed to update investment scenario" });
       }
     }
   });
 
-  app.delete("/api/dictionary/:id", async (req, res) => {
+  app.delete("/api/scenarios/:id", async (req, res) => {
     try {
-      const success = await storage.deleteDictionaryEntry(req.params.id);
-      if (!success) {
-        return res.status(404).json({ message: "Dictionary entry not found" });
+      const deleted = await storage.deleteScenario(req.params.id);
+      if (!deleted) {
+        return res.status(404).json({ message: "Investment scenario not found" });
       }
-      res.status(204).send();
+      res.json({ message: "Investment scenario deleted successfully" });
     } catch (error) {
-      res.status(500).json({ message: "Failed to delete dictionary entry" });
+      res.status(500).json({ message: "Failed to delete investment scenario" });
     }
   });
 
@@ -192,7 +195,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/export", async (_req, res) => {
     try {
       const data = await storage.exportData();
-      res.setHeader('Content-Disposition', 'attachment; filename=asset-data.json');
+      res.setHeader('Content-Disposition', 'attachment; filename=real-estate-data.json');
       res.setHeader('Content-Type', 'application/json');
       res.json(data);
     } catch (error) {
@@ -200,19 +203,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/import/assets", async (req, res) => {
+  app.post("/api/import/investments", async (req, res) => {
     try {
-      const assetsData = z.array(insertAssetSchema).parse(req.body);
-      const importedAssets = await storage.importAssets(assetsData);
+      const investmentsData = z.array(insertRealEstateInvestmentSchema).parse(req.body);
+      const importedInvestments = await storage.importInvestments(investmentsData);
       res.status(201).json({ 
-        message: `Successfully imported ${importedAssets.length} assets`,
-        assets: importedAssets 
+        message: `Successfully imported ${importedInvestments.length} investments`,
+        investments: importedInvestments 
       });
     } catch (error) {
       if (error instanceof z.ZodError) {
         res.status(400).json({ message: "Invalid data format", errors: error.errors });
       } else {
-        res.status(500).json({ message: "Failed to import assets" });
+        res.status(500).json({ message: "Failed to import investments" });
       }
     }
   });

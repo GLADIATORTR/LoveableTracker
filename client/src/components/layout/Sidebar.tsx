@@ -7,8 +7,8 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { 
   LayoutDashboard, 
-  BookOpen, 
-  Package, 
+  Calculator, 
+  Home, 
   BarChart3, 
   Settings, 
   Moon, 
@@ -19,8 +19,8 @@ import {
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { name: "Dictionary", href: "/dictionary", icon: BookOpen },
-  { name: "Assets", href: "/assets", icon: Package },
+  { name: "Investments", href: "/investments", icon: Home },
+  { name: "Scenarios", href: "/scenarios", icon: Calculator },
   { name: "Reports", href: "/reports", icon: BarChart3 },
   { name: "Settings", href: "/settings", icon: Settings },
 ];
@@ -44,10 +44,10 @@ export default function Sidebar() {
         {!sidebarCollapsed && (
           <div className="flex items-center space-x-3">
             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-              <Package className="w-5 h-5 text-primary-foreground" />
+              <Home className="w-5 h-5 text-primary-foreground" />
             </div>
             <span className="text-lg font-semibold text-sidebar-foreground">
-              Asset Tracker
+              Real Estate Tracker
             </span>
           </div>
         )}
