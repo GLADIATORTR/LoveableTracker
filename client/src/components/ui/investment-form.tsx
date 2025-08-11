@@ -123,7 +123,7 @@ export function InvestmentForm({ onSuccess }: InvestmentFormProps) {
         </Button>
       </DialogTrigger>
       
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-background border shadow-lg">
         <DialogHeader>
           <DialogTitle>Add Real Estate Investment</DialogTitle>
         </DialogHeader>

@@ -132,7 +132,7 @@ Another Property,456 Oak Ave,Condo,200000,220000,2023-03-20,1800,600,20000,Downt
         </Button>
       </DialogTrigger>
       
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl bg-background border shadow-lg">
         <DialogHeader>
           <DialogTitle>Import Investments from CSV</DialogTitle>
         </DialogHeader>
