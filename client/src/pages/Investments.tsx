@@ -40,8 +40,10 @@ function formatCurrency(cents: number): string {
   }).format(cents / 100);
 }
 
-function formatDate(date: string | Date): string {
+function formatDate(date: string | Date | null | undefined): string {
+  if (!date) return 'N/A';
   const dateObj = typeof date === 'string' ? new Date(date) : date;
+  if (!dateObj || isNaN(dateObj.getTime())) return 'N/A';
   return dateObj.toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'short',
