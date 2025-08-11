@@ -229,6 +229,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Helper function to parse CSV properly handling quoted fields
+  const parseCSVLine = (line: string): string[] => {
+    const result: string[] = [];
+    let current = '';
+    let inQuotes = false;
+    
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+      
+      if (char === '"') {
+        if (inQuotes && line[i + 1] === '"') {
+          // Escaped quote
+          current += '"';
+          i++; // Skip next quote
+        } else {
+          // Toggle quote state
+          inQuotes = !inQuotes;
+        }
+      } else if (char === ',' && !inQuotes) {
+        // End of field
+        result.push(current.trim());
+        current = '';
+      } else {
+        current += char;
+      }
+    }
+    
+    // Add the last field
+    result.push(current.trim());
+    return result;
+  };
+
   // CSV Import endpoint for investments
   app.post("/api/investments/import", async (req, res) => {
     try {
@@ -239,7 +271,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const lines = csvData.trim().split('\n');
-      const headers = lines[0].split(',').map((h: string) => h.trim());
+      const headers = parseCSVLine(lines[0]);
       
       const results = {
         success: 0,
@@ -250,7 +282,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Process each data row (skip header)
       for (let i = 1; i < lines.length; i++) {
         try {
-          const values = lines[i].split(',').map((v: string) => v.trim());
+          const values = parseCSVLine(lines[i]);
           
           if (values.length < 10) {
             results.errors.push(`Row ${i + 1}: Missing required columns`);

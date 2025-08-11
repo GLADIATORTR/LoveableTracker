@@ -27,7 +27,7 @@ export function CSVTemplate() {
     const sampleData = [
       [
         'Sample Property',
-        '123 Main Street',
+        '123 Main Street, Apt 2B',
         'Condo',
         'USA',
         '300000',
@@ -44,7 +44,7 @@ export function CSVTemplate() {
       ],
       [
         'Another Property',
-        '456 Oak Avenue',
+        '456 Oak Avenue, Unit 5',
         'Single Family',
         'USA',
         '200000',
@@ -58,6 +58,23 @@ export function CSVTemplate() {
         '30',
         '150000',
         '1200'
+      ],
+      [
+        'Turkish Property',
+        'Besiktas, Levent, Merkez',
+        'Condo',
+        'Turkey',
+        '100000',
+        '120000',
+        '1000',
+        '500',
+        '06/01/2021',
+        '20000',
+        '80000',
+        '5.2',
+        '25',
+        '75000',
+        '800'
       ]
     ];
 
