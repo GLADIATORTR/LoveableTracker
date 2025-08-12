@@ -2,7 +2,7 @@
 
 ## Overview
 
-Asset Tracker is a modern data management platform designed for professional asset tracking and organizational management. The application provides comprehensive tools for managing assets, maintaining a data dictionary, generating reports, and tracking activities across an organization. Built with a full-stack architecture using React, Express, and PostgreSQL, it offers a clean, professional interface with advanced search, filtering, and data visualization capabilities.
+Real Estate Investment Tracker is a comprehensive investment management platform featuring intelligent property tracking, financial analysis, and portfolio optimization tools. The application provides advanced TimeSeries projections with inflation adjustment, country-specific global settings, CSV import capabilities, and detailed investment performance analysis. Built with a modern full-stack architecture using React, Express, and PostgreSQL, it offers professional-grade financial modeling and projection tools for real estate investors.
 
 ## User Preferences
 
@@ -10,7 +10,16 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
-### PWA Implementation (August 2025)
+### TimeSeries Projections & Global Settings (August 2025)
+Completed advanced financial projection features:
+- Renamed "Reports" to "TimeSeries Projections" for clearer functionality description
+- Added inflation adjustment toggle to convert values to today's dollars
+- Implemented Global Settings dialog for country-specific financial parameters
+- Properties inherit rates like Real Estate Appreciation, Inflation, Capital Gains Tax from country settings
+- Support for multiple countries (USA, Turkey, Canada, UK) with realistic default rates
+- Enhanced projection calculations using dynamic global settings
+
+### PWA Implementation (August 2025)  
 Added Progressive Web App capabilities with comprehensive offline support:
 - Service Worker for caching and offline functionality
 - Web App Manifest for installable app experience
