@@ -30,6 +30,12 @@ type FormData = {
   monthlyRent: number;
   monthlyExpenses: number;
   netEquity: number;
+  loanAmount?: number;
+  interestRate?: number;
+  loanTerm?: number;
+  monthlyMortgage?: number;
+  outstandingBalance?: number;
+  currentTerm?: number;
   description?: string;
   categoryId?: string;
 };
@@ -72,8 +78,13 @@ export function InvestmentForm({ onSuccess, existingInvestment, onClose }: Inves
       monthlyRent: existingInvestment.monthlyRent / 100,
       monthlyExpenses: existingInvestment.monthlyExpenses / 100,
       netEquity: existingInvestment.netEquity / 100,
-      description: existingInvestment.description || "",
-      categoryId: existingInvestment.categoryId?.toString() || "",
+      loanAmount: existingInvestment.loanAmount ? existingInvestment.loanAmount / 100 : 0,
+      interestRate: existingInvestment.interestRate ? existingInvestment.interestRate / 100 : 0,
+      loanTerm: existingInvestment.loanTerm || 0,
+      monthlyMortgage: existingInvestment.monthlyMortgage ? existingInvestment.monthlyMortgage / 100 : 0,
+      outstandingBalance: existingInvestment.outstandingBalance ? existingInvestment.outstandingBalance / 100 : 0,
+      currentTerm: existingInvestment.currentTerm || 0,
+      description: existingInvestment.notes || "",
     } : {
       propertyName: "",
       address: "",
@@ -84,8 +95,13 @@ export function InvestmentForm({ onSuccess, existingInvestment, onClose }: Inves
       monthlyRent: 0,
       monthlyExpenses: 0,
       netEquity: 0,
+      loanAmount: 0,
+      interestRate: 0,
+      loanTerm: 0,
+      monthlyMortgage: 0,
+      outstandingBalance: 0,
+      currentTerm: 0,
       description: "",
-      categoryId: undefined,
     },
     resolver: zodResolver(z.object({
       propertyName: z.string().min(1, "Property name is required"),
@@ -97,8 +113,13 @@ export function InvestmentForm({ onSuccess, existingInvestment, onClose }: Inves
       monthlyRent: z.number().min(0, "Monthly rent must be positive"),
       monthlyExpenses: z.number().min(0, "Monthly expenses must be positive"),
       netEquity: z.number(),
+      loanAmount: z.number().min(0).optional(),
+      interestRate: z.number().min(0).optional(),
+      loanTerm: z.number().min(0).optional(),
+      monthlyMortgage: z.number().min(0).optional(),
+      outstandingBalance: z.number().min(0).optional(),
+      currentTerm: z.number().min(0).optional(),
       description: z.string().optional(),
-      categoryId: z.string().optional(),
     })),
   });
 
@@ -365,6 +386,129 @@ export function InvestmentForm({ onSuccess, existingInvestment, onClose }: Inves
                   </FormItem>
                 )}
               />
+            </div>
+
+            {/* Loan Information Section */}
+            <div className="space-y-3">
+              <h3 className="text-sm font-medium text-muted-foreground border-b pb-2">Loan Information (Optional)</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <FormField
+                  control={form.control}
+                  name="loanAmount"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Loan Amount</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          placeholder="0" 
+                          {...field} 
+                          onChange={e => field.onChange(Number(e.target.value))}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="interestRate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Interest Rate (%)</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          step="0.01"
+                          placeholder="0.00" 
+                          {...field} 
+                          onChange={e => field.onChange(Number(e.target.value))}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="loanTerm"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Loan Term (months)</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          placeholder="360" 
+                          {...field} 
+                          onChange={e => field.onChange(Number(e.target.value))}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <FormField
+                  control={form.control}
+                  name="monthlyMortgage"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Monthly Mortgage</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          placeholder="0" 
+                          {...field} 
+                          onChange={e => field.onChange(Number(e.target.value))}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="outstandingBalance"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Outstanding Balance</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          placeholder="0" 
+                          {...field} 
+                          onChange={e => field.onChange(Number(e.target.value))}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="currentTerm"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Current Term (months)</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          placeholder="0" 
+                          {...field} 
+                          onChange={e => field.onChange(Number(e.target.value))}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
             </div>
 
             {categories && categories.length > 0 && (

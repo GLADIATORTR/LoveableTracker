@@ -305,7 +305,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           };
 
           // Map CSV columns based on the user's format:
-          // Property Name | Address | Investment Property Type | Country | Purchase Price | Current Value | Monthly Rent | Monthly Expenses | Purchase Date | Down Payment | Loan Amount | Interest Rate | Loan Term | Outstanding Balance | Monthly Mortgage
+          // Property Name | Address | Investment Property Type | Country | Purchase Price | Current Value | Monthly Rent | Monthly Expenses | Purchase Date | Down Payment | Loan Amount | Interest Rate | Loan Term | Outstanding Balance | Monthly Mortgage | Current Term
           const investmentData = {
             propertyName: values[0] || '',
             address: values[1] || '',
@@ -322,6 +322,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             loanTerm: Math.round(parseFloat(values[12] || '0') * 12) || 0, // Column 12 is Loan Term (convert years to months)
             outstandingBalance: Math.round(parseFloat(values[13] || '0') * 100) || 0, // Column 13 is Outstanding Balance
             monthlyMortgage: Math.round(parseFloat(values[14] || '0') * 100) || 0, // Column 14 is Monthly Mortgage
+            currentTerm: parseInt(values[15] || '0') || 0, // Column 15 is Current Term (months since purchase)
             netEquity: Math.round((parseFloat(values[5] || '0') - parseFloat(values[13] || '0')) * 100) || 0, // Current Value - Outstanding Balance
             description: `${values[3] || ''} property`, // Column 3 is Country
             categoryId: null,
