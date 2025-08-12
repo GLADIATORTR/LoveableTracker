@@ -101,12 +101,19 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
     const annualInterestRate = rawRate / 10000;
     const monthlyInterestRate = annualInterestRate / 12;
     
-    // Outstanding balance calculation using proper amortization
+    // Outstanding balance calculation using proper amortization with payment progression
     let outstandingBalance = currentOutstandingBalance;
-    if (monthlyMortgage > 0 && monthlyInterestRate > 0 && remainingMonths > 0) {
-      // Calculate remaining balance using amortization formula
-      const factor = Math.pow(1 + monthlyInterestRate, remainingMonths);
-      outstandingBalance = monthlyMortgage * ((factor - 1) / (monthlyInterestRate * factor));
+    if (monthlyMortgage > 0 && monthlyInterestRate > 0) {
+      if (year === 0) {
+        // Y0 uses current outstanding balance
+        outstandingBalance = currentOutstandingBalance;
+      } else if (remainingMonths > 0) {
+        // Calculate remaining balance after additional payments
+        const factor = Math.pow(1 + monthlyInterestRate, remainingMonths);
+        outstandingBalance = monthlyMortgage * ((factor - 1) / (monthlyInterestRate * factor));
+      } else {
+        outstandingBalance = 0;
+      }
     } else if (remainingMonths <= 0) {
       outstandingBalance = 0;
     }
@@ -133,7 +140,7 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
       capitalGainsTax: (marketValue - purchasePrice) * (countrySettings.capitalGainsTax / 100),
       sellingCosts: marketValue * (countrySettings.sellingCosts / 100),
       netEquityNominal: netEquity,
-      netEquityToday: netEquity, // Same as nominal when inflation adjusted
+      netEquityToday: netEquity * Math.pow(1 + inflationRate, -year), // Present value discounted by country inflation rate
       cumulativeNetYield,
       cumulativeMortgagePayment,
       netGain: netEquity + cumulativeNetYield - (investment.netEquity || 0) / 100
@@ -234,7 +241,7 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
       y30: formatCurrency(yearlyData[30].netEquityNominal),
     },
     {
-      metric: "Net Equity (PV Today $)",
+      metric: "Net Equity (Present Value - Today's Dollars)",
       y0: formatCurrency(yearlyData[0].netEquityToday),
       y1: formatCurrency(yearlyData[1].netEquityToday),
       y2: formatCurrency(yearlyData[2].netEquityToday),
