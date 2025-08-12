@@ -20,6 +20,7 @@ import {
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, like, and } from "drizzle-orm";
+import { randomUUID } from "crypto";
 
 export interface IStorage {
   // Users
@@ -61,9 +62,6 @@ export interface IStorage {
   exportData(): Promise<{ investments: RealEstateInvestmentWithCategory[]; scenarios: InvestmentScenarioWithCategory[]; categories: Category[] }>;
   importInvestments(investments: InsertRealEstateInvestment[]): Promise<RealEstateInvestment[]>;
   clearAllData(): Promise<boolean>;
-
-  // Initialization
-  initializeDefaultData(): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -283,6 +281,7 @@ export class DatabaseStorage implements IStorage {
 
   // Scenario operations (simplified for now)
   async getScenarios(filters?: { categoryId?: string; search?: string }): Promise<InvestmentScenarioWithCategory[]> {
+    // Simplified implementation - return empty array for now
     return [];
   }
 
@@ -369,3 +368,118 @@ export class DatabaseStorage implements IStorage {
 }
 
 export const storage = new DatabaseStorage();
+      entityId: id,
+      entityName: updatedScenario.name,
+      description: `Investment scenario "${updatedScenario.name}" updated`,
+      userId: undefined,
+      metadata: { changes: Object.keys(updates) },
+    });
+
+    return updatedScenario;
+  }
+
+  async deleteScenario(id: string): Promise<boolean> {
+    const scenario = this.scenarios.get(id);
+    if (scenario) {
+      await this.createActivity({
+        type: "deleted",
+        entityType: "scenario",
+        entityId: id,
+        entityName: scenario.name,
+        description: `Investment scenario "${scenario.name}" removed`,
+        userId: undefined,
+        metadata: {},
+      });
+    }
+    return this.scenarios.delete(id);
+  }
+
+  // Activities
+  async getActivities(limit = 50): Promise<Activity[]> {
+    return Array.from(this.activities.values())
+      .sort((a, b) => b.createdAt!.getTime() - a.createdAt!.getTime())
+      .slice(0, limit);
+  }
+
+  async createActivity(insertActivity: InsertActivity): Promise<Activity> {
+    const id = randomUUID();
+    const activity: Activity = {
+      ...insertActivity,
+      id,
+      createdAt: new Date(),
+    };
+    this.activities.set(id, activity);
+    return activity;
+  }
+
+  // Dashboard
+  async getDashboardStats(): Promise<DashboardStats> {
+    const investments = Array.from(this.investments.values());
+    
+    const totalProperties = investments.length;
+    const totalPortfolioValue = investments.reduce((sum, inv) => sum + inv.currentValue, 0);
+    const totalNetEquity = investments.reduce((sum, inv) => sum + inv.netEquity, 0);
+    const totalMonthlyIncome = investments.reduce((sum, inv) => sum + inv.monthlyRent, 0);
+    const totalMonthlyExpenses = investments.reduce((sum, inv) => sum + inv.monthlyExpenses, 0);
+    const netCashFlow = totalMonthlyIncome - totalMonthlyExpenses;
+    
+    // Calculate average cap rate
+    const averageCapRate = investments.length > 0 
+      ? (totalMonthlyIncome * 12) / totalPortfolioValue * 100 
+      : 0;
+    
+    // Calculate total tax benefits (placeholder calculation)
+    const totalTaxBenefits = investments.reduce((sum, inv) => 
+      sum + (inv.totalTaxBenefits || 0), 0);
+    
+    const activeProperties = investments.filter(inv => inv.isInvestmentProperty).length;
+    const recentActivity = await this.getActivities(10);
+
+    return {
+      totalProperties,
+      totalPortfolioValue,
+      totalNetEquity,
+      totalMonthlyIncome,
+      totalMonthlyExpenses,
+      netCashFlow,
+      averageCapRate,
+      totalTaxBenefits,
+      activeProperties,
+      recentActivity,
+    };
+  }
+
+  // Data management
+  async exportData() {
+    const investments = await this.getInvestments();
+    const scenarios = await this.getScenarios();
+    const categories = await this.getCategories();
+
+    return { investments, scenarios, categories };
+  }
+
+  async importInvestments(investmentsData: InsertRealEstateInvestment[]): Promise<RealEstateInvestment[]> {
+    const importedInvestments: RealEstateInvestment[] = [];
+    
+    for (const investmentData of investmentsData) {
+      try {
+        const investment = await this.createInvestment(investmentData);
+        importedInvestments.push(investment);
+      } catch (error) {
+        console.error(`Failed to import investment: ${investmentData.propertyName}`, error);
+      }
+    }
+    
+    return importedInvestments;
+  }
+
+  async clearAllData(): Promise<boolean> {
+    this.investments.clear();
+    this.scenarios.clear();
+    this.activities.clear();
+    // Keep categories and users
+    return true;
+  }
+}
+
+export const storage = new MemStorage();

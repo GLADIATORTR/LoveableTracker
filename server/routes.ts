@@ -1,10 +1,107 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertRealEstateInvestmentSchema, insertInvestmentScenarioSchema, insertCategorySchema } from "@shared/schema";
+import { insertRealEstateInvestmentSchema, insertInvestmentScenarioSchema, insertCategorySchema, type InsertRealEstateInvestment } from "@shared/schema";
 import { z } from "zod";
 
+// CSV data from user's file
+const csvData = [
+  ["Property Name", "Address", "Property Type", "Country", "Purchase Price", "Current Value", "Monthly Rent Income", "Monthly Expenses", "Purchase Date", "Down Payment", "Loan Amount", "Interest Rate", "Loan Term", "Outstanding Balance", "Current Term", "Monthly Mortgage"],
+  ["Levent", "Besiktas, Levent, Menekseli S No8", "Condo", "Turkey", "930000", "2200000", "4500", "333.33", "10/1/2005", "0", "0", "0", "0", "0", "0", "0"],
+  ["Eyup", "Eyup, Topcular C, No 40", "Condo", "Turkey", "700000", "2000000", "5750", "300", "11/1/2007", "0", "0", "0", "0", "0", "0", "0"],
+  ["Sisli_Gulbahar", "Sisli, Mecidiyekoy, Gulbahar M, Buyukdere C, Oya S, Tumer Plaza, No 7/6", "Condo", "Turkey", "400000", "600000", "1100", "91.67", "9/1/2016", "0", "0", "0", "0", "0", "0", "0"],
+  ["Sisli_Halaskargazi", "Sisli, 19 Mayis M, Halaskargazi C, 226/1", "Condo", "Turkey", "110000", "550000", "1050", "91.67", "1/1/2002", "0", "0", "0", "0", "0", "0", "0"],
+  ["Sisli_HirantDink", "Sisli, 19 Mayis M, Hirant Dink, 96/4", "Condo", "Turkey", "60000", "300000", "825", "41.67", "1/1/1995", "0", "0", "0", "0", "0", "0", "0"],
+  ["KocaMustafa_AptiIpekci", "KocaMustafaPasa, Apti Ipekci M, Mercan Balik S No 4/2", "Condo", "Turkey", "9000", "120000", "300", "20", "1/1/1990", "0", "0", "0", "0", "0", "0", "0"],
+  ["KocaMustafa_Marmara", "KocaMustafaPasa, Marmara C, 116/6", "Condo", "Turkey", "3000", "120000", "313", "20", "1/1/1970", "0", "0", "0", "0", "0", "0", "0"],
+  ["Sisli_Siracevizler", "Sisli, Merkez M, Siracevizler C, Marmara Ap, 132/7", "Condo", "Turkey", "11840", "300000", "600", "50", "1/1/1982", "0", "0", "0", "0", "0", "0", "0"],
+  ["Atakoy", "Bakirkoy, Atakoy, Karanfil S No 1/KB A/7-Bl 13/143", "Condo", "Turkey", "32200", "300000", "875", "50", "1/1/1995", "0", "0", "0", "0", "0", "0", "0"],
+  ["12 Hillcrest", "12 Hillcrest Ct, South San Francisco, CA 94080", "Single Family", "USA", "675000", "1250000", "4450", "2910", "3/1/2014", "230000", "445000", "3.75%", "360", "338,073", "125", "2030"],
+  ["Boca 219", "500 SW Avenue, Boca Raton, Florida", "Single Family", "USA", "212500", "225000", "1950", "936.3333333", "5/1/2024", "0", "0", "0", "0", "0", "0", "0"],
+  ["Lupin way", "925 Lupin way San Carlos CA", "Single Family", "USA", "1375000", "2300000", "0", "1600", "3/1/2020", "704165", "670835", "2.50%", "360", "583712", "66", "3054"],
+  ["ErsoySahil", "Kadikoy, Suadiye, Zihni Sakaryali S 7/2", "Condo", "Turkey", "300000", "450000", "0", "66.67", "12/1/2018", "0", "0", "0", "0", "0", "0", "0"]
+];
+
+function parseCSVData(data: string[][]): InsertRealEstateInvestment[] {
+  const properties: InsertRealEstateInvestment[] = [];
+  
+  for (let i = 1; i < data.length; i++) { // Skip header row
+    const row = data[i];
+    const [
+      propertyName, address, propertyType, country, purchasePrice, currentValue,
+      monthlyRentIncome, monthlyExpenses, purchaseDate, downPayment, loanAmount,
+      interestRate, loanTerm, outstandingBalance, currentTerm, monthlyMortgage
+    ] = row;
+
+    // Parse numeric values and convert to cents where needed
+    const parsePriceValue = (value: string) => {
+      const cleaned = value.replace(/[,$]/g, '');
+      return Math.round(parseFloat(cleaned) * 100); // Convert to cents
+    };
+
+    const parsePercentage = (value: string) => {
+      const cleaned = value.replace(/%/g, '');
+      return Math.round(parseFloat(cleaned) * 100); // Convert to basis points
+    };
+
+    const parseDate = (dateStr: string) => {
+      const [month, day, year] = dateStr.split('/');
+      return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+    };
+
+    const property: InsertRealEstateInvestment = {
+      propertyName,
+      address,
+      purchasePrice: parsePriceValue(purchasePrice),
+      currentValue: parsePriceValue(currentValue),
+      netEquity: parsePriceValue(currentValue) - (outstandingBalance ? parsePriceValue(outstandingBalance) : 0),
+      downPayment: parsePriceValue(downPayment || '0'),
+      loanAmount: parsePriceValue(loanAmount || '0'),
+      interestRate: interestRate ? parsePercentage(interestRate) : 0,
+      loanTerm: parseInt(loanTerm || '0'),
+      monthlyMortgage: parsePriceValue(monthlyMortgage || '0'),
+      monthlyRent: parsePriceValue(monthlyRentIncome || '0'),
+      monthlyExpenses: parsePriceValue(monthlyExpenses || '0'),
+      outstandingBalance: parsePriceValue(outstandingBalance || '0'),
+      currentTerm: parseInt(currentTerm || '0'),
+      propertyType: propertyType.toLowerCase().replace(' ', '-'),
+      purchaseDate: parseDate(purchaseDate),
+      country,
+      group: country, // Use country as group
+      avgAppreciationRate: country === 'Turkey' ? 1200 : 350, // 12% for Turkey, 3.5% for USA
+      isInvestmentProperty: true
+    };
+
+    properties.push(property);
+  }
+
+  return properties;
+}
+
+async function initializeDummyProperties() {
+  try {
+    // Check if properties already exist
+    const existingInvestments = await storage.getInvestments();
+    if (existingInvestments.length > 0) {
+      console.log('Properties already loaded, skipping initialization');
+      return;
+    }
+
+    // Parse and import the CSV data
+    const properties = parseCSVData(csvData);
+    console.log(`Importing ${properties.length} properties for dummy user...`);
+    
+    await storage.importInvestments(properties);
+    console.log('Successfully imported dummy properties');
+  } catch (error) {
+    console.error('Error initializing dummy properties:', error);
+  }
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Initialize default data on startup
+  await storage.initializeDefaultData();
+  await initializeDummyProperties();
   
   // Dashboard stats
   app.get("/api/dashboard/stats", async (_req, res) => {

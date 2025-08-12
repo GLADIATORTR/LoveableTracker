@@ -10,6 +10,18 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### Database Implementation & Dummy User Account (August 2025)
+Complete transition from memory storage to PostgreSQL database with dummy user system:
+- **Database Migration**: Replaced MemStorage with DatabaseStorage using PostgreSQL and Drizzle ORM
+- **Dummy User Account**: Created arinkeskin@gmail.com account with Real Estate Investor profile
+- **Preloaded Properties**: Automatically imports 13 properties from user's CSV on first startup:
+  * 10 Turkish properties (condos) with 12% appreciation rate
+  * 3 US properties (single family) with 3.75%-2.5% interest rates and proper mortgage calculations
+  * Maintains exact user CSV format: Property Name, Address, Purchase Price, Current Value, etc.
+- **Dictionary Integration**: Added Dictionary button to TopBar for easy access to asset definitions
+- **Data Persistence**: All property data now persists between sessions in PostgreSQL database
+- **Automatic Initialization**: System creates default categories and dummy user on first startup
+
 ### TimeSeries Projections & Calculation Fixes (August 2025)
 Major improvements to financial projection accuracy and data consistency:
 - Fixed all calculation errors in TimeSeries Projections:
