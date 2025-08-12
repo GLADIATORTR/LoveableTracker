@@ -5,6 +5,7 @@ import { useTheme } from "@/components/ui/theme-provider";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { GlobalSettings } from "@/components/ui/global-settings";
 import { 
   LayoutDashboard, 
   Calculator, 
@@ -114,6 +115,16 @@ export default function Sidebar() {
             </Tooltip>
           );
         })}
+        
+        {/* Global Settings in sidebar */}
+        {!sidebarCollapsed && (
+          <div className="mt-6 pt-4 border-t border-sidebar-border">
+            <div className="text-xs font-medium text-muted-foreground mb-2 px-2">
+              GLOBAL SETTINGS
+            </div>
+            <GlobalSettings />
+          </div>
+        )}
       </nav>
 
       {/* User Profile */}

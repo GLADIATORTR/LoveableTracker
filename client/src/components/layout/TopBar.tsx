@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { GlobalSettings } from "@/components/ui/global-settings";
 import { Search, Bell, Download, Plus } from "lucide-react";
 import { useState } from "react";
 
@@ -98,6 +99,9 @@ export default function TopBar() {
             </Badge>
           </div>
 
+          {/* Global Settings */}
+          <GlobalSettings />
+          
           {/* Export */}
           <Button
             variant="outline"
