@@ -132,8 +132,9 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
     // Display net equity based on inflation adjustment toggle
     const netEquity = inflationAdjusted ? netEquityToday : nominalNetEquity;
     
-    // Cumulative values
-    const cumulativeNetYield = year === 0 ? 0 : (monthlyRent - monthlyExpenses - monthlyMortgage) * 12 * year * inflationAdjustment;
+    // Annual and cumulative values
+    const annualNetYield = (monthlyRent - monthlyExpenses) * 12; // Excluding mortgage payment
+    const cumulativeNetYield = year === 0 ? 0 : annualNetYield * year * inflationAdjustment;
     const cumulativeMortgagePayment = year === 0 ? 0 : monthlyMortgage * 12 * year * inflationAdjustment;
     
     yearlyData[year] = {
@@ -146,6 +147,7 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
       sellingCosts: marketValue * (countrySettings.sellingCosts / 100),
       netEquityNominal: nominalNetEquity, // Always nominal for comparison
       netEquityToday: netEquityToday, // Always present value using country inflation rate
+      annualNetYield: annualNetYield * inflationAdjustment,
       cumulativeNetYield,
       cumulativeMortgagePayment,
       netGain: netEquity + cumulativeNetYield - (investment.netEquity || 0) / 100
@@ -257,6 +259,19 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
       y15: formatCurrency(yearlyData[15].netEquityToday),
       y25: formatCurrency(yearlyData[25].netEquityToday),
       y30: formatCurrency(yearlyData[30].netEquityToday),
+    },
+    {
+      metric: "Annual Net Yield excluding Mortgage Payment",
+      y0: formatCurrency(yearlyData[0].annualNetYield),
+      y1: formatCurrency(yearlyData[1].annualNetYield),
+      y2: formatCurrency(yearlyData[2].annualNetYield),
+      y3: formatCurrency(yearlyData[3].annualNetYield),
+      y4: formatCurrency(yearlyData[4].annualNetYield),
+      y5: formatCurrency(yearlyData[5].annualNetYield),
+      y10: formatCurrency(yearlyData[10].annualNetYield),
+      y15: formatCurrency(yearlyData[15].annualNetYield),
+      y25: formatCurrency(yearlyData[25].annualNetYield),
+      y30: formatCurrency(yearlyData[30].annualNetYield),
     },
     {
       metric: "Cumulative Net Yield excluding Mortgage Payment",
