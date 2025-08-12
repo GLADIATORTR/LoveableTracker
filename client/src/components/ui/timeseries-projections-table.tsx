@@ -69,12 +69,12 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
   const rentGrowthRate = appreciationRate * 0.7; // Rent growth is typically 70% of appreciation
   const expenseGrowthRate = 0.02; // 2% annual expense growth
   
-  // Current values
-  const currentMarketValue = investment.currentValue;
-  const currentMonthlyRent = investment.monthlyRent;
-  const currentMonthlyExpenses = investment.monthlyExpenses;
-  const currentOutstandingBalance = investment.outstandingBalance || 0;
-  const monthlyMortgage = investment.monthlyMortgage || 0;
+  // Current values (convert from cents to dollars)
+  const currentMarketValue = investment.currentValue / 100;
+  const currentMonthlyRent = investment.monthlyRent / 100;
+  const currentMonthlyExpenses = investment.monthlyExpenses / 100;
+  const currentOutstandingBalance = (investment.outstandingBalance || 0) / 100;
+  const monthlyMortgage = (investment.monthlyMortgage || 0) / 100;
   
   // Calculate projections for each year
   const yearlyData: Record<number, any> = {};
@@ -90,8 +90,9 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
     const originalTerm = investment.loanTerm || 360;
     const remainingMonths = Math.max(0, originalTerm - currentTerm - (year * 12));
     
-    // Interest rate from investment data
-    const monthlyInterestRate = (investment.interestRate || 0) / 100 / 12;
+    // Interest rate from investment data (stored in basis points, convert to decimal)
+    const annualInterestRate = (investment.interestRate || 0) / 10000; // Convert basis points to decimal
+    const monthlyInterestRate = annualInterestRate / 12;
     
     // Outstanding balance calculation (simplified)
     let outstandingBalance = currentOutstandingBalance;
@@ -123,15 +124,15 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
     yearlyData[year] = {
       marketValue,
       remainingTerm: remainingMonths,
-      interestRate: investment.interestRate || 0,
+      interestRate: annualInterestRate * 100, // Store as percentage for display
       outstandingBalance,
-      capitalGainsTax: (marketValue - (investment.costBasis || investment.purchasePrice)) * (countrySettings.capitalGainsTax / 100),
+      capitalGainsTax: (marketValue - (investment.costBasis || investment.purchasePrice / 100)) * (countrySettings.capitalGainsTax / 100),
       sellingCosts: marketValue * (countrySettings.sellingCosts / 100),
       netEquityNominal: netEquity,
       netEquityToday: netEquity, // Same as nominal when inflation adjusted
       cumulativeNetYield,
       cumulativeMortgagePayment,
-      netGain: netEquity + cumulativeNetYield - investment.netEquity
+      netGain: netEquity + cumulativeNetYield - (investment.netEquity || 0) / 100
     };
   });
 

@@ -347,7 +347,7 @@ export default function Investments() {
                   <div>
                     <div className="text-xs text-muted-foreground mb-1">Interest Rate</div>
                     <div className="font-medium text-foreground">
-                      {((investment.interestRate || 0) / 100).toFixed(2)}%
+                      {((investment.interestRate || 0) / 10000).toFixed(2)}%
                     </div>
                   </div>
                   <div>
@@ -357,6 +357,24 @@ export default function Investments() {
                     </div>
                   </div>
                 </div>
+
+                {/* Current Term */}
+                {investment.currentTerm && investment.currentTerm > 0 && (
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <div className="text-xs text-muted-foreground mb-1">Current Term</div>
+                      <div className="font-medium text-foreground">
+                        {investment.currentTerm} months
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-muted-foreground mb-1">Remaining Term</div>
+                      <div className="font-medium text-foreground">
+                        {Math.max(0, (investment.loanTerm || 0) - (investment.currentTerm || 0))} months
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Outstanding Balance & Monthly Mortgage */}
                 <div className="grid grid-cols-2 gap-4">
