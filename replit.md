@@ -11,13 +11,25 @@ Preferred communication style: Simple, everyday language.
 ## Recent Changes
 
 ### TimeSeries Projections & Global Settings (August 2025)
-Completed advanced financial projection features:
+Completed advanced financial projection features matching user's reference screenshot:
 - Renamed "Reports" to "TimeSeries Projections" for clearer functionality description
-- Added inflation adjustment toggle to convert values to today's dollars
-- Implemented Global Settings dialog for country-specific financial parameters
+- Added property dropdown selector for individual property analysis
+- Detailed financial metrics table with 12 projection rows:
+  * Market Value projections over time
+  * Remaining mortgage term calculations
+  * Interest rate tracking
+  * Outstanding balance projections
+  * Capital Gains Tax calculations (using global country settings)
+  * Selling Costs calculations (using global country settings)
+  * Net Equity projections (both nominal and present value)
+  * Cumulative Net Yield calculations
+  * Cumulative Mortgage Payment tracking
+  * Net Gain projections
+- Time series columns: Y0, Y1, Y2, Y3, Y4, Y5, Y10, Y15, Y25, Y30
+- Inflation adjustment toggle to convert values to today's dollars
+- Global Settings dialog for country-specific financial parameters
 - Properties inherit rates like Real Estate Appreciation, Inflation, Capital Gains Tax from country settings
 - Support for multiple countries (USA, Turkey, Canada, UK) with realistic default rates
-- Enhanced projection calculations using dynamic global settings
 
 ### PWA Implementation (August 2025)  
 Added Progressive Web App capabilities with comprehensive offline support:
