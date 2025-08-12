@@ -1,15 +1,10 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { generateFinancialProjections, type PropertyFinancials, type GlobalCountrySettings } from "@/utils/financial-calculations";
 import type { RealEstateInvestmentWithCategory } from "@shared/schema";
 
-interface ProjectionData {
-  year: number;
-  marketValue: number;
-  monthlyRent: number;
-  netCashFlow: number;
-  netEquity: number;
-  capRate: number;
-}
+// Using standardized projection interface from financial calculations
+import type { FinancialProjection } from "@/utils/financial-calculations";
 
 interface InvestmentProjectionsTableProps {
   investment: RealEstateInvestmentWithCategory;
@@ -30,7 +25,7 @@ function formatPercent(value: number): string {
 }
 
 // Get global settings from localStorage
-function getGlobalSettings() {
+function getGlobalSettings(): { selectedCountry: string; countrySettings: Record<string, GlobalCountrySettings> } {
   try {
     const saved = localStorage.getItem('global-settings');
     if (saved) {
@@ -55,40 +50,23 @@ function getGlobalSettings() {
   };
 }
 
-// Generate projection data for a property
-function generateProjections(investment: RealEstateInvestmentWithCategory, inflationAdjusted: boolean = false): ProjectionData[] {
-  const years = [0, 1, 2, 3, 4, 5, 10, 15, 25, 30];
+export function InvestmentProjectionsTable({ investment, inflationAdjusted = false }: InvestmentProjectionsTableProps) {
   const globalSettings = getGlobalSettings();
   const countrySettings = globalSettings.countrySettings[globalSettings.selectedCountry];
   
-  const appreciationRate = countrySettings.realEstateAppreciationRate / 100; // Use global setting
-  const inflationRate = countrySettings.inflationRate / 100; // Use global setting
-  const rentGrowthRate = appreciationRate * 0.7; // Rent growth is typically 70% of appreciation
+  // Convert investment data to PropertyFinancials format
+  const propertyFinancials: PropertyFinancials = {
+    marketValue: investment.currentValue,
+    monthlyRent: investment.monthlyRent,
+    monthlyExpenses: investment.monthlyExpenses,
+    loanBalance: investment.currentValue - investment.netEquity, // Calculated loan balance
+    purchasePrice: investment.currentValue, // Using current value as estimate
+    downPayment: investment.netEquity,
+    yearsPurchased: 0, // Assuming recent purchase
+  };
   
-  return years.map(year => {
-    const marketValue = investment.currentValue * Math.pow(1 + appreciationRate, year);
-    const monthlyRent = investment.monthlyRent * Math.pow(1 + rentGrowthRate, year);
-    const annualRent = monthlyRent * 12;
-    const totalExpenses = investment.monthlyExpenses * 12 * Math.pow(1.02, year); // 2% expense growth
-    const netCashFlow = annualRent - totalExpenses;
-    const netEquity = marketValue - (investment.currentValue - investment.netEquity); // Assuming no additional principal payments
-    
-    // Apply inflation adjustment if requested
-    const inflationAdjustment = inflationAdjusted ? Math.pow(1 + inflationRate, -year) : 1;
-    
-    return {
-      year,
-      marketValue: marketValue * inflationAdjustment,
-      monthlyRent: monthlyRent * inflationAdjustment,
-      netCashFlow: netCashFlow * inflationAdjustment,
-      netEquity: netEquity * inflationAdjustment,
-      capRate: (annualRent / marketValue) * 100, // Cap rate doesn't adjust for inflation
-    };
-  });
-}
-
-export function InvestmentProjectionsTable({ investment, inflationAdjusted = false }: InvestmentProjectionsTableProps) {
-  const projections = generateProjections(investment, inflationAdjusted);
+  // Generate projections using standardized financial calculations
+  const projections = generateFinancialProjections(propertyFinancials, countrySettings, undefined, inflationAdjusted);
   
   return (
     <Card>
@@ -113,9 +91,11 @@ export function InvestmentProjectionsTable({ investment, inflationAdjusted = fal
                 <TableHead className="w-16">Year</TableHead>
                 <TableHead className="text-right">Market Value</TableHead>
                 <TableHead className="text-right">Monthly Rent</TableHead>
-                <TableHead className="text-right">Net Cash Flow</TableHead>
-                <TableHead className="text-right">Net Equity</TableHead>
-                <TableHead className="text-right">Cap Rate</TableHead>
+                <TableHead className="text-right">Net Yield (Cash Flow)</TableHead>
+                <TableHead className="text-right">Cash at Hand</TableHead>
+                <TableHead className="text-right">After-Tax Net Equity</TableHead>
+                <TableHead className="text-right">% Net Yield</TableHead>
+                <TableHead className="text-right">Cash-on-Cash Return</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -131,15 +111,23 @@ export function InvestmentProjectionsTable({ investment, inflationAdjusted = fal
                     {formatCurrency(projection.monthlyRent)}
                   </TableCell>
                   <TableCell className={`text-right font-mono ${
-                    projection.netCashFlow > 0 ? 'text-green-600' : 'text-red-600'
+                    projection.netYield > 0 ? 'text-green-600' : 'text-red-600'
                   }`}>
-                    {formatCurrency(projection.netCashFlow)}
+                    {formatCurrency(projection.netYield)}
+                  </TableCell>
+                  <TableCell className={`text-right font-mono ${
+                    projection.cashAtHand > 0 ? 'text-green-600' : 'text-red-600'
+                  }`}>
+                    {formatCurrency(projection.cashAtHand)}
                   </TableCell>
                   <TableCell className="text-right font-mono">
-                    {formatCurrency(projection.netEquity)}
+                    {formatCurrency(projection.afterTaxNetEquity)}
                   </TableCell>
                   <TableCell className="text-right font-mono">
-                    {formatPercent(projection.capRate)}
+                    {formatPercent(projection.netYieldPercentage)}
+                  </TableCell>
+                  <TableCell className="text-right font-mono">
+                    {formatPercent(projection.cashOnCashReturn)}
                   </TableCell>
                 </TableRow>
               ))}

@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { FinancialDictionary } from "@/components/ui/financial-dictionary";
 import { Search, Bell, Download, Plus } from "lucide-react";
 import { useState } from "react";
 
@@ -97,6 +98,9 @@ export default function TopBar() {
               3
             </Badge>
           </div>
+
+          {/* Financial Dictionary */}
+          <FinancialDictionary />
 
           {/* Export */}
           <Button
