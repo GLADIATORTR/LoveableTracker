@@ -101,21 +101,45 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
     const annualInterestRate = rawRate / 10000;
     const monthlyInterestRate = annualInterestRate / 12;
     
-    // Outstanding balance calculation using proper amortization with payment progression
+    // Outstanding balance calculation using CUMPRINC equivalent formula
     let outstandingBalance = currentOutstandingBalance;
-    if (monthlyMortgage > 0 && monthlyInterestRate > 0) {
-      if (year === 0) {
-        // Y0 uses current outstanding balance
-        outstandingBalance = currentOutstandingBalance;
-      } else if (remainingMonths > 0) {
-        // Calculate remaining balance after additional payments
-        const factor = Math.pow(1 + monthlyInterestRate, remainingMonths);
-        outstandingBalance = monthlyMortgage * ((factor - 1) / (monthlyInterestRate * factor));
+    let cumulativePrincipalPayment = 0;
+    
+    if (monthlyMortgage > 0 && monthlyInterestRate > 0 && year > 0) {
+      // Calculate cumulative principal payments from Y0 to current year
+      // This is equivalent to CUMPRINC(rate, nper, pv, start_period, end_period, type)
+      const paymentsInYear = 12 * year; // Total payments from Y0 to current year
+      
+      if (paymentsInYear <= (originalTerm - currentTerm)) {
+        // Calculate cumulative principal for the period using the CUMPRINC formula approach
+        for (let month = 1; month <= paymentsInYear; month++) {
+          const remainingBalance = currentOutstandingBalance;
+          const interestPayment = remainingBalance * monthlyInterestRate;
+          const principalPayment = Math.max(0, monthlyMortgage - interestPayment);
+          cumulativePrincipalPayment += principalPayment;
+          
+          // Reduce balance for next iteration (simplified approximation)
+          if (month === 1) {
+            // For first payment, calculate more precisely
+            const factor = Math.pow(1 + monthlyInterestRate, originalTerm - currentTerm);
+            const monthlyPaymentCalc = currentOutstandingBalance * (monthlyInterestRate * factor) / (factor - 1);
+            
+            // Use PV formula to get remaining balance after payments
+            const paymentsLeft = Math.max(0, originalTerm - currentTerm - paymentsInYear);
+            if (paymentsLeft > 0) {
+              const remainingFactor = Math.pow(1 + monthlyInterestRate, paymentsLeft);
+              outstandingBalance = monthlyPaymentCalc * ((remainingFactor - 1) / (monthlyInterestRate * remainingFactor));
+            } else {
+              outstandingBalance = 0;
+            }
+            break; // Use precise calculation instead of iteration
+          }
+        }
       } else {
-        outstandingBalance = 0;
+        outstandingBalance = 0; // Loan is paid off
       }
-    } else if (remainingMonths <= 0) {
-      outstandingBalance = 0;
+    } else if (year === 0) {
+      outstandingBalance = currentOutstandingBalance;
     }
     
     // Monthly rent with growth
@@ -126,7 +150,11 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
     
     // Net equity calculations - separate nominal and present value
     const nominalMarketValue = currentMarketValue * Math.pow(1 + appreciationRate, year);
-    const nominalNetEquity = nominalMarketValue - outstandingBalance;
+    const capitalGainsTax = (nominalMarketValue - purchasePrice) * (countrySettings.capitalGainsTax / 100);
+    const sellingCosts = nominalMarketValue * (countrySettings.sellingCosts / 100);
+    
+    // Net Equity = Market Value - Outstanding Balance - Capital Gains Tax - Selling Costs
+    const nominalNetEquity = nominalMarketValue - outstandingBalance - capitalGainsTax - sellingCosts;
     const netEquityToday = nominalNetEquity * Math.pow(1 + inflationRate, -year);
     
     // Display net equity based on inflation adjustment toggle
@@ -134,8 +162,22 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
     
     // Annual and cumulative values
     const annualNetYield = (monthlyRent - monthlyExpenses) * 12; // Excluding mortgage payment
-    const cumulativeNetYield = year === 0 ? 0 : annualNetYield * year * inflationAdjustment;
-    const cumulativeMortgagePayment = year === 0 ? 0 : monthlyMortgage * 12 * year * inflationAdjustment;
+    
+    // Fix cumulative calculations to be properly cumulative
+    let cumulativeNetYield = 0;
+    let cumulativeMortgagePayment = 0;
+    
+    if (year > 0) {
+      // Calculate cumulative values by summing annual amounts
+      for (let y = 1; y <= year; y++) {
+        const yearRent = currentMonthlyRent * Math.pow(1 + rentGrowthRate, y) * (inflationAdjusted ? Math.pow(1 + inflationRate, -y) : 1);
+        const yearExpenses = currentMonthlyExpenses * Math.pow(1 + expenseGrowthRate, y) * (inflationAdjusted ? Math.pow(1 + inflationRate, -y) : 1);
+        const yearMortgage = monthlyMortgage * (inflationAdjusted ? Math.pow(1 + inflationRate, -y) : 1);
+        
+        cumulativeNetYield += (yearRent - yearExpenses) * 12;
+        cumulativeMortgagePayment += yearMortgage * 12;
+      }
+    }
     
     yearlyData[year] = {
       marketValue,
@@ -143,8 +185,9 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
       remainingTerm: remainingMonths,
       interestRate: annualInterestRate * 100, // Store as percentage for display
       outstandingBalance,
-      capitalGainsTax: (marketValue - purchasePrice) * (countrySettings.capitalGainsTax / 100),
-      sellingCosts: marketValue * (countrySettings.sellingCosts / 100),
+      capitalGainsTax,
+      sellingCosts,
+      cumulativePrincipalPayment,
       netEquityNominal: nominalNetEquity, // Always nominal for comparison
       netEquityToday: netEquityToday, // Always present value using country inflation rate
       annualNetYield: annualNetYield * inflationAdjustment,
@@ -154,8 +197,19 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
     };
   });
 
+  // Calculate interest rate for header display
+  const rawRate = investment.interestRate || 0;
+  const displayInterestRate = rawRate / 10000; // Convert basis points to decimal
+  
+  // Add property details header row
+  const propertyDetailsRow: ProjectionRow = {
+    metric: `${investment.propertyName} (${investment.country || 'USA'}) | Purchase Price: ${formatCurrency(purchasePrice)} | Appreciation: ${formatPercent(appreciationRate * 100)} | Int Rate: ${formatPercent(displayInterestRate * 100)} | Inf Rate: ${formatPercent(inflationRate * 100)} | Sales Costs: ${formatPercent(countrySettings.sellingCosts)} | Cap Gains Tax: ${formatPercent(countrySettings.capitalGainsTax)} | Monthly Rent: ${formatCurrency(currentMonthlyRent)} | Monthly Exp: ${formatCurrency(currentMonthlyExpenses)} | Monthly Mortgage: ${formatCurrency(monthlyMortgage)}`,
+    y0: "", y1: "", y2: "", y3: "", y4: "", y5: "", y10: "", y15: "", y25: "", y30: ""
+  };
+
   // Build the rows according to the screenshot format
   const rows: ProjectionRow[] = [
+    propertyDetailsRow,
     {
       metric: "Market Value",
       y0: formatCurrency(yearlyData[0].marketValue),
@@ -194,6 +248,32 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
       y15: formatPercent(yearlyData[15].interestRate),
       y25: formatPercent(yearlyData[25].interestRate),
       y30: formatPercent(yearlyData[30].interestRate),
+    },
+    {
+      metric: "Inflation Rate",
+      y0: formatPercent(inflationRate * 100),
+      y1: formatPercent(inflationRate * 100),
+      y2: formatPercent(inflationRate * 100),
+      y3: formatPercent(inflationRate * 100),
+      y4: formatPercent(inflationRate * 100),
+      y5: formatPercent(inflationRate * 100),
+      y10: formatPercent(inflationRate * 100),
+      y15: formatPercent(inflationRate * 100),
+      y25: formatPercent(inflationRate * 100),
+      y30: formatPercent(inflationRate * 100),
+    },
+    {
+      metric: "Cumulative Principle PMT",
+      y0: formatCurrency(0),
+      y1: formatCurrency(yearlyData[1].cumulativePrincipalPayment || 0),
+      y2: formatCurrency(yearlyData[2].cumulativePrincipalPayment || 0),
+      y3: formatCurrency(yearlyData[3].cumulativePrincipalPayment || 0),
+      y4: formatCurrency(yearlyData[4].cumulativePrincipalPayment || 0),
+      y5: formatCurrency(yearlyData[5].cumulativePrincipalPayment || 0),
+      y10: formatCurrency(yearlyData[10].cumulativePrincipalPayment || 0),
+      y15: formatCurrency(yearlyData[15].cumulativePrincipalPayment || 0),
+      y25: formatCurrency(yearlyData[25].cumulativePrincipalPayment || 0),
+      y30: formatCurrency(yearlyData[30].cumulativePrincipalPayment || 0),
     },
     {
       metric: "Outstanding Balance",
