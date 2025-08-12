@@ -19,7 +19,7 @@ const routeTitles = {
 };
 
 export default function TopBar() {
-  const [location] = useLocation();
+  const [location, navigate] = useLocation();
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -48,10 +48,11 @@ export default function TopBar() {
   };
 
   const handleAddAsset = () => {
-    // This would typically open a modal or navigate to an add form
+    // Navigate to investments page where user can add new properties
+    navigate("/investments");
     toast({
-      title: "Add Asset",
-      description: "Asset creation form would open here.",
+      title: "Add Property",
+      description: "Redirecting to investments page to add new property.",
     });
   };
 
