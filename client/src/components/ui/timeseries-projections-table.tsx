@@ -124,8 +124,13 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
     // Monthly expenses with growth
     const monthlyExpenses = currentMonthlyExpenses * Math.pow(1 + expenseGrowthRate, year) * inflationAdjustment;
     
-    // Net equity
-    const netEquity = marketValue - outstandingBalance;
+    // Net equity calculations - separate nominal and present value
+    const nominalMarketValue = currentMarketValue * Math.pow(1 + appreciationRate, year);
+    const nominalNetEquity = nominalMarketValue - outstandingBalance;
+    const netEquityToday = nominalNetEquity * Math.pow(1 + inflationRate, -year);
+    
+    // Display net equity based on inflation adjustment toggle
+    const netEquity = inflationAdjusted ? netEquityToday : nominalNetEquity;
     
     // Cumulative values
     const cumulativeNetYield = year === 0 ? 0 : (monthlyRent - monthlyExpenses - monthlyMortgage) * 12 * year * inflationAdjustment;
@@ -139,8 +144,8 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
       outstandingBalance,
       capitalGainsTax: (marketValue - purchasePrice) * (countrySettings.capitalGainsTax / 100),
       sellingCosts: marketValue * (countrySettings.sellingCosts / 100),
-      netEquityNominal: netEquity,
-      netEquityToday: netEquity * Math.pow(1 + inflationRate, -year), // Present value discounted by country inflation rate
+      netEquityNominal: nominalNetEquity, // Always nominal for comparison
+      netEquityToday: netEquityToday, // Always present value using country inflation rate
       cumulativeNetYield,
       cumulativeMortgagePayment,
       netGain: netEquity + cumulativeNetYield - (investment.netEquity || 0) / 100
