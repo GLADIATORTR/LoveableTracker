@@ -47,6 +47,9 @@ function getGlobalSettings() {
 }
 
 function formatCurrency(amount: number): string {
+  if (isNaN(amount) || !isFinite(amount)) {
+    return '$NaN';
+  }
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',
@@ -90,22 +93,35 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
     const originalTerm = investment.loanTerm || 360;
     const remainingMonths = Math.max(0, originalTerm - currentTerm - (year * 12));
     
-    // Interest rate from investment data (stored in basis points, convert to decimal)
-    const annualInterestRate = (investment.interestRate || 0) / 10000; // Convert basis points to decimal
+    // Interest rate from investment data 
+    // Handle both the current incorrect storage (37500 for 3.75%) and correct basis points (375 for 3.75%)
+    let annualInterestRate;
+    const rawRate = investment.interestRate || 0;
+    if (rawRate > 1000) {
+      // This is the incorrectly stored format: 37500 for 3.75%
+      annualInterestRate = rawRate / 1000000; // Convert to decimal: 37500 -> 0.0375
+    } else {
+      // This is the correct basis points format: 375 for 3.75%
+      annualInterestRate = rawRate / 10000; // Convert to decimal: 375 -> 0.0375
+    }
     const monthlyInterestRate = annualInterestRate / 12;
     
-    // Outstanding balance calculation (simplified)
+    // Outstanding balance calculation 
     let outstandingBalance = currentOutstandingBalance;
-    if (year > 0 && monthlyMortgage > 0) {
+    if (year > 0 && monthlyMortgage > 0 && monthlyInterestRate > 0) {
       // Approximate remaining balance after payments
       const monthsPassed = year * 12;
       const paymentsRemaining = Math.max(0, originalTerm - currentTerm - monthsPassed);
       if (paymentsRemaining > 0) {
-        outstandingBalance = monthlyMortgage * ((Math.pow(1 + monthlyInterestRate, paymentsRemaining) - 1) / 
-                                              (monthlyInterestRate * Math.pow(1 + monthlyInterestRate, paymentsRemaining)));
+        // Standard mortgage balance formula
+        const factor = Math.pow(1 + monthlyInterestRate, paymentsRemaining);
+        outstandingBalance = monthlyMortgage * ((factor - 1) / (monthlyInterestRate * factor));
       } else {
         outstandingBalance = 0;
       }
+    } else if (year > 0) {
+      // For properties without mortgages or with 0% interest
+      outstandingBalance = 0;
     }
     
     // Monthly rent with growth

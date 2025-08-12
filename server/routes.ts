@@ -304,11 +304,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
             return isNaN(parsed.getTime()) ? new Date() : parsed;
           };
 
-          // Parse interest rate - handle percentage format
+          // Parse interest rate - handle percentage format and store in basis points
           const parseInterestRate = (rateStr: string) => {
             if (!rateStr || rateStr === '0') return 0;
             const rate = parseFloat(rateStr.replace('%', ''));
-            return Math.round(rate * 100); // Convert to basis points
+            // Store as basis points: 3.75% becomes 375 basis points
+            return Math.round(rate * 100);
           };
 
           // Parse outstanding balance - handle quoted numbers with commas
