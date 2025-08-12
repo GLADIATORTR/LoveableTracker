@@ -7,7 +7,6 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { TimeSeriesProjectionsTable } from "@/components/ui/timeseries-projections-table";
-import { GlobalSettings } from "@/components/ui/global-settings";
 import { 
   Download,
   Home,
@@ -86,7 +85,6 @@ export default function Reports() {
               Convert to Today's Dollars
             </Label>
           </div>
-          <GlobalSettings />
           <Button variant="outline" size="sm" onClick={handleExportReport}>
             <Download className="w-4 h-4 mr-2" />
             Export Report
