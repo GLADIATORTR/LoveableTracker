@@ -12,6 +12,7 @@ import Scenarios from "@/pages/Scenarios";
 import Investments from "@/pages/Investments";
 import Reports from "@/pages/Reports";
 import Settings from "@/pages/Settings";
+import Dictionary from "@/pages/Dictionary";
 import NotFound from "@/pages/not-found";
 import { useEffect } from "react";
 
@@ -24,6 +25,7 @@ function Router() {
       <Route path="/investments" component={Investments} />
       <Route path="/reports" component={Reports} />
       <Route path="/settings" component={Settings} />
+      <Route path="/dictionary" component={Dictionary} />
       <Route component={NotFound} />
     </Switch>
   );

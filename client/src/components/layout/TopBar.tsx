@@ -4,15 +4,17 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { GlobalSettings } from "@/components/ui/global-settings";
-import { Search, Bell, Download, Plus } from "lucide-react";
+import { Search, Bell, Download, Plus, BookOpen } from "lucide-react";
 import { useState } from "react";
+import { Link } from "wouter";
 
 const routeTitles = {
   "/": "Dashboard",
   "/dashboard": "Dashboard",
-  "/dictionary": "Dictionary",
-  "/assets": "Assets",
-  "/reports": "Reports",
+  "/dictionary": "Asset Dictionary",
+  "/investments": "Investments",
+  "/projections": "Future Projections", 
+  "/reports": "TimeSeries Projections",
   "/settings": "Settings",
 };
 
@@ -98,6 +100,18 @@ export default function TopBar() {
               3
             </Badge>
           </div>
+
+          {/* Dictionary */}
+          <Link href="/dictionary">
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-primary hover:bg-primary/10"
+            >
+              <BookOpen className="w-4 h-4 mr-2" />
+              Dictionary
+            </Button>
+          </Link>
 
           {/* Global Settings */}
           <GlobalSettings />
