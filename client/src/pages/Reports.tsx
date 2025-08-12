@@ -1,10 +1,12 @@
 import { useState } from "react";
+import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { InvestmentProjectionsTable } from "@/components/ui/investment-projections-table";
+import { TimeSeriesProjectionsTable } from "@/components/ui/timeseries-projections-table";
 import { GlobalSettings } from "@/components/ui/global-settings";
 import { 
   Download,
@@ -16,10 +18,20 @@ import type { RealEstateInvestmentWithCategory } from "@shared/schema";
 export default function Reports() {
   const { toast } = useToast();
   const [inflationAdjusted, setInflationAdjusted] = useState(false);
+  const [selectedPropertyId, setSelectedPropertyId] = useState<string>("");
 
   const { data: investments, isLoading } = useQuery<RealEstateInvestmentWithCategory[]>({
     queryKey: ["/api/investments"],
   });
+
+  // Set default property when investments load
+  React.useEffect(() => {
+    if (investments && investments.length > 0 && !selectedPropertyId) {
+      setSelectedPropertyId(investments[0].id);
+    }
+  }, [investments, selectedPropertyId]);
+
+  const selectedProperty = investments?.find(inv => inv.id === selectedPropertyId);
 
   const handleExportReport = () => {
     toast({
@@ -50,7 +62,20 @@ export default function Reports() {
             Long-term financial projections with inflation-adjusted values for your real estate investments.
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
+          <Select value={selectedPropertyId} onValueChange={setSelectedPropertyId}>
+            <SelectTrigger className="w-64">
+              <SelectValue placeholder="Select a property" />
+            </SelectTrigger>
+            <SelectContent>
+              {investments?.map((investment) => (
+                <SelectItem key={investment.id} value={investment.id}>
+                  {investment.propertyName} - {investment.address}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          
           <div className="flex items-center space-x-2">
             <Switch
               id="inflation-adjusted"
@@ -69,16 +94,19 @@ export default function Reports() {
         </div>
       </div>
 
-      {/* Investment Projections */}
-      <div className="space-y-6">
-        {investments.map((investment) => (
-          <InvestmentProjectionsTable 
-            key={investment.id} 
-            investment={investment} 
-            inflationAdjusted={inflationAdjusted}
-          />
-        ))}
-      </div>
+      {/* Selected Property Projections */}
+      {selectedProperty ? (
+        <TimeSeriesProjectionsTable 
+          investment={selectedProperty} 
+          inflationAdjusted={inflationAdjusted}
+        />
+      ) : (
+        <div className="text-center py-12">
+          <TrendingUp className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-foreground mb-2">No property selected</h3>
+          <p className="text-muted-foreground">Please select a property to view projections.</p>
+        </div>
+      )}
     </div>
   );
 }
