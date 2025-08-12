@@ -10,26 +10,19 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
-### TimeSeries Projections & Global Settings (August 2025)
-Completed advanced financial projection features matching user's reference screenshot:
-- Renamed "Reports" to "TimeSeries Projections" for clearer functionality description
-- Added property dropdown selector for individual property analysis
-- Detailed financial metrics table with 12 projection rows:
-  * Market Value projections over time
-  * Remaining mortgage term calculations
-  * Interest rate tracking
-  * Outstanding balance projections
-  * Capital Gains Tax calculations (using global country settings)
-  * Selling Costs calculations (using global country settings)
-  * Net Equity projections (both nominal and present value)
-  * Cumulative Net Yield calculations
-  * Cumulative Mortgage Payment tracking
-  * Net Gain projections
-- Time series columns: Y0, Y1, Y2, Y3, Y4, Y5, Y10, Y15, Y25, Y30
-- Inflation adjustment toggle to convert values to today's dollars
-- Global Settings dialog for country-specific financial parameters
-- Properties inherit rates like Real Estate Appreciation, Inflation, Capital Gains Tax from country settings
-- Support for multiple countries (USA, Turkey, Canada, UK) with realistic default rates
+### TimeSeries Projections & Calculation Fixes (August 2025)
+Major improvements to financial projection accuracy and data consistency:
+- Fixed all calculation errors in TimeSeries Projections:
+  * Market Value: Now correctly shows $1,250,000 (not $125,000,000)
+  * Interest Rate: Displays 3.75% correctly (not 375.00%)
+  * Outstanding Balance: Uses proper mortgage amortization formula
+  * Capital Gains Tax: Correctly calculates as (Market Value - Purchase Price) × Tax Rate
+  * Current Term: Shows months since loan start (not remaining term)
+- Present Value calculations now use country-specific inflation rates for proper discounting
+- Outstanding balance properly reduces year-over-year using financial amortization
+- CSV import fixed to match user's exact 16-column format without reordering
+- Fixed caching issue: Preview window and "open in new tab" now show identical live data
+- React Query cache optimized: 30-second stale time, refetch on window focus
 
 ### PWA Implementation (August 2025)  
 Added Progressive Web App capabilities with comprehensive offline support:
@@ -40,15 +33,14 @@ Added Progressive Web App capabilities with comprehensive offline support:
 - Network status indicator with offline mode alerts
 - Enhanced query client with offline-first strategy
 
-### TimeSeries Projections & Global Settings (August 2025)
-Enhanced reporting capabilities with advanced financial modeling:
-- Renamed "Reports" to "TimeSeries Projections" for clarity
-- Inflation adjustment toggle to convert values to today's dollars
-- Global Settings dialog for country-specific financial parameters
-- Country-based inheritance of rates (Real Estate Appreciation, Inflation, etc.)
-- Support for USA, Turkey, Canada, and UK with customizable parameters
+### Global Settings & Financial Modeling (August 2025)
+Advanced country-specific financial parameter system:
+- Global Settings dialog accessible via gear icon in TimeSeries page
+- Country-based inheritance of rates (Real Estate Appreciation, Inflation, Capital Gains Tax, etc.)
+- Support for USA, Turkey, Canada, and UK with realistic default rates
 - Persistent settings storage with localStorage integration
 - Dynamic projection calculations using global country settings
+- Present value calculations using country-specific discount rates
 
 ## System Architecture
 
