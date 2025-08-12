@@ -145,11 +145,64 @@ export function calculateAnnualDepreciation(
  */
 export function calculateTotalTaxBenefits(
   annualDepreciation: number,
-  mortgageInterestDeduction: number,
-  propertyTaxDeduction: number,
+  mortgageInterest: number,
+  propertyTax: number,
   maintenanceDeductions: number
 ): number {
-  return annualDepreciation + mortgageInterestDeduction + propertyTaxDeduction + maintenanceDeductions;
+  return annualDepreciation + mortgageInterest + propertyTax + maintenanceDeductions;
+}
+
+/**
+ * Generate complete financial projections for a property
+ */
+export function generateFinancialProjections(
+  propertyFinancials: PropertyFinancials,
+  globalSettings: GlobalCountrySettings,
+  years: number = 10,
+  inflationAdjusted: boolean = false
+): FinancialProjection[] {
+  const projections: FinancialProjection[] = [];
+  
+  for (let year = 1; year <= years; year++) {
+    const adjustedMarketValue = propertyFinancials.marketValue * Math.pow(1 + globalSettings.realEstateAppreciationRate / 100, year);
+    const adjustedRent = propertyFinancials.monthlyRent * 12 * Math.pow(1 + globalSettings.inflationRate / 100, year);
+    const adjustedExpenses = propertyFinancials.monthlyExpenses * 12 * Math.pow(1 + globalSettings.inflationRate / 100, year);
+    
+    const netYield = calculateNetYield(adjustedRent / 12, adjustedExpenses / 12);
+    const netYieldPercentage = calculateNetYieldPercentage(netYield, adjustedMarketValue);
+    const appreciation = calculateAppreciation(adjustedMarketValue, globalSettings.realEstateAppreciationRate);
+    const salesCost = calculateSalesCost(adjustedMarketValue, globalSettings.sellingCosts);
+    const capitalGainsTax = calculateCapitalGainsTax(adjustedMarketValue, propertyFinancials.loanBalance, globalSettings.capitalGainsTax);
+    const afterTaxNetEquity = calculateAfterTaxNetEquity(adjustedMarketValue, propertyFinancials.loanBalance, salesCost, capitalGainsTax);
+    
+    // Estimate mortgage payment (simplified)
+    const annualMortgagePayment = propertyFinancials.monthlyExpenses * 12 * 0.6; // Assuming 60% of expenses is mortgage
+    const cashAtHand = calculateCashAtHand(netYield, annualMortgagePayment);
+    
+    // Tax benefits calculation
+    const costBasis = calculateCostBasis(propertyFinancials.purchasePrice);
+    const annualDepreciation = calculateAnnualDepreciation(costBasis);
+    const totalTaxBenefits = calculateTotalTaxBenefits(annualDepreciation, annualMortgagePayment * 0.8, 0, 0);
+    
+    // Cash on cash return
+    const cashOnCashReturn = propertyFinancials.downPayment > 0 ? (cashAtHand / propertyFinancials.downPayment) * 100 : 0;
+    
+    projections.push({
+      year,
+      marketValue: adjustedMarketValue,
+      monthlyRent: adjustedRent / 12,
+      netYield,
+      cashAtHand,
+      netValue: adjustedMarketValue - propertyFinancials.loanBalance,
+      afterTaxNetEquity,
+      netYieldPercentage,
+      appreciation,
+      totalTaxBenefits,
+      cashOnCashReturn
+    });
+  }
+  
+  return projections;
 }
 
 /**
@@ -177,68 +230,3 @@ export function calculateCashOnCashReturn(
   return (annualCashFlow / initialInvestment) * 100;
 }
 
-/**
- * Generate comprehensive financial projections using standardized calculations
- */
-export function generateFinancialProjections(
-  property: PropertyFinancials,
-  countrySettings: GlobalCountrySettings,
-  years: number[] = [0, 1, 2, 3, 4, 5, 10, 15, 25, 30],
-  inflationAdjusted: boolean = false
-): FinancialProjection[] {
-  const costBasis = calculateCostBasis(property.purchasePrice);
-  const annualDepreciation = calculateAnnualDepreciation(costBasis);
-  
-  return years.map(year => {
-    // Apply time-based growth rates
-    const futureMarketValue = property.marketValue * Math.pow(1 + countrySettings.realEstateAppreciationRate / 100, year);
-    const futureMonthlyRent = property.monthlyRent * Math.pow(1 + (countrySettings.realEstateAppreciationRate * 0.7) / 100, year);
-    const futureMonthlyExpenses = property.monthlyExpenses * Math.pow(1.02, year); // 2% expense growth
-    
-    // Core calculations using standardized formulas
-    const netYield = calculateNetYield(futureMonthlyRent, futureMonthlyExpenses);
-    const netYieldPercentage = calculateNetYieldPercentage(netYield, futureMarketValue);
-    const appreciation = calculateAppreciation(futureMarketValue, countrySettings.realEstateAppreciationRate);
-    
-    // Mortgage calculations (simplified - assuming fixed payment)
-    const annualMortgagePayment = (property.loanBalance * (countrySettings.currentMortgageRate / 100)) / 12 * 12;
-    const mortgageInterest = property.loanBalance * (countrySettings.currentMortgageRate / 100);
-    const cashAtHand = calculateCashAtHand(netYield, annualMortgagePayment);
-    
-    // Tax calculations
-    const propertyTaxDeduction = futureMonthlyExpenses * 12 * 0.3; // Estimate 30% of expenses are property tax
-    const maintenanceDeductions = futureMonthlyExpenses * 12 * 0.4; // Estimate 40% of expenses are maintenance
-    const totalTaxBenefits = calculateTotalTaxBenefits(
-      annualDepreciation,
-      mortgageInterest,
-      propertyTaxDeduction,
-      maintenanceDeductions
-    );
-    
-    const netValue = calculateNetValue(netYield, mortgageInterest, appreciation, totalTaxBenefits);
-    
-    // Sales calculations
-    const salesCost = calculateSalesCost(futureMarketValue, countrySettings.sellingCosts);
-    const capitalGainsTax = calculateCapitalGainsTax(futureMarketValue, property.loanBalance, countrySettings.capitalGainsTax);
-    const afterTaxNetEquity = calculateAfterTaxNetEquity(futureMarketValue, property.loanBalance, salesCost, capitalGainsTax);
-    
-    const cashOnCashReturn = calculateCashOnCashReturn(cashAtHand, property.downPayment);
-    
-    // Apply inflation adjustment if requested
-    const inflationAdjustment = inflationAdjusted ? Math.pow(1 + countrySettings.inflationRate / 100, -year) : 1;
-    
-    return {
-      year,
-      marketValue: futureMarketValue * inflationAdjustment,
-      monthlyRent: futureMonthlyRent * inflationAdjustment,
-      netYield: netYield * inflationAdjustment,
-      cashAtHand: cashAtHand * inflationAdjustment,
-      netValue: netValue * inflationAdjustment,
-      afterTaxNetEquity: afterTaxNetEquity * inflationAdjustment,
-      netYieldPercentage,
-      appreciation: appreciation * inflationAdjustment,
-      totalTaxBenefits: totalTaxBenefits * inflationAdjustment,
-      cashOnCashReturn, // Percentage doesn't adjust for inflation
-    };
-  });
-}
