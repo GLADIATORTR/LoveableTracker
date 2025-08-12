@@ -1,100 +1,120 @@
-// PWA utilities for offline support and installation
+// Progressive Web App utilities and service worker management
 
-export interface BeforeInstallPromptEvent extends Event {
-  readonly platforms: Array<string>;
-  readonly userChoice: Promise<{
-    outcome: 'accepted' | 'dismissed';
-    platform: string;
-  }>;
-  prompt(): Promise<void>;
+interface AppInfo {
+  canInstall: boolean;
+  isInstalled: boolean;
+  isStandalone: boolean;
 }
 
 class PWAManager {
-  private deferredPrompt: BeforeInstallPromptEvent | null = null;
-  private onlineListeners: Array<() => void> = [];
-  private offlineListeners: Array<() => void> = [];
+  private beforeInstallPrompt: any = null;
+  private onlineCallbacks: (() => void)[] = [];
+  private offlineCallbacks: (() => void)[] = [];
 
   constructor() {
-    this.setupEventListeners();
+    this.init();
   }
 
-  private setupEventListeners() {
-    // Listen for the beforeinstallprompt event
+  private init() {
+    // Register service worker
+    if ('serviceWorker' in navigator) {
+      this.registerServiceWorker();
+    }
+
+    // Listen for install prompt
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
-      this.deferredPrompt = e as BeforeInstallPromptEvent;
+      this.beforeInstallPrompt = e;
     });
 
-    // Listen for online/offline events
+    // Listen for network changes
     window.addEventListener('online', () => {
-      this.onlineListeners.forEach(callback => callback());
+      this.onlineCallbacks.forEach(callback => callback());
     });
 
     window.addEventListener('offline', () => {
-      this.offlineListeners.forEach(callback => callback());
+      this.offlineCallbacks.forEach(callback => callback());
     });
   }
 
-  // Check if the app can be installed
-  canInstall(): boolean {
-    return this.deferredPrompt !== null;
+  private async registerServiceWorker() {
+    try {
+      const registration = await navigator.serviceWorker.register('/sw.js');
+      console.log('SW registered:', registration);
+      
+      // Handle service worker updates
+      registration.addEventListener('updatefound', () => {
+        const newWorker = registration.installing;
+        if (newWorker) {
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              // New service worker is available, prompt user to refresh
+              if (confirm('New version available. Refresh to update?')) {
+                window.location.reload();
+              }
+            }
+          });
+        }
+      });
+    } catch (error) {
+      console.log('SW registration failed:', error);
+    }
   }
 
-  // Show the install prompt
+  getAppInfo(): AppInfo {
+    return {
+      canInstall: !!this.beforeInstallPrompt,
+      isInstalled: window.matchMedia('(display-mode: standalone)').matches || 
+                   (window.navigator as any).standalone === true,
+      isStandalone: window.matchMedia('(display-mode: standalone)').matches
+    };
+  }
+
   async install(): Promise<boolean> {
-    if (!this.deferredPrompt) {
+    if (!this.beforeInstallPrompt) {
       return false;
     }
 
     try {
-      this.deferredPrompt.prompt();
-      const choiceResult = await this.deferredPrompt.userChoice;
-      this.deferredPrompt = null;
-      return choiceResult.outcome === 'accepted';
+      const choiceResult = await this.beforeInstallPrompt.prompt();
+      const accepted = choiceResult.outcome === 'accepted';
+      
+      if (accepted) {
+        this.beforeInstallPrompt = null;
+      }
+      
+      return accepted;
     } catch (error) {
-      console.error('Error showing install prompt:', error);
+      console.error('Install failed:', error);
       return false;
     }
   }
 
-  // Check if the app is installed
-  isInstalled(): boolean {
-    return window.matchMedia('(display-mode: standalone)').matches ||
-           (window.navigator as any).standalone === true;
-  }
-
-  // Check online status
-  isOnline(): boolean {
-    return navigator.onLine;
-  }
-
-  // Add online/offline event listeners
+  // Network status management
   onOnline(callback: () => void) {
-    this.onlineListeners.push(callback);
+    this.onlineCallbacks.push(callback);
   }
 
   onOffline(callback: () => void) {
-    this.offlineListeners.push(callback);
+    this.offlineCallbacks.push(callback);
   }
 
-  // Remove event listeners
   removeOnlineListener(callback: () => void) {
-    this.onlineListeners = this.onlineListeners.filter(cb => cb !== callback);
+    const index = this.onlineCallbacks.indexOf(callback);
+    if (index > -1) {
+      this.onlineCallbacks.splice(index, 1);
+    }
   }
 
   removeOfflineListener(callback: () => void) {
-    this.offlineListeners = this.offlineListeners.filter(cb => cb !== callback);
+    const index = this.offlineCallbacks.indexOf(callback);
+    if (index > -1) {
+      this.offlineCallbacks.splice(index, 1);
+    }
   }
 
-  // Get app info
-  getAppInfo() {
-    return {
-      isInstalled: this.isInstalled(),
-      canInstall: this.canInstall(),
-      isOnline: this.isOnline(),
-      serviceWorkerSupported: 'serviceWorker' in navigator,
-      notificationSupported: 'Notification' in window,
-    };
+  isOnline(): boolean {
+    return navigator.onLine;
   }
 }
 
