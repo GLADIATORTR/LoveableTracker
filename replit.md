@@ -29,16 +29,6 @@ Enhanced reporting capabilities with advanced financial modeling:
 - Persistent settings storage with localStorage integration
 - Dynamic projection calculations using global country settings
 
-### Financial Dictionary & Standardized Calculations (August 2025)
-Implemented comprehensive financial terminology and calculation standards:
-- Financial Dictionary dialog accessible from top navigation bar
-- 20+ standardized real estate investment terms with precise formulas
-- Standardized calculation engine for all financial projections
-- Updated terminology throughout application (Net Yield, Cash at Hand, After-Tax Net Equity, etc.)
-- Enhanced TimeSeries Projections with 8 key financial metrics
-- Consistent use of industry-standard formulas across all calculations
-- Type-safe financial calculation utilities with full documentation
-
 ## System Architecture
 
 ### Frontend Architecture
