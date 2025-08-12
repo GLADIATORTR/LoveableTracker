@@ -78,6 +78,7 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
   const currentMonthlyExpenses = investment.monthlyExpenses / 100;
   const currentOutstandingBalance = (investment.outstandingBalance || 0) / 100;
   const monthlyMortgage = (investment.monthlyMortgage || 0) / 100;
+  const purchasePrice = investment.purchasePrice / 100;
   
   // Calculate projections for each year
   const yearlyData: Record<number, any> = {};
@@ -88,39 +89,25 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
     // Market value with appreciation
     const marketValue = currentMarketValue * Math.pow(1 + appreciationRate, year) * inflationAdjustment;
     
-    // Remaining mortgage term - assuming we know current term and original term
+    // Current term and remaining mortgage calculations
     const currentTerm = investment.currentTerm || 0;
     const originalTerm = investment.loanTerm || 360;
-    const remainingMonths = Math.max(0, originalTerm - currentTerm - (year * 12));
+    const currentTermAtYear = currentTerm + (year * 12);
+    const remainingMonths = Math.max(0, originalTerm - currentTermAtYear);
     
-    // Interest rate from investment data 
-    // Handle both the current incorrect storage (37500 for 3.75%) and correct basis points (375 for 3.75%)
-    let annualInterestRate;
+    // Interest rate from investment data - convert basis points to decimal
     const rawRate = investment.interestRate || 0;
-    if (rawRate > 1000) {
-      // This is the incorrectly stored format: 37500 for 3.75%
-      annualInterestRate = rawRate / 1000000; // Convert to decimal: 37500 -> 0.0375
-    } else {
-      // This is the correct basis points format: 375 for 3.75%
-      annualInterestRate = rawRate / 10000; // Convert to decimal: 375 -> 0.0375
-    }
+    // For 3.75% stored as 375 basis points -> 0.0375 decimal
+    const annualInterestRate = rawRate / 10000;
     const monthlyInterestRate = annualInterestRate / 12;
     
-    // Outstanding balance calculation 
+    // Outstanding balance calculation using proper amortization
     let outstandingBalance = currentOutstandingBalance;
-    if (year > 0 && monthlyMortgage > 0 && monthlyInterestRate > 0) {
-      // Approximate remaining balance after payments
-      const monthsPassed = year * 12;
-      const paymentsRemaining = Math.max(0, originalTerm - currentTerm - monthsPassed);
-      if (paymentsRemaining > 0) {
-        // Standard mortgage balance formula
-        const factor = Math.pow(1 + monthlyInterestRate, paymentsRemaining);
-        outstandingBalance = monthlyMortgage * ((factor - 1) / (monthlyInterestRate * factor));
-      } else {
-        outstandingBalance = 0;
-      }
-    } else if (year > 0) {
-      // For properties without mortgages or with 0% interest
+    if (monthlyMortgage > 0 && monthlyInterestRate > 0 && remainingMonths > 0) {
+      // Calculate remaining balance using amortization formula
+      const factor = Math.pow(1 + monthlyInterestRate, remainingMonths);
+      outstandingBalance = monthlyMortgage * ((factor - 1) / (monthlyInterestRate * factor));
+    } else if (remainingMonths <= 0) {
       outstandingBalance = 0;
     }
     
@@ -139,10 +126,11 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
     
     yearlyData[year] = {
       marketValue,
+      currentTerm: currentTermAtYear,
       remainingTerm: remainingMonths,
       interestRate: annualInterestRate * 100, // Store as percentage for display
       outstandingBalance,
-      capitalGainsTax: (marketValue - (investment.costBasis || investment.purchasePrice / 100)) * (countrySettings.capitalGainsTax / 100),
+      capitalGainsTax: (marketValue - purchasePrice) * (countrySettings.capitalGainsTax / 100),
       sellingCosts: marketValue * (countrySettings.sellingCosts / 100),
       netEquityNominal: netEquity,
       netEquityToday: netEquity, // Same as nominal when inflation adjusted
@@ -168,17 +156,17 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
       y30: formatCurrency(yearlyData[30].marketValue),
     },
     {
-      metric: "Remaining Term (based on today - loan start date if not available purchase date)",
-      y0: yearlyData[0].remainingTerm.toString(),
-      y1: yearlyData[1].remainingTerm.toString(),
-      y2: yearlyData[2].remainingTerm.toString(),
-      y3: yearlyData[3].remainingTerm.toString(),
-      y4: yearlyData[4].remainingTerm.toString(),
-      y5: yearlyData[5].remainingTerm.toString(),
-      y10: yearlyData[10].remainingTerm.toString(),
-      y15: yearlyData[15].remainingTerm.toString(),
-      y25: yearlyData[25].remainingTerm.toString(),
-      y30: yearlyData[30].remainingTerm.toString(),
+      metric: "Current Term (months since loan start)",
+      y0: yearlyData[0].currentTerm.toString(),
+      y1: yearlyData[1].currentTerm.toString(),
+      y2: yearlyData[2].currentTerm.toString(),
+      y3: yearlyData[3].currentTerm.toString(),
+      y4: yearlyData[4].currentTerm.toString(),
+      y5: yearlyData[5].currentTerm.toString(),
+      y10: yearlyData[10].currentTerm.toString(),
+      y15: yearlyData[15].currentTerm.toString(),
+      y25: yearlyData[25].currentTerm.toString(),
+      y30: yearlyData[30].currentTerm.toString(),
     },
     {
       metric: "Interest Rate",
