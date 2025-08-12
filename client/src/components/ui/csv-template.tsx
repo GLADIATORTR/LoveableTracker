@@ -21,7 +21,8 @@ export function CSVTemplate() {
       'Interest Rate',
       'Loan Term',
       'Outstanding Balance',
-      'Monthly Mortgage'
+      'Monthly Mortgage',
+      'Current Term'
     ];
 
     const sampleData = [
@@ -40,7 +41,8 @@ export function CSVTemplate() {
         '4.5',
         '30',
         '220000',
-        '1800'
+        '1800',
+        '24'
       ],
       [
         'Another Property',
@@ -57,7 +59,8 @@ export function CSVTemplate() {
         '3.8',
         '30',
         '150000',
-        '1200'
+        '1200',
+        '36'
       ],
       [
         'Turkish Property',
@@ -74,7 +77,8 @@ export function CSVTemplate() {
         '5.2',
         '25',
         '75000',
-        '800'
+        '800',
+        '48'
       ]
     ];
 
