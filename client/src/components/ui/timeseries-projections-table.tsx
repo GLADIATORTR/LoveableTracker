@@ -299,7 +299,10 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
 }
 
 export function TimeSeriesProjectionsTable({ investment, inflationAdjusted = false }: TimeSeriesProjectionsTableProps) {
+  console.log('TimeSeriesProjectionsTable rendering with:', { investment, inflationAdjusted });
+  
   const projectionRows = calculateProjections(investment, inflationAdjusted);
+  console.log('Projection rows calculated:', projectionRows.length, 'rows');
 
   return (
     <Card className="w-full">

@@ -95,16 +95,31 @@ export default function Reports() {
       </div>
 
       {/* Selected Property Projections */}
-      {selectedProperty ? (
-        <TimeSeriesProjectionsTable 
-          investment={selectedProperty} 
-          inflationAdjusted={inflationAdjusted}
-        />
+      {isLoading ? (
+        <div className="text-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading properties...</p>
+        </div>
+      ) : selectedProperty ? (
+        <div className="space-y-4">
+          <div className="text-sm text-muted-foreground">
+            Selected: {selectedProperty.propertyName} - {selectedProperty.address}
+          </div>
+          <TimeSeriesProjectionsTable 
+            investment={selectedProperty} 
+            inflationAdjusted={inflationAdjusted}
+          />
+        </div>
       ) : (
         <div className="text-center py-12">
           <TrendingUp className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
           <h3 className="text-lg font-medium text-foreground mb-2">No property selected</h3>
-          <p className="text-muted-foreground">Please select a property to view projections.</p>
+          <p className="text-muted-foreground">
+            {investments && investments.length > 0 
+              ? "Please select a property from the dropdown above to view projections."
+              : "No properties found. Please add a property first."
+            }
+          </p>
         </div>
       )}
     </div>
