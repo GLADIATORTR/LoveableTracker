@@ -284,7 +284,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         try {
           const values = parseCSVLine(lines[i]);
           
-          if (values.length < 10) {
+          if (values.length < 8) {
             results.errors.push(`Row ${i + 1}: Missing required columns`);
             continue;
           }
@@ -304,28 +304,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
             return isNaN(parsed.getTime()) ? new Date() : parsed;
           };
 
+          // Parse interest rate - handle percentage format
+          const parseInterestRate = (rateStr: string) => {
+            if (!rateStr || rateStr === '0') return 0;
+            const rate = parseFloat(rateStr.replace('%', ''));
+            return Math.round(rate * 100); // Convert to basis points
+          };
+
+          // Parse outstanding balance - handle quoted numbers with commas
+          const parseAmount = (amountStr: string) => {
+            if (!amountStr || amountStr === '0') return 0;
+            const cleaned = amountStr.replace(/[",]/g, '');
+            return Math.round(parseFloat(cleaned) * 100) || 0;
+          };
+
           // Map CSV columns based on the user's format:
-          // Property Name | Address | Investment Property Type | Country | Purchase Price | Current Value | Monthly Rent | Monthly Expenses | Purchase Date | Down Payment | Loan Amount | Interest Rate | Loan Term | Outstanding Balance | Monthly Mortgage | Current Term
+          // Property Name | Address | Property Type | Country | Purchase Price | Current Value | Monthly Rent Income | Monthly Expenses | Purchase Date | Down Payment | Loan Amount | Interest Rate | Loan Term | Outstanding Balance | Current Term | Monthly Mortgage
           const investmentData = {
             propertyName: values[0] || '',
             address: values[1] || '',
-            propertyType: values[2] || 'single-family', // Column 2 is Investment Property Type
+            propertyType: values[2] || 'single-family', // Column 2 is Property Type
             country: values[3] || 'USA', // Column 3 is Country
-            purchasePrice: Math.round(parseFloat(values[4] || '0') * 100) || 0, // Column 4 is Purchase Price
-            currentValue: Math.round(parseFloat(values[5] || '0') * 100) || 0, // Column 5 is Current Value
-            monthlyRent: Math.round(parseFloat(values[6] || '0') * 100) || 0, // Column 6 is Monthly Rent
-            monthlyExpenses: Math.round(parseFloat(values[7] || '0') * 100) || 0, // Column 7 is Monthly Expenses
+            purchasePrice: parseAmount(values[4] || '0'), // Column 4 is Purchase Price
+            currentValue: parseAmount(values[5] || '0'), // Column 5 is Current Value
+            monthlyRent: parseAmount(values[6] || '0'), // Column 6 is Monthly Rent Income
+            monthlyExpenses: parseAmount(values[7] || '0'), // Column 7 is Monthly Expenses
             purchaseDate: parsePurchaseDate(values[8] || ''), // Column 8 is Purchase Date
-            downPayment: Math.round(parseFloat(values[9] || '0') * 100) || 0, // Column 9 is Down Payment
-            loanAmount: Math.round(parseFloat(values[10] || '0') * 100) || 0, // Column 10 is Loan Amount
-            interestRate: Math.round(parseFloat(values[11] || '0') * 100) || 0, // Column 11 is Interest Rate (in basis points)
+            downPayment: parseAmount(values[9] || '0'), // Column 9 is Down Payment
+            loanAmount: parseAmount(values[10] || '0'), // Column 10 is Loan Amount
+            interestRate: parseInterestRate(values[11] || '0'), // Column 11 is Interest Rate
             loanTerm: Math.round(parseFloat(values[12] || '0') * 12) || 0, // Column 12 is Loan Term (convert years to months)
-            outstandingBalance: Math.round(parseFloat(values[13] || '0') * 100) || 0, // Column 13 is Outstanding Balance
-            monthlyMortgage: Math.round(parseFloat(values[14] || '0') * 100) || 0, // Column 14 is Monthly Mortgage
-            currentTerm: parseInt(values[15] || '0') || 0, // Column 15 is Current Term (months since purchase)
-            netEquity: Math.round((parseFloat(values[5] || '0') - parseFloat(values[13] || '0')) * 100) || 0, // Current Value - Outstanding Balance
-            description: `${values[3] || ''} property`, // Column 3 is Country
+            outstandingBalance: parseAmount(values[13] || '0'), // Column 13 is Outstanding Balance
+            currentTerm: parseInt(values[14] || '0') || 0, // Column 14 is Current Term (months since purchase)
+            monthlyMortgage: parseAmount(values[15] || '0'), // Column 15 is Monthly Mortgage
+            netEquity: Math.round((parseFloat(values[5]?.replace(/[",]/g, '') || '0') - parseFloat(values[13]?.replace(/[",]/g, '') || '0')) * 100) || 0,
+            description: `${values[3] || ''} property`,
             categoryId: null,
+            notes: `Imported from CSV: ${values[3] || ''} property`,
           };
 
           // Validate required fields
