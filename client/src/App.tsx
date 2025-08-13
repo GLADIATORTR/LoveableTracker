@@ -1,3 +1,4 @@
+import React from "react";
 import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -14,7 +15,6 @@ import Reports from "@/pages/Reports";
 import Settings from "@/pages/Settings";
 import Dictionary from "@/pages/Dictionary";
 import NotFound from "@/pages/not-found";
-import { useEffect } from "react";
 
 function Router() {
   return (
