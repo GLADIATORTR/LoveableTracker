@@ -1,5 +1,9 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Copy, Check } from "lucide-react";
+import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 import type { RealEstateInvestmentWithCategory } from "@shared/schema";
 
 interface ProjectionRow {
@@ -476,20 +480,75 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
 
 export function TimeSeriesProjectionsTable({ investment, inflationAdjusted = false }: TimeSeriesProjectionsTableProps) {
   const projectionRows = calculateProjections(investment, inflationAdjusted);
+  const [copied, setCopied] = useState(false);
+  const { toast } = useToast();
+
+  const copyDataToClipboard = async () => {
+    try {
+      // Create header row
+      const headers = ["Property / Metric", "Y0", "Y1", "Y2", "Y3", "Y4", "Y5", "Y10", "Y15", "Y25", "Y30"];
+      
+      // Format data for Excel (tab-separated values)
+      const csvData = [
+        headers.join("\t"),
+        ...projectionRows.map(row => [
+          row.metric,
+          row.y0,
+          row.y1,
+          row.y2,
+          row.y3,
+          row.y4,
+          row.y5,
+          row.y10,
+          row.y15,
+          row.y25,
+          row.y30
+        ].join("\t"))
+      ].join("\n");
+
+      await navigator.clipboard.writeText(csvData);
+      setCopied(true);
+      toast({
+        title: "Data copied!",
+        description: "TimeSeries projections copied to clipboard. You can now paste into Excel or any spreadsheet.",
+      });
+      
+      // Reset copy status after 2 seconds
+      setTimeout(() => setCopied(false), 2000);
+    } catch (error) {
+      console.error('Failed to copy data:', error);
+      toast({
+        title: "Copy failed",
+        description: "Unable to copy data to clipboard. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <Card className="w-full">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <span>{investment.propertyName}</span>
-          <span className="text-sm font-normal text-muted-foreground">
-            {investment.address}
-          </span>
-          {inflationAdjusted && (
-            <span className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded-full">
-              Inflation Adjusted
+        <CardTitle className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <span>{investment.propertyName}</span>
+            <span className="text-sm font-normal text-muted-foreground">
+              {investment.address}
             </span>
-          )}
+            {inflationAdjusted && (
+              <span className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded-full">
+                Inflation Adjusted
+              </span>
+            )}
+          </div>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={copyDataToClipboard}
+            className="flex items-center gap-2"
+          >
+            {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+            {copied ? "Copied!" : "Copy Data"}
+          </Button>
         </CardTitle>
       </CardHeader>
       <CardContent>
