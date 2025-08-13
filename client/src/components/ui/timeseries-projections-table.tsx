@@ -230,15 +230,33 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
   const rawRate = investment.interestRate || 0;
   const displayInterestRate = rawRate / 10000; // Convert basis points to decimal
   
-  // Add property details header row with version number
-  const propertyDetailsRow: ProjectionRow = {
-    metric: `${investment.propertyName} (${investment.country || 'USA'}) | Purchase Price: ${formatCurrency(purchasePrice)} | Appreciation: ${formatPercent(propertyAppreciationRate * 100)} | Int Rate: ${formatPercent(displayInterestRate * 100)} | Inf Rate: ${formatPercent(inflationRate * 100)} | Sales Costs: ${formatPercent(countrySettings.sellingCosts)} | Cap Gains Tax: ${formatPercent(countrySettings.capitalGainsTax)} | Monthly Rent: ${formatCurrency(currentMonthlyRent)} | Monthly Exp: ${formatCurrency(currentMonthlyExpenses)} | Monthly Mortgage: ${formatCurrency(monthlyMortgage)} | v2.1`,
+  // Add property details as separate flat rows for better readability
+  const propertyHeaderRow: ProjectionRow = {
+    metric: `${investment.propertyName} (${investment.country || 'USA'}) - Property Details v2.1`,
+    y0: "", y1: "", y2: "", y3: "", y4: "", y5: "", y10: "", y15: "", y25: "", y30: ""
+  };
+  
+  const purchaseDetailsRow: ProjectionRow = {
+    metric: `Purchase Price: ${formatCurrency(purchasePrice)} | Appreciation Rate: ${formatPercent(propertyAppreciationRate * 100)} | Interest Rate: ${formatPercent(displayInterestRate * 100)}`,
+    y0: "", y1: "", y2: "", y3: "", y4: "", y5: "", y10: "", y15: "", y25: "", y30: ""
+  };
+  
+  const settingsDetailsRow: ProjectionRow = {
+    metric: `Inflation Rate: ${formatPercent(inflationRate * 100)} | Selling Costs: ${formatPercent(countrySettings.sellingCosts)} | Capital Gains Tax: ${formatPercent(countrySettings.capitalGainsTax)}`,
+    y0: "", y1: "", y2: "", y3: "", y4: "", y5: "", y10: "", y15: "", y25: "", y30: ""
+  };
+  
+  const monthlyDetailsRow: ProjectionRow = {
+    metric: `Monthly Rent: ${formatCurrency(currentMonthlyRent)} | Monthly Expenses: ${formatCurrency(currentMonthlyExpenses)} | Monthly Mortgage: ${formatCurrency(monthlyMortgage)}`,
     y0: "", y1: "", y2: "", y3: "", y4: "", y5: "", y10: "", y15: "", y25: "", y30: ""
   };
 
   // Build the rows according to the screenshot format
   const rows: ProjectionRow[] = [
-    propertyDetailsRow,
+    propertyHeaderRow,
+    purchaseDetailsRow,
+    settingsDetailsRow,
+    monthlyDetailsRow,
     {
       metric: "Market Value",
       y0: formatCurrency(yearlyData[0].marketValue),
@@ -570,23 +588,38 @@ export function TimeSeriesProjectionsTable({ investment, inflationAdjusted = fal
               </TableRow>
             </TableHeader>
             <TableBody>
-              {projectionRows.map((row, index) => (
-                <TableRow key={index} className="text-sm">
-                  <TableCell className="font-medium py-2 px-3">
-                    {row.metric}
-                  </TableCell>
-                  <TableCell className="text-center py-2 px-3 font-mono">{row.y0}</TableCell>
-                  <TableCell className="text-center py-2 px-3 font-mono">{row.y1}</TableCell>
-                  <TableCell className="text-center py-2 px-3 font-mono">{row.y2}</TableCell>
-                  <TableCell className="text-center py-2 px-3 font-mono">{row.y3}</TableCell>
-                  <TableCell className="text-center py-2 px-3 font-mono">{row.y4}</TableCell>
-                  <TableCell className="text-center py-2 px-3 font-mono">{row.y5}</TableCell>
-                  <TableCell className="text-center py-2 px-3 font-mono">{row.y10}</TableCell>
-                  <TableCell className="text-center py-2 px-3 font-mono">{row.y15}</TableCell>
-                  <TableCell className="text-center py-2 px-3 font-mono">{row.y25}</TableCell>
-                  <TableCell className="text-center py-2 px-3 font-mono">{row.y30}</TableCell>
-                </TableRow>
-              ))}
+              {projectionRows.map((row, index) => {
+                // Style property header rows differently (first 4 rows are property details)
+                const isPropertyHeader = index < 4;
+                const rowClass = isPropertyHeader 
+                  ? "text-sm bg-muted/50 dark:bg-muted/30" 
+                  : "text-sm";
+                const cellClass = isPropertyHeader 
+                  ? "font-medium py-2 px-3 text-sm text-muted-foreground" 
+                  : "font-medium py-2 px-3";
+                
+                return (
+                  <TableRow key={index} className={rowClass}>
+                    <TableCell className={cellClass} colSpan={isPropertyHeader ? 11 : 1}>
+                      {row.metric}
+                    </TableCell>
+                    {!isPropertyHeader && (
+                      <>
+                        <TableCell className="text-center py-2 px-3 font-mono">{row.y0}</TableCell>
+                        <TableCell className="text-center py-2 px-3 font-mono">{row.y1}</TableCell>
+                        <TableCell className="text-center py-2 px-3 font-mono">{row.y2}</TableCell>
+                        <TableCell className="text-center py-2 px-3 font-mono">{row.y3}</TableCell>
+                        <TableCell className="text-center py-2 px-3 font-mono">{row.y4}</TableCell>
+                        <TableCell className="text-center py-2 px-3 font-mono">{row.y5}</TableCell>
+                        <TableCell className="text-center py-2 px-3 font-mono">{row.y10}</TableCell>
+                        <TableCell className="text-center py-2 px-3 font-mono">{row.y15}</TableCell>
+                        <TableCell className="text-center py-2 px-3 font-mono">{row.y25}</TableCell>
+                        <TableCell className="text-center py-2 px-3 font-mono">{row.y30}</TableCell>
+                      </>
+                    )}
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </div>
