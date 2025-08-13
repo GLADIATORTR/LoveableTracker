@@ -101,45 +101,45 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
     const annualInterestRate = rawRate / 10000;
     const monthlyInterestRate = annualInterestRate / 12;
     
-    // Outstanding balance calculation using CUMPRINC equivalent formula
+    // Outstanding balance and cumulative principal calculation using proper CUMPRINC
     let outstandingBalance = currentOutstandingBalance;
     let cumulativePrincipalPayment = 0;
     
-    if (monthlyMortgage > 0 && monthlyInterestRate > 0 && year > 0) {
-      // Calculate cumulative principal payments from Y0 to current year
-      // This is equivalent to CUMPRINC(rate, nper, pv, start_period, end_period, type)
-      const paymentsInYear = 12 * year; // Total payments from Y0 to current year
-      
-      if (paymentsInYear <= (originalTerm - currentTerm)) {
-        // Calculate cumulative principal for the period using the CUMPRINC formula approach
-        for (let month = 1; month <= paymentsInYear; month++) {
-          const remainingBalance = currentOutstandingBalance;
-          const interestPayment = remainingBalance * monthlyInterestRate;
-          const principalPayment = Math.max(0, monthlyMortgage - interestPayment);
-          cumulativePrincipalPayment += principalPayment;
-          
-          // Reduce balance for next iteration (simplified approximation)
-          if (month === 1) {
-            // For first payment, calculate more precisely
-            const factor = Math.pow(1 + monthlyInterestRate, originalTerm - currentTerm);
-            const monthlyPaymentCalc = currentOutstandingBalance * (monthlyInterestRate * factor) / (factor - 1);
-            
-            // Use PV formula to get remaining balance after payments
-            const paymentsLeft = Math.max(0, originalTerm - currentTerm - paymentsInYear);
-            if (paymentsLeft > 0) {
-              const remainingFactor = Math.pow(1 + monthlyInterestRate, paymentsLeft);
-              outstandingBalance = monthlyPaymentCalc * ((remainingFactor - 1) / (monthlyInterestRate * remainingFactor));
-            } else {
-              outstandingBalance = 0;
-            }
-            break; // Use precise calculation instead of iteration
-          }
-        }
-      } else {
-        outstandingBalance = 0; // Loan is paid off
-      }
-    } else if (year === 0) {
+    if (year === 0) {
       outstandingBalance = currentOutstandingBalance;
+      cumulativePrincipalPayment = 0;
+    } else if (monthlyMortgage > 0 && monthlyInterestRate > 0) {
+      const totalPaymentsFromStart = 12 * year; // Total payments from Y0 to current year
+      const remainingPaymentsAtStart = originalTerm - currentTerm; // Remaining payments at Y0
+      
+      if (totalPaymentsFromStart <= remainingPaymentsAtStart) {
+        // Calculate CUMPRINC: cumulative principal payment for the period
+        // CUMPRINC(rate, nper, pv, start_period, end_period, type)
+        // where rate = monthly rate, nper = remaining term, pv = current balance
+        // start_period = 1, end_period = totalPaymentsFromStart, type = 0 (end of period)
+        
+        // Use the exact CUMPRINC formula approach
+        let cumulativePrincipal = 0;
+        let remainingBalance = currentOutstandingBalance;
+        
+        // Calculate payment by payment for exact CUMPRINC
+        for (let payment = 1; payment <= totalPaymentsFromStart; payment++) {
+          const interestPayment = remainingBalance * monthlyInterestRate;
+          const principalPayment = monthlyMortgage - interestPayment;
+          cumulativePrincipal += principalPayment;
+          remainingBalance -= principalPayment;
+        }
+        
+        cumulativePrincipalPayment = cumulativePrincipal;
+        outstandingBalance = currentOutstandingBalance - cumulativePrincipal;
+        
+        // Ensure outstanding balance doesn't go negative
+        outstandingBalance = Math.max(0, outstandingBalance);
+      } else {
+        // Loan is fully paid off
+        outstandingBalance = 0;
+        cumulativePrincipalPayment = currentOutstandingBalance;
+      }
     }
     
     // Monthly rent with growth
@@ -163,20 +163,34 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
     // Annual and cumulative values
     const annualNetYield = (monthlyRent - monthlyExpenses) * 12; // Excluding mortgage payment
     
-    // Fix cumulative calculations to be properly cumulative
+    // Calculate cumulative values properly
     let cumulativeNetYield = 0;
     let cumulativeMortgagePayment = 0;
+    let annualMortgage = 0;
+    let annualMortgagePV = 0;
+    let cumulativeAnnualMortgagePV = 0;
     
     if (year > 0) {
+      // Annual mortgage payment (constant dollar amount)
+      annualMortgage = monthlyMortgage * 12;
+      
+      // Annual mortgage in present value terms  
+      annualMortgagePV = annualMortgage * Math.pow(1 + inflationRate, -year);
+      
       // Calculate cumulative values by summing annual amounts
-      // For cumulative net yield: NO inflation adjustment since it's already in today's dollars
       for (let y = 1; y <= year; y++) {
-        const yearRent = currentMonthlyRent * Math.pow(1 + rentGrowthRate, y); // No inflation adjustment
-        const yearExpenses = currentMonthlyExpenses * Math.pow(1 + expenseGrowthRate, y); // No inflation adjustment
-        const yearMortgage = monthlyMortgage; // Mortgage payment stays constant
+        const yearRent = currentMonthlyRent * Math.pow(1 + rentGrowthRate, y);
+        const yearExpenses = currentMonthlyExpenses * Math.pow(1 + expenseGrowthRate, y);
+        const yearMortgagePV = monthlyMortgage * 12 * Math.pow(1 + inflationRate, -y); // Present value of mortgage payment
         
-        cumulativeNetYield += (yearRent - yearExpenses) * 12; // Already in today's dollars
-        cumulativeMortgagePayment += yearMortgage * 12; // Constant payment
+        // Net yield excluding mortgage (rent - expenses only)
+        cumulativeNetYield += (yearRent - yearExpenses) * 12;
+        
+        // Cumulative mortgage payments in present value
+        cumulativeAnnualMortgagePV += yearMortgagePV;
+        
+        // Simple cumulative mortgage (not present value)
+        cumulativeMortgagePayment += monthlyMortgage * 12;
         
         // Debug for year 1 of 12 Hillcrest
         if (investment.propertyName?.includes("Hillcrest") && year === 1 && y === 1) {
@@ -199,6 +213,9 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
       annualNetYield: annualNetYield * inflationAdjustment,
       cumulativeNetYield,
       cumulativeMortgagePayment,
+      annualMortgage,
+      annualMortgagePV,
+      cumulativeAnnualMortgagePV,
       netGain: netEquity + cumulativeNetYield - (investment.netEquity || 0) / 100
     };
   });
@@ -373,20 +390,59 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
       y30: formatCurrency(yearlyData[30].cumulativeNetYield),
     },
     {
-      metric: "Cumulative Mortgage Payment (Today's Dollars)",
-      y0: formatCurrency(yearlyData[0].cumulativeMortgagePayment),
-      y1: formatCurrency(yearlyData[1].cumulativeMortgagePayment),
-      y2: formatCurrency(yearlyData[2].cumulativeMortgagePayment),
-      y3: formatCurrency(yearlyData[3].cumulativeMortgagePayment),
-      y4: formatCurrency(yearlyData[4].cumulativeMortgagePayment),
-      y5: formatCurrency(yearlyData[5].cumulativeMortgagePayment),
-      y10: formatCurrency(yearlyData[10].cumulativeMortgagePayment),
-      y15: formatCurrency(yearlyData[15].cumulativeMortgagePayment),
-      y25: formatCurrency(yearlyData[25].cumulativeMortgagePayment),
-      y30: formatCurrency(yearlyData[30].cumulativeMortgagePayment),
+      metric: "Annual_Mortgage",
+      y0: formatCurrency(0),
+      y1: formatCurrency(yearlyData[1].annualMortgage || 0),
+      y2: formatCurrency(yearlyData[2].annualMortgage || 0),
+      y3: formatCurrency(yearlyData[3].annualMortgage || 0),
+      y4: formatCurrency(yearlyData[4].annualMortgage || 0),
+      y5: formatCurrency(yearlyData[5].annualMortgage || 0),
+      y10: formatCurrency(yearlyData[10].annualMortgage || 0),
+      y15: formatCurrency(yearlyData[15].annualMortgage || 0),
+      y25: formatCurrency(yearlyData[25].annualMortgage || 0),
+      y30: formatCurrency(yearlyData[30].annualMortgage || 0),
     },
     {
-      metric: "Cumul. Net Yield incl mortage - Mortgage_Todays $",
+      metric: "Annual_Mortgage (PV)",
+      y0: formatCurrency(0),
+      y1: formatCurrency(yearlyData[1].annualMortgagePV || 0),
+      y2: formatCurrency(yearlyData[2].annualMortgagePV || 0),
+      y3: formatCurrency(yearlyData[3].annualMortgagePV || 0),
+      y4: formatCurrency(yearlyData[4].annualMortgagePV || 0),
+      y5: formatCurrency(yearlyData[5].annualMortgagePV || 0),
+      y10: formatCurrency(yearlyData[10].annualMortgagePV || 0),
+      y15: formatCurrency(yearlyData[15].annualMortgagePV || 0),
+      y25: formatCurrency(yearlyData[25].annualMortgagePV || 0),
+      y30: formatCurrency(yearlyData[30].annualMortgagePV || 0),
+    },
+    {
+      metric: "Cumulative_Annual_Mortgage_PV",
+      y0: formatCurrency(0),
+      y1: formatCurrency(yearlyData[1].cumulativeAnnualMortgagePV || 0),
+      y2: formatCurrency(yearlyData[2].cumulativeAnnualMortgagePV || 0),
+      y3: formatCurrency(yearlyData[3].cumulativeAnnualMortgagePV || 0),
+      y4: formatCurrency(yearlyData[4].cumulativeAnnualMortgagePV || 0),
+      y5: formatCurrency(yearlyData[5].cumulativeAnnualMortgagePV || 0),
+      y10: formatCurrency(yearlyData[10].cumulativeAnnualMortgagePV || 0),
+      y15: formatCurrency(yearlyData[15].cumulativeAnnualMortgagePV || 0),
+      y25: formatCurrency(yearlyData[25].cumulativeAnnualMortgagePV || 0),
+      y30: formatCurrency(yearlyData[30].cumulativeAnnualMortgagePV || 0),
+    },
+    {
+      metric: "Annual Net Yield excluding Mortgage Payment (already in Today's Dollars)",
+      y0: formatCurrency(yearlyData[0].annualNetYield),
+      y1: formatCurrency(yearlyData[1].annualNetYield),
+      y2: formatCurrency(yearlyData[2].annualNetYield),
+      y3: formatCurrency(yearlyData[3].annualNetYield),
+      y4: formatCurrency(yearlyData[4].annualNetYield),
+      y5: formatCurrency(yearlyData[5].annualNetYield),
+      y10: formatCurrency(yearlyData[10].annualNetYield),
+      y15: formatCurrency(yearlyData[15].annualNetYield),
+      y25: formatCurrency(yearlyData[25].annualNetYield),
+      y30: formatCurrency(yearlyData[30].annualNetYield),
+    },
+    {
+      metric: "Cumulative Net Yield excluding Mortgage Payment (already in Today's Dollars)",
       y0: formatCurrency(yearlyData[0].cumulativeNetYield),
       y1: formatCurrency(yearlyData[1].cumulativeNetYield),
       y2: formatCurrency(yearlyData[2].cumulativeNetYield),
@@ -399,17 +455,17 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
       y30: formatCurrency(yearlyData[30].cumulativeNetYield),
     },
     {
-      metric: "Net Gain (Today's Dollars)",
+      metric: "Net Gain (PV)",
       y0: formatCurrency(yearlyData[0].netEquityToday),
-      y1: formatCurrency(yearlyData[1].netEquityToday + yearlyData[1].cumulativeNetYield - yearlyData[1].cumulativeMortgagePayment),
-      y2: formatCurrency(yearlyData[2].netEquityToday + yearlyData[2].cumulativeNetYield - yearlyData[2].cumulativeMortgagePayment),
-      y3: formatCurrency(yearlyData[3].netEquityToday + yearlyData[3].cumulativeNetYield - yearlyData[3].cumulativeMortgagePayment),
-      y4: formatCurrency(yearlyData[4].netEquityToday + yearlyData[4].cumulativeNetYield - yearlyData[4].cumulativeMortgagePayment),
-      y5: formatCurrency(yearlyData[5].netEquityToday + yearlyData[5].cumulativeNetYield - yearlyData[5].cumulativeMortgagePayment),
-      y10: formatCurrency(yearlyData[10].netEquityToday + yearlyData[10].cumulativeNetYield - yearlyData[10].cumulativeMortgagePayment),
-      y15: formatCurrency(yearlyData[15].netEquityToday + yearlyData[15].cumulativeNetYield - yearlyData[15].cumulativeMortgagePayment),
-      y25: formatCurrency(yearlyData[25].netEquityToday + yearlyData[25].cumulativeNetYield - yearlyData[25].cumulativeMortgagePayment),
-      y30: formatCurrency(yearlyData[30].netEquityToday + yearlyData[30].cumulativeNetYield - yearlyData[30].cumulativeMortgagePayment),
+      y1: formatCurrency(yearlyData[1].netEquityToday + yearlyData[1].cumulativeNetYield - (yearlyData[1].cumulativeAnnualMortgagePV || 0)),
+      y2: formatCurrency(yearlyData[2].netEquityToday + yearlyData[2].cumulativeNetYield - (yearlyData[2].cumulativeAnnualMortgagePV || 0)),
+      y3: formatCurrency(yearlyData[3].netEquityToday + yearlyData[3].cumulativeNetYield - (yearlyData[3].cumulativeAnnualMortgagePV || 0)),
+      y4: formatCurrency(yearlyData[4].netEquityToday + yearlyData[4].cumulativeNetYield - (yearlyData[4].cumulativeAnnualMortgagePV || 0)),
+      y5: formatCurrency(yearlyData[5].netEquityToday + yearlyData[5].cumulativeNetYield - (yearlyData[5].cumulativeAnnualMortgagePV || 0)),
+      y10: formatCurrency(yearlyData[10].netEquityToday + yearlyData[10].cumulativeNetYield - (yearlyData[10].cumulativeAnnualMortgagePV || 0)),
+      y15: formatCurrency(yearlyData[15].netEquityToday + yearlyData[15].cumulativeNetYield - (yearlyData[15].cumulativeAnnualMortgagePV || 0)),
+      y25: formatCurrency(yearlyData[25].netEquityToday + yearlyData[25].cumulativeNetYield - (yearlyData[25].cumulativeAnnualMortgagePV || 0)),
+      y30: formatCurrency(yearlyData[30].netEquityToday + yearlyData[30].cumulativeNetYield - (yearlyData[30].cumulativeAnnualMortgagePV || 0)),
     },
   ];
 
