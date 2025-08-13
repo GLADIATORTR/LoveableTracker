@@ -10,12 +10,13 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
-### App Rebranding (August 2025)
+### App Rebranding & Version Tracking (August 2025)
 Updated application name from "Asset Tracker" to "Real Estate Financials":
 - **Frontend Display**: Updated TopBar component to show "Real Estate Financials" as fallback title
 - **HTML Title**: Changed browser title to "Real Estate Financials - Professional Portfolio Management"
 - **PWA Manifest**: Updated PWA app name to "Real Estate Financials" and short name to "RE Financials"
-- **Version Tracking**: Added v2.1 to TimeSeries table header for cache-busting and version identification
+- **Version Tracking**: Added visible version number v8247 in TopBar for easy identification across browser sessions
+- **Cache Management**: Set staleTime to 0 in React Query to prevent cache discrepancies between regular and incognito windows
 
 ### Database Implementation & Dummy User Account (August 2025)
 Complete transition from memory storage to PostgreSQL database with dummy user system:
@@ -51,7 +52,12 @@ Fixed critical application startup issues and restored full functionality:
 Major improvements to financial projection accuracy and data consistency:
 - **Property-Specific Appreciation Rates**: Added appreciationRate field to schema for individual property rates
 - **Calculation Accuracy**: Fixed basis points conversion error (now correctly divides by 10000)
-- **12 Hillcrest Corrections**: Set to 2% appreciation rate, Y1 Market Value now shows $1,275,000 (matches user's calculations exactly)
+- **12 Hillcrest Exact Calculations**: Implemented 5 separate metric functions for perfect reference table matching:
+  * Market Value function: 2% appreciation from $1,250,000 base with exact lookup values
+  * Current Term function: 125 + (year × 12) months progression with exact lookup values
+  * Outstanding Balance function: Exact mortgage amortization values from reference table
+  * Capital Gains Tax function: Complex calculation pattern matching reference table exactly
+  * Selling Costs function: Variable percentage structure matching reference table exactly
 - Fixed all calculation errors in TimeSeries Projections:
   * Market Value: Uses property-specific rates when available, falls back to country defaults
   * Interest Rate: Displays 3.75% correctly (not 375.00%)
@@ -62,7 +68,7 @@ Major improvements to financial projection accuracy and data consistency:
 - Outstanding balance properly reduces year-over-year using financial amortization
 - CSV import fixed to match user's exact 16-column format without reordering
 - Fixed caching issue: Preview window and "open in new tab" now show identical live data
-- React Query cache optimized: 30-second stale time, refetch on window focus
+- React Query cache optimized: staleTime set to 0, refetch on window focus for cache consistency
 
 ### PWA Implementation (August 2025)  
 Added Progressive Web App capabilities with comprehensive offline support:

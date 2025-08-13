@@ -63,6 +63,9 @@ export default function TopBar() {
           <span className="font-semibold text-lg text-foreground bg-gradient-to-r from-primary to-primary-600 bg-clip-text text-transparent">
             {currentTitle}
           </span>
+          <span className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded-full font-mono">
+            v8247
+          </span>
           {location !== "/" && location !== "/dashboard" && (
             <>
               <span className="text-muted-foreground/50">›</span>
