@@ -68,7 +68,7 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
   const countrySettings = globalSettings.countrySettings[globalSettings.selectedCountry];
   
   // Use property-specific appreciation rate if available, otherwise use country default
-  const propertyAppreciationRate = investment.appreciationRate ? (investment.appreciationRate / 100) : (countrySettings.realEstateAppreciationRate / 100);
+  const propertyAppreciationRate = investment.appreciationRate ? (investment.appreciationRate / 10000) : (countrySettings.realEstateAppreciationRate / 100);
   const inflationRate = countrySettings.inflationRate / 100;
   const rentGrowthRate = propertyAppreciationRate * 0.7; // Rent growth is typically 70% of appreciation
   const expenseGrowthRate = 0.02; // 2% annual expense growth
