@@ -42,6 +42,7 @@ export const realEstateInvestments = pgTable("real_estate_investments", {
   expenseDetails: jsonb("expense_details").default({}), // Detailed expense breakdown
   monthlyEscrow: integer("monthly_escrow").notNull().default(0), // Store as cents
   avgAppreciationRate: integer("avg_appreciation_rate").notNull().default(350), // Store as basis points (3.5% = 350)
+  appreciationRate: integer("appreciation_rate"), // Property-specific appreciation rate in basis points (200 = 2.00%)
   outstandingBalance: integer("outstanding_balance").notNull().default(0), // Store as cents
   currentTerm: integer("current_term").notNull().default(0), // Months since purchase
   propertyType: text("property_type").notNull().default("single-family"), // single-family, multi-family, condo, townhouse, commercial

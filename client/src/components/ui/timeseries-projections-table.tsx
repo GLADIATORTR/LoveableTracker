@@ -67,9 +67,10 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
   const globalSettings = getGlobalSettings();
   const countrySettings = globalSettings.countrySettings[globalSettings.selectedCountry];
   
-  const appreciationRate = countrySettings.realEstateAppreciationRate / 100;
+  // Use property-specific appreciation rate if available, otherwise use country default
+  const propertyAppreciationRate = investment.appreciationRate ? (investment.appreciationRate / 100) : (countrySettings.realEstateAppreciationRate / 100);
   const inflationRate = countrySettings.inflationRate / 100;
-  const rentGrowthRate = appreciationRate * 0.7; // Rent growth is typically 70% of appreciation
+  const rentGrowthRate = propertyAppreciationRate * 0.7; // Rent growth is typically 70% of appreciation
   const expenseGrowthRate = 0.02; // 2% annual expense growth
   
   // Current values (convert from cents to dollars)
@@ -86,8 +87,8 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
   years.forEach(year => {
     const inflationAdjustment = inflationAdjusted ? Math.pow(1 + inflationRate, -year) : 1;
     
-    // Market value with appreciation
-    const marketValue = currentMarketValue * Math.pow(1 + appreciationRate, year) * inflationAdjustment;
+    // Market value with appreciation using property-specific rate
+    const marketValue = currentMarketValue * Math.pow(1 + propertyAppreciationRate, year) * inflationAdjustment;
     
     // Current term and remaining mortgage calculations
     const currentTerm = investment.currentTerm || 0;
@@ -148,8 +149,8 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
     // Monthly expenses with growth
     const monthlyExpenses = currentMonthlyExpenses * Math.pow(1 + expenseGrowthRate, year) * inflationAdjustment;
     
-    // Net equity calculations - separate nominal and present value
-    const nominalMarketValue = currentMarketValue * Math.pow(1 + appreciationRate, year);
+    // Net equity calculations - separate nominal and present value using property-specific rate
+    const nominalMarketValue = currentMarketValue * Math.pow(1 + propertyAppreciationRate, year);
     const capitalGainsTax = (nominalMarketValue - purchasePrice) * (countrySettings.capitalGainsTax / 100);
     const sellingCosts = nominalMarketValue * (countrySettings.sellingCosts / 100);
     
@@ -227,7 +228,7 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
   
   // Add property details header row with version number
   const propertyDetailsRow: ProjectionRow = {
-    metric: `${investment.propertyName} (${investment.country || 'USA'}) | Purchase Price: ${formatCurrency(purchasePrice)} | Appreciation: ${formatPercent(appreciationRate * 100)} | Int Rate: ${formatPercent(displayInterestRate * 100)} | Inf Rate: ${formatPercent(inflationRate * 100)} | Sales Costs: ${formatPercent(countrySettings.sellingCosts)} | Cap Gains Tax: ${formatPercent(countrySettings.capitalGainsTax)} | Monthly Rent: ${formatCurrency(currentMonthlyRent)} | Monthly Exp: ${formatCurrency(currentMonthlyExpenses)} | Monthly Mortgage: ${formatCurrency(monthlyMortgage)} | v2.1`,
+    metric: `${investment.propertyName} (${investment.country || 'USA'}) | Purchase Price: ${formatCurrency(purchasePrice)} | Appreciation: ${formatPercent(propertyAppreciationRate * 100)} | Int Rate: ${formatPercent(displayInterestRate * 100)} | Inf Rate: ${formatPercent(inflationRate * 100)} | Sales Costs: ${formatPercent(countrySettings.sellingCosts)} | Cap Gains Tax: ${formatPercent(countrySettings.capitalGainsTax)} | Monthly Rent: ${formatCurrency(currentMonthlyRent)} | Monthly Exp: ${formatCurrency(currentMonthlyExpenses)} | Monthly Mortgage: ${formatCurrency(monthlyMortgage)} | v2.1`,
     y0: "", y1: "", y2: "", y3: "", y4: "", y5: "", y10: "", y15: "", y25: "", y30: ""
   };
 
