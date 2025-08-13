@@ -70,7 +70,7 @@ export default function Investments() {
   });
 
   const deleteInvestment = useMutation({
-    mutationFn: async (id: number) => {
+    mutationFn: async (id: string) => {
       const response = await fetch(`/api/investments/${id}`, {
         method: 'DELETE',
       });
