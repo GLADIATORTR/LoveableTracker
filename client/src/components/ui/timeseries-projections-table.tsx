@@ -165,8 +165,8 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
     // Display net equity based on inflation adjustment toggle
     const netEquity = inflationAdjusted ? netEquityToday : nominalNetEquity;
     
-    // Annual and cumulative values
-    const annualNetYield = (monthlyRent - monthlyExpenses) * 12; // Excluding mortgage payment
+    // Annual Net Yield - keep constant (no growth) as per user request
+    const annualNetYield = (currentMonthlyRent - currentMonthlyExpenses) * 12; // Excluding mortgage payment - constant value
     
     // Calculate cumulative values properly
     let cumulativeNetYield = 0;
@@ -188,8 +188,8 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
         const yearExpenses = currentMonthlyExpenses * Math.pow(1 + expenseGrowthRate, y);
         const yearMortgagePV = monthlyMortgage * 12 * Math.pow(1 + inflationRate, -y); // Present value of mortgage payment for year y
         
-        // Net yield excluding mortgage (rent - expenses only) - no inflation adjustment needed as it's already in real terms
-        const yearNetYield = (yearRent - yearExpenses) * 12;
+        // Net yield excluding mortgage - use constant base values (no growth) as per user request
+        const yearNetYield = (currentMonthlyRent - currentMonthlyExpenses) * 12;
         cumulativeNetYield += yearNetYield;
         
         // Cumulative mortgage payments in present value
