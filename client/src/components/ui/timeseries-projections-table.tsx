@@ -169,13 +169,14 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
     
     if (year > 0) {
       // Calculate cumulative values by summing annual amounts
+      // For cumulative net yield: NO inflation adjustment since it's already in today's dollars
       for (let y = 1; y <= year; y++) {
-        const yearRent = currentMonthlyRent * Math.pow(1 + rentGrowthRate, y) * (inflationAdjusted ? Math.pow(1 + inflationRate, -y) : 1);
-        const yearExpenses = currentMonthlyExpenses * Math.pow(1 + expenseGrowthRate, y) * (inflationAdjusted ? Math.pow(1 + inflationRate, -y) : 1);
-        const yearMortgage = monthlyMortgage * (inflationAdjusted ? Math.pow(1 + inflationRate, -y) : 1);
+        const yearRent = currentMonthlyRent * Math.pow(1 + rentGrowthRate, y); // No inflation adjustment
+        const yearExpenses = currentMonthlyExpenses * Math.pow(1 + expenseGrowthRate, y); // No inflation adjustment
+        const yearMortgage = monthlyMortgage; // Mortgage payment stays constant
         
-        cumulativeNetYield += (yearRent - yearExpenses) * 12;
-        cumulativeMortgagePayment += yearMortgage * 12;
+        cumulativeNetYield += (yearRent - yearExpenses) * 12; // Already in today's dollars
+        cumulativeMortgagePayment += yearMortgage * 12; // Constant payment
       }
     }
     
