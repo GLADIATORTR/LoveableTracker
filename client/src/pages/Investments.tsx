@@ -105,7 +105,7 @@ export default function Investments() {
   };
 
   const handleDelete = (investment: RealEstateInvestmentWithCategory) => {
-    deleteInvestment.mutate(Number(investment.id));
+    deleteInvestment.mutate(investment.id);
   };
 
   const exportInvestments = () => {
