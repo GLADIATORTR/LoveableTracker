@@ -154,53 +154,11 @@ export class DatabaseStorage implements IStorage {
 
   async deleteCategory(id: string): Promise<boolean> {
     const result = await db.delete(categories).where(eq(categories.id, id));
-    return result.rowCount > 0;
+    return (result.rowCount ?? 0) > 0;
   }
 
   // Investment operations
   async getInvestments(filters?: { categoryId?: string; group?: string; search?: string }): Promise<RealEstateInvestmentWithCategory[]> {
-    let query = db.select({
-      id: realEstateInvestments.id,
-      propertyName: realEstateInvestments.propertyName,
-      address: realEstateInvestments.address,
-      purchasePrice: realEstateInvestments.purchasePrice,
-      currentValue: realEstateInvestments.currentValue,
-      netEquity: realEstateInvestments.netEquity,
-      downPayment: realEstateInvestments.downPayment,
-      loanAmount: realEstateInvestments.loanAmount,
-      interestRate: realEstateInvestments.interestRate,
-      loanTerm: realEstateInvestments.loanTerm,
-      monthlyMortgage: realEstateInvestments.monthlyMortgage,
-      monthlyRent: realEstateInvestments.monthlyRent,
-      monthlyRentPotential: realEstateInvestments.monthlyRentPotential,
-      isInvestmentProperty: realEstateInvestments.isInvestmentProperty,
-      monthlyExpenses: realEstateInvestments.monthlyExpenses,
-      expenseDetails: realEstateInvestments.expenseDetails,
-      monthlyEscrow: realEstateInvestments.monthlyEscrow,
-      avgAppreciationRate: realEstateInvestments.avgAppreciationRate,
-      outstandingBalance: realEstateInvestments.outstandingBalance,
-      currentTerm: realEstateInvestments.currentTerm,
-      propertyType: realEstateInvestments.propertyType,
-      purchaseDate: realEstateInvestments.purchaseDate,
-      notes: realEstateInvestments.notes,
-      group: realEstateInvestments.group,
-      country: realEstateInvestments.country,
-      annualDepreciation: realEstateInvestments.annualDepreciation,
-      mortgageInterestDeduction: realEstateInvestments.mortgageInterestDeduction,
-      propertyTaxDeduction: realEstateInvestments.propertyTaxDeduction,
-      maintenanceDeductions: realEstateInvestments.maintenanceDeductions,
-      totalTaxBenefits: realEstateInvestments.totalTaxBenefits,
-      taxBenefitOverride: realEstateInvestments.taxBenefitOverride,
-      zipCode: realEstateInvestments.zipCode,
-      taxRate: realEstateInvestments.taxRate,
-      depreciationMethod: realEstateInvestments.depreciationMethod,
-      costBasis: realEstateInvestments.costBasis,
-      createdAt: realEstateInvestments.createdAt,
-      updatedAt: realEstateInvestments.updatedAt,
-      category: categories
-    }).from(realEstateInvestments)
-    .leftJoin(categories, eq(realEstateInvestments.group, categories.name));
-
     const conditions = [];
     if (filters?.search) {
       conditions.push(like(realEstateInvestments.propertyName, `%${filters.search}%`));
@@ -208,59 +166,45 @@ export class DatabaseStorage implements IStorage {
     if (filters?.group) {
       conditions.push(eq(realEstateInvestments.group, filters.group));
     }
-
-    if (conditions.length > 0) {
-      query = query.where(and(...conditions));
+    if (filters?.categoryId) {
+      conditions.push(eq(realEstateInvestments.group, filters.categoryId));
     }
 
-    return await query;
+    let investments;
+    if (conditions.length > 0) {
+      investments = await db.select().from(realEstateInvestments).where(and(...conditions));
+    } else {
+      investments = await db.select().from(realEstateInvestments);
+    }
+
+    // Get categories for each investment
+    const categoriesMap = new Map<string, Category>();
+    const allCategories = await this.getCategories();
+    allCategories.forEach(cat => categoriesMap.set(cat.name, cat));
+
+    return investments.map(investment => ({
+      ...investment,
+      category: investment.group ? categoriesMap.get(investment.group) : undefined
+    }));
   }
 
   async getInvestment(id: string): Promise<RealEstateInvestmentWithCategory | undefined> {
-    const [investment] = await db.select({
-      id: realEstateInvestments.id,
-      propertyName: realEstateInvestments.propertyName,
-      address: realEstateInvestments.address,
-      purchasePrice: realEstateInvestments.purchasePrice,
-      currentValue: realEstateInvestments.currentValue,
-      netEquity: realEstateInvestments.netEquity,
-      downPayment: realEstateInvestments.downPayment,
-      loanAmount: realEstateInvestments.loanAmount,
-      interestRate: realEstateInvestments.interestRate,
-      loanTerm: realEstateInvestments.loanTerm,
-      monthlyMortgage: realEstateInvestments.monthlyMortgage,
-      monthlyRent: realEstateInvestments.monthlyRent,
-      monthlyRentPotential: realEstateInvestments.monthlyRentPotential,
-      isInvestmentProperty: realEstateInvestments.isInvestmentProperty,
-      monthlyExpenses: realEstateInvestments.monthlyExpenses,
-      expenseDetails: realEstateInvestments.expenseDetails,
-      monthlyEscrow: realEstateInvestments.monthlyEscrow,
-      avgAppreciationRate: realEstateInvestments.avgAppreciationRate,
-      outstandingBalance: realEstateInvestments.outstandingBalance,
-      currentTerm: realEstateInvestments.currentTerm,
-      propertyType: realEstateInvestments.propertyType,
-      purchaseDate: realEstateInvestments.purchaseDate,
-      notes: realEstateInvestments.notes,
-      group: realEstateInvestments.group,
-      country: realEstateInvestments.country,
-      annualDepreciation: realEstateInvestments.annualDepreciation,
-      mortgageInterestDeduction: realEstateInvestments.mortgageInterestDeduction,
-      propertyTaxDeduction: realEstateInvestments.propertyTaxDeduction,
-      maintenanceDeductions: realEstateInvestments.maintenanceDeductions,
-      totalTaxBenefits: realEstateInvestments.totalTaxBenefits,
-      taxBenefitOverride: realEstateInvestments.taxBenefitOverride,
-      zipCode: realEstateInvestments.zipCode,
-      taxRate: realEstateInvestments.taxRate,
-      depreciationMethod: realEstateInvestments.depreciationMethod,
-      costBasis: realEstateInvestments.costBasis,
-      createdAt: realEstateInvestments.createdAt,
-      updatedAt: realEstateInvestments.updatedAt,
-      category: categories
-    }).from(realEstateInvestments)
-    .leftJoin(categories, eq(realEstateInvestments.group, categories.name))
-    .where(eq(realEstateInvestments.id, id));
+    const [investment] = await db.select().from(realEstateInvestments)
+      .where(eq(realEstateInvestments.id, id));
 
-    return investment;
+    if (!investment) return undefined;
+
+    // Get category if exists
+    let category: Category | undefined;
+    if (investment.group) {
+      const categories = await this.getCategories();
+      category = categories.find(cat => cat.name === investment.group);
+    }
+
+    return {
+      ...investment,
+      category
+    };
   }
 
   async createInvestment(investment: InsertRealEstateInvestment): Promise<RealEstateInvestment> {
@@ -278,7 +222,7 @@ export class DatabaseStorage implements IStorage {
 
   async deleteInvestment(id: string): Promise<boolean> {
     const result = await db.delete(realEstateInvestments).where(eq(realEstateInvestments.id, id));
-    return result.rowCount > 0;
+    return (result.rowCount ?? 0) > 0;
   }
 
   // Scenario operations (simplified for now)
@@ -305,7 +249,7 @@ export class DatabaseStorage implements IStorage {
 
   async deleteScenario(id: string): Promise<boolean> {
     const result = await db.delete(investmentScenarios).where(eq(investmentScenarios.id, id));
-    return result.rowCount > 0;
+    return (result.rowCount ?? 0) > 0;
   }
 
   // Activity operations (simplified)
@@ -327,19 +271,22 @@ export class DatabaseStorage implements IStorage {
     const totalEquity = investments.reduce((sum, inv) => sum + inv.netEquity, 0);
     const totalMonthlyRent = investments.reduce((sum, inv) => sum + (inv.monthlyRent || 0), 0);
     
+    const totalInvestment = investments.reduce((sum, inv) => sum + inv.purchasePrice, 0);
+    
     return {
       totalProperties,
       totalPortfolioValue,
-      totalEquity,
+      totalInvestment,
+      averageROI: totalInvestment > 0 ? Math.round(((totalPortfolioValue - totalInvestment) / totalInvestment) * 100) : 0,
+      totalNetEquity: totalEquity,
       totalMonthlyRent,
-      averageROI: totalPortfolioValue > 0 ? Math.round((totalMonthlyRent * 12 / totalPortfolioValue) * 10000) : 0,
       topPerformingProperties: investments
         .sort((a, b) => b.currentValue - b.purchasePrice - (a.currentValue - a.purchasePrice))
         .slice(0, 3)
         .map(inv => ({
           id: inv.id,
           name: inv.propertyName,
-          roi: inv.purchasePrice > 0 ? Math.round(((inv.currentValue - inv.purchasePrice) / inv.purchasePrice) * 10000) : 0
+          roi: inv.purchasePrice > 0 ? Math.round(((inv.currentValue - inv.purchasePrice) / inv.purchasePrice) * 100) : 0
         }))
     };
   }

@@ -1,8 +1,15 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
 
+interface DashboardStats {
+  totalProperties: number;
+  totalPortfolioValue: number;
+  totalInvestment: number;
+  averageROI: number;
+}
+
 export default function SimpleDashboard() {
-  const { data: stats, isLoading } = useQuery({
+  const { data: stats, isLoading } = useQuery<DashboardStats>({
     queryKey: ["/api/dashboard/stats"],
   });
 

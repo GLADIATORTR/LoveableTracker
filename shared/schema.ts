@@ -152,14 +152,22 @@ export type InvestmentScenarioWithCategory = InvestmentScenario & {
 export interface DashboardStats {
   totalProperties: number;
   totalPortfolioValue: number;
-  totalNetEquity: number;
-  totalMonthlyIncome: number;
-  totalMonthlyExpenses: number;
-  netCashFlow: number;
-  averageCapRate: number;
-  totalTaxBenefits: number;
-  activeProperties: number;
-  recentActivity: Activity[];
+  totalInvestment: number;
+  averageROI: number;
+  totalNetEquity?: number;
+  totalMonthlyIncome?: number;
+  totalMonthlyExpenses?: number;
+  netCashFlow?: number;
+  averageCapRate?: number;
+  totalTaxBenefits?: number;
+  activeProperties?: number;
+  recentActivity?: Activity[];
+  topPerformingProperties?: Array<{
+    id: string;
+    name: string;
+    roi: number;
+  }>;
+  totalMonthlyRent?: number;
 }
 
 // Expense details interface
@@ -174,18 +182,3 @@ export interface ExpenseDetails {
   monthlyEscrow?: number;
   monthlyOther?: number;
 }
-
-// Dashboard statistics type
-export type DashboardStats = {
-  totalAssets: number;
-  activeItems: number;
-  pendingReviews: number;
-  totalValue: number;
-  categories: Array<{
-    id: string;
-    name: string;
-    count: number;
-    color: string;
-  }>;
-  recentActivity: Activity[];
-};
