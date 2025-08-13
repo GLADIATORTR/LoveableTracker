@@ -235,6 +235,12 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
   // Check if this is 12 Hillcrest property
   const is12Hillcrest = investment.propertyName?.includes("12 Hillcrest") || investment.propertyName?.includes("Hillcrest");
   
+  // Debug logging for 12 Hillcrest detection
+  if (investment.propertyName?.includes("Hillcrest")) {
+    console.log(`🏠 12 Hillcrest detected: ${investment.propertyName}, using exact calculation functions`);
+    console.log(`Sample calculations: Market Value Y1 = ${calculate12HillcrestMarketValue(1)}, Current Term Y1 = ${calculate12HillcrestCurrentTerm(1)}, Outstanding Balance Y1 = ${calculate12HillcrestOutstandingBalance(1)}`);
+  }
+  
   // Use property-specific appreciation rate if available, otherwise use country default
   const propertyAppreciationRate = investment.appreciationRate ? (investment.appreciationRate / 10000) : (countrySettings.realEstateAppreciationRate / 100);
   const inflationRate = countrySettings.inflationRate / 100;
@@ -754,7 +760,7 @@ export function TimeSeriesProjectionsTable({ investment, inflationAdjusted = fal
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-80 font-semibold">Property / Metric</TableHead>
+                <TableHead className="w-80 font-semibold">Property / Metric v2.2</TableHead>
                 <TableHead className="text-center font-semibold">Y0</TableHead>
                 <TableHead className="text-center font-semibold">Y1</TableHead>
                 <TableHead className="text-center font-semibold">Y2</TableHead>
