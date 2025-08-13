@@ -8,7 +8,7 @@ import { SimpleThemeProvider } from "@/components/ui/simple-theme-provider";
 import { AppContextProvider } from "@/contexts/AppContext";
 import Sidebar from "@/components/layout/Sidebar";
 import TopBar from "@/components/layout/TopBar";
-import Dashboard from "@/pages/Dashboard";
+import Dashboard from "@/pages/SimpleDashboard";
 import Scenarios from "@/pages/Scenarios";
 import Investments from "@/pages/Investments";
 import Reports from "@/pages/Reports";
@@ -34,24 +34,24 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <SimpleThemeProvider>
-        <TooltipProvider>
-          <AppContextProvider>
-            <Toaster />
-            <div className="h-screen flex bg-background">
-              <Sidebar />
-              <div className="flex-1 flex flex-col min-w-0">
-                <TopBar />
-                <main className="flex-1 overflow-y-auto bg-surface-50 dark:bg-background">
-                  <div className="p-6">
-                    <Router />
-                  </div>
-                </main>
-              </div>
-            </div>
-          </AppContextProvider>
-        </TooltipProvider>
-      </SimpleThemeProvider>
+      <div className="h-screen flex bg-white">
+        <div className="w-64 bg-gray-100 border-r border-gray-200 p-4">
+          <h1 className="text-xl font-bold text-gray-800 mb-4">Real Estate Financials</h1>
+          <nav className="space-y-2">
+            <a href="#" className="block text-gray-700 hover:text-blue-600">Dashboard</a>
+            <a href="#" className="block text-gray-700 hover:text-blue-600">Investments</a>
+            <a href="#" className="block text-gray-700 hover:text-blue-600">Reports</a>
+          </nav>
+        </div>
+        <div className="flex-1 flex flex-col">
+          <header className="bg-white border-b border-gray-200 px-6 py-4">
+            <h2 className="text-lg font-semibold text-gray-800">Dashboard</h2>
+          </header>
+          <main className="flex-1 overflow-y-auto bg-gray-50 p-6">
+            <Router />
+          </main>
+        </div>
+      </div>
     </QueryClientProvider>
   );
 }
