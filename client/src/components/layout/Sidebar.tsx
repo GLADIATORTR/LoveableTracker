@@ -21,7 +21,6 @@ import {
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Investments", href: "/investments", icon: Home },
-  { name: "Future Projections", href: "/projections", icon: Calculator },
   { name: "TimeSeries Projections", href: "/reports", icon: BarChart3 },
   { name: "Settings", href: "/settings", icon: Settings },
 ];
@@ -37,19 +36,24 @@ export default function Sidebar() {
 
   return (
     <div className={cn(
-      "flex flex-col bg-sidebar border-r border-sidebar-border transition-all duration-300",
+      "flex flex-col bg-sidebar border-r border-sidebar-border transition-all duration-300 shadow-2xl",
       sidebarCollapsed ? "w-16" : "w-64"
     )}>
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-sidebar-border">
+      <div className="flex items-center justify-between p-4 border-b border-sidebar-border/50">
         {!sidebarCollapsed && (
           <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+            <div className="w-9 h-9 bg-gradient-to-br from-primary to-primary-600 rounded-xl flex items-center justify-center shadow-lg">
               <Home className="w-5 h-5 text-primary-foreground" />
             </div>
-            <span className="text-lg font-semibold text-sidebar-foreground">
-              Real Estate Financials
-            </span>
+            <div className="flex flex-col">
+              <span className="text-lg font-bold text-sidebar-foreground bg-gradient-to-r from-primary to-primary-600 bg-clip-text text-transparent">
+                Real Estate
+              </span>
+              <span className="text-xs text-sidebar-foreground/70 -mt-1">
+                Financials
+              </span>
+            </div>
           </div>
         )}
         
@@ -96,17 +100,34 @@ export default function Sidebar() {
             <Tooltip key={item.name}>
               <TooltipTrigger asChild>
                 <Link href={item.href}>
-                  <Button
-                    variant="ghost"
-                    className={cn(
-                      "w-full justify-start text-sidebar-foreground",
-                      isActive && "bg-primary/10 text-primary hover:bg-primary/20",
-                      sidebarCollapsed && "px-2"
+                  <div className={cn(
+                    "flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-300 group cursor-pointer relative overflow-hidden",
+                    isActive
+                      ? "bg-gradient-to-r from-primary/20 to-primary-600/20 text-primary border border-primary/30 shadow-lg"
+                      : "text-sidebar-foreground/80 hover:bg-sidebar-accent/30 hover:text-sidebar-foreground hover:scale-[1.02] hover:shadow-md",
+                    sidebarCollapsed && "justify-center px-2"
+                  )}>
+                    {isActive && (
+                      <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-primary-600/5 rounded-xl" />
                     )}
-                  >
-                    <Icon className="w-5 h-5" />
-                    {!sidebarCollapsed && <span className="ml-3">{item.name}</span>}
-                  </Button>
+                    <Icon className={cn(
+                      "w-5 h-5 transition-all duration-300 relative z-10",
+                      isActive 
+                        ? "text-primary scale-110 drop-shadow-sm" 
+                        : "group-hover:scale-105 group-hover:text-sidebar-foreground"
+                    )} />
+                    {!sidebarCollapsed && (
+                      <span className={cn(
+                        "font-medium transition-all duration-300 relative z-10",
+                        isActive ? "text-primary font-semibold" : "group-hover:text-sidebar-foreground"
+                      )}>
+                        {item.name}
+                      </span>
+                    )}
+                    {isActive && !sidebarCollapsed && (
+                      <div className="absolute right-2 w-1 h-8 bg-gradient-to-b from-primary to-primary-600 rounded-full" />
+                    )}
+                  </div>
                 </Link>
               </TooltipTrigger>
               {sidebarCollapsed && (

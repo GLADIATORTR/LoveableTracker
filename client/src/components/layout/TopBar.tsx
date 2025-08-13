@@ -13,7 +13,6 @@ const routeTitles = {
   "/dashboard": "Dashboard",
   "/dictionary": "Asset Dictionary",
   "/investments": "Investments",
-  "/projections": "Future Projections", 
   "/reports": "TimeSeries Projections",
   "/settings": "Settings",
 };
@@ -57,15 +56,17 @@ export default function TopBar() {
   };
 
   return (
-    <header className="bg-background border-b border-border px-6 py-4">
+    <header className="bg-gradient-to-r from-background to-background/95 border-b border-border/50 px-6 py-4 backdrop-blur-sm">
       <div className="flex items-center justify-between">
         {/* Breadcrumbs */}
         <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-          <span className="font-medium text-foreground">{currentTitle}</span>
+          <span className="font-semibold text-lg text-foreground bg-gradient-to-r from-primary to-primary-600 bg-clip-text text-transparent">
+            {currentTitle}
+          </span>
           {location !== "/" && location !== "/dashboard" && (
             <>
-              <span>›</span>
-              <span>Overview</span>
+              <span className="text-muted-foreground/50">›</span>
+              <span className="text-muted-foreground">Overview</span>
             </>
           )}
         </div>
