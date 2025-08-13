@@ -49,8 +49,11 @@ Fixed critical application startup issues and restored full functionality:
 
 ### TimeSeries Projections & Calculation Fixes (August 2025)
 Major improvements to financial projection accuracy and data consistency:
+- **Property-Specific Appreciation Rates**: Added appreciationRate field to schema for individual property rates
+- **Calculation Accuracy**: Fixed basis points conversion error (now correctly divides by 10000)
+- **12 Hillcrest Corrections**: Set to 2% appreciation rate, Y1 Market Value now shows $1,275,000 (matches user's calculations exactly)
 - Fixed all calculation errors in TimeSeries Projections:
-  * Market Value: Now correctly shows $1,250,000 (not $125,000,000)
+  * Market Value: Uses property-specific rates when available, falls back to country defaults
   * Interest Rate: Displays 3.75% correctly (not 375.00%)
   * Outstanding Balance: Uses proper mortgage amortization formula
   * Capital Gains Tax: Correctly calculates as (Market Value - Purchase Price) × Tax Rate
