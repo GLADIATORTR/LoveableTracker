@@ -48,7 +48,7 @@ export default function Sidebar() {
               <Home className="w-5 h-5 text-primary-foreground" />
             </div>
             <span className="text-lg font-semibold text-sidebar-foreground">
-              Real Estate Tracker
+              Real Estate Financials
             </span>
           </div>
         )}
