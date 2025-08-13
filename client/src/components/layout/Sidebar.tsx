@@ -1,7 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
 import { useAppContext } from "@/contexts/AppContext";
-import { useTheme } from "@/components/ui/theme-provider";
+import { useTheme } from "@/components/ui/simple-theme-provider";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
