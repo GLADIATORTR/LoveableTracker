@@ -174,17 +174,18 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
       // Annual mortgage payment (constant dollar amount)
       annualMortgage = monthlyMortgage * 12;
       
-      // Annual mortgage in present value terms  
+      // Annual mortgage in present value terms for this specific year
       annualMortgagePV = annualMortgage * Math.pow(1 + inflationRate, -year);
       
       // Calculate cumulative values by summing annual amounts
       for (let y = 1; y <= year; y++) {
         const yearRent = currentMonthlyRent * Math.pow(1 + rentGrowthRate, y);
         const yearExpenses = currentMonthlyExpenses * Math.pow(1 + expenseGrowthRate, y);
-        const yearMortgagePV = monthlyMortgage * 12 * Math.pow(1 + inflationRate, -y); // Present value of mortgage payment
+        const yearMortgagePV = monthlyMortgage * 12 * Math.pow(1 + inflationRate, -y); // Present value of mortgage payment for year y
         
-        // Net yield excluding mortgage (rent - expenses only)
-        cumulativeNetYield += (yearRent - yearExpenses) * 12;
+        // Net yield excluding mortgage (rent - expenses only) - no inflation adjustment needed as it's already in real terms
+        const yearNetYield = (yearRent - yearExpenses) * 12;
+        cumulativeNetYield += yearNetYield;
         
         // Cumulative mortgage payments in present value
         cumulativeAnnualMortgagePV += yearMortgagePV;
@@ -194,7 +195,7 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
         
         // Debug for year 1 of 12 Hillcrest
         if (investment.propertyName?.includes("Hillcrest") && year === 1 && y === 1) {
-          console.log(`Debug 12 Hillcrest Y1: rent=${yearRent}, expenses=${yearExpenses}, annual=${(yearRent - yearExpenses) * 12}, cumulative=${cumulativeNetYield}`);
+          console.log(`Debug 12 Hillcrest Y${year}: annualMortgage=${annualMortgage}, annualMortgagePV=${yearMortgagePV}, cumulativeMortgagePV=${cumulativeAnnualMortgagePV}`);
         }
       }
     }
@@ -364,7 +365,7 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
       y30: formatCurrency(yearlyData[30].netEquityToday),
     },
     {
-      metric: "Annual Net Yield excluding Mortgage Payment",
+      metric: "Annual Net Yield excluding Mortgage Payment (already in Today's Dollars)",
       y0: formatCurrency(yearlyData[0].annualNetYield),
       y1: formatCurrency(yearlyData[1].annualNetYield),
       y2: formatCurrency(yearlyData[2].annualNetYield),
@@ -377,7 +378,7 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
       y30: formatCurrency(yearlyData[30].annualNetYield),
     },
     {
-      metric: "Cumulative Net Yield excluding Mortgage Payment (Today's Dollars)",
+      metric: "Cumulative Net Yield excluding Mortgage Payment (already in Today's Dollars)",
       y0: formatCurrency(yearlyData[0].cumulativeNetYield),
       y1: formatCurrency(yearlyData[1].cumulativeNetYield),
       y2: formatCurrency(yearlyData[2].cumulativeNetYield),
