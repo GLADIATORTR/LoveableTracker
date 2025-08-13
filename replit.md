@@ -1,14 +1,21 @@
-# Asset Tracker
+# Real Estate Financials
 
 ## Overview
 
-Real Estate Investment Tracker is a comprehensive investment management platform featuring intelligent property tracking, financial analysis, and portfolio optimization tools. The application provides advanced TimeSeries projections with inflation adjustment, country-specific global settings, CSV import capabilities, and detailed investment performance analysis. Built with a modern full-stack architecture using React, Express, and PostgreSQL, it offers professional-grade financial modeling and projection tools for real estate investors.
+Real Estate Financials is a comprehensive investment management platform featuring intelligent property tracking, financial analysis, and portfolio optimization tools. The application provides advanced TimeSeries projections with inflation adjustment, country-specific global settings, CSV import capabilities, and detailed investment performance analysis. Built with a modern full-stack architecture using React, Express, and PostgreSQL, it offers professional-grade financial modeling and projection tools for real estate investors.
 
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
+
+### App Rebranding (August 2025)
+Updated application name from "Asset Tracker" to "Real Estate Financials":
+- **Frontend Display**: Updated TopBar component to show "Real Estate Financials" as fallback title
+- **HTML Title**: Changed browser title to "Real Estate Financials - Professional Portfolio Management"
+- **PWA Manifest**: Updated PWA app name to "Real Estate Financials" and short name to "RE Financials"
+- **Version Tracking**: Added v2.1 to TimeSeries table header for cache-busting and version identification
 
 ### Database Implementation & Dummy User Account (August 2025)
 Complete transition from memory storage to PostgreSQL database with dummy user system:

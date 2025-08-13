@@ -23,7 +23,7 @@ export default function TopBar() {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
 
-  const currentTitle = routeTitles[location as keyof typeof routeTitles] || "Asset Tracker";
+  const currentTitle = routeTitles[location as keyof typeof routeTitles] || "Real Estate Financials";
 
   const handleExport = () => {
     // Create download link for export
