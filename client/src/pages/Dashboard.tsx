@@ -89,6 +89,7 @@ export default function Dashboard() {
               }}
               icon={Package}
               iconColor="text-primary"
+              gradient="primary"
             />
             <StatsCard
               title="Portfolio Value"
@@ -100,6 +101,7 @@ export default function Dashboard() {
               }}
               icon={DollarSign}
               iconColor="text-success"
+              gradient="success"
             />
             <StatsCard
               title="Net Equity"
@@ -111,6 +113,7 @@ export default function Dashboard() {
               }}
               icon={TrendingUp}
               iconColor="text-success"
+              gradient="info"
             />
             <StatsCard
               title="Monthly Cash Flow"
@@ -122,6 +125,7 @@ export default function Dashboard() {
               }}
               icon={CheckCircle}
               iconColor={stats?.netCashFlow && stats.netCashFlow > 0 ? "text-success" : "text-destructive"}
+              gradient={stats?.netCashFlow && stats.netCashFlow > 0 ? "purple" : "warning"}
             />
           </>
         )}
