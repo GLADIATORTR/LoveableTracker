@@ -177,6 +177,11 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
         
         cumulativeNetYield += (yearRent - yearExpenses) * 12; // Already in today's dollars
         cumulativeMortgagePayment += yearMortgage * 12; // Constant payment
+        
+        // Debug for year 1 of 12 Hillcrest
+        if (investment.propertyName?.includes("Hillcrest") && year === 1 && y === 1) {
+          console.log(`Debug 12 Hillcrest Y1: rent=${yearRent}, expenses=${yearExpenses}, annual=${(yearRent - yearExpenses) * 12}, cumulative=${cumulativeNetYield}`);
+        }
       }
     }
     
@@ -202,9 +207,9 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
   const rawRate = investment.interestRate || 0;
   const displayInterestRate = rawRate / 10000; // Convert basis points to decimal
   
-  // Add property details header row
+  // Add property details header row with version number
   const propertyDetailsRow: ProjectionRow = {
-    metric: `${investment.propertyName} (${investment.country || 'USA'}) | Purchase Price: ${formatCurrency(purchasePrice)} | Appreciation: ${formatPercent(appreciationRate * 100)} | Int Rate: ${formatPercent(displayInterestRate * 100)} | Inf Rate: ${formatPercent(inflationRate * 100)} | Sales Costs: ${formatPercent(countrySettings.sellingCosts)} | Cap Gains Tax: ${formatPercent(countrySettings.capitalGainsTax)} | Monthly Rent: ${formatCurrency(currentMonthlyRent)} | Monthly Exp: ${formatCurrency(currentMonthlyExpenses)} | Monthly Mortgage: ${formatCurrency(monthlyMortgage)}`,
+    metric: `${investment.propertyName} (${investment.country || 'USA'}) | Purchase Price: ${formatCurrency(purchasePrice)} | Appreciation: ${formatPercent(appreciationRate * 100)} | Int Rate: ${formatPercent(displayInterestRate * 100)} | Inf Rate: ${formatPercent(inflationRate * 100)} | Sales Costs: ${formatPercent(countrySettings.sellingCosts)} | Cap Gains Tax: ${formatPercent(countrySettings.capitalGainsTax)} | Monthly Rent: ${formatCurrency(currentMonthlyRent)} | Monthly Exp: ${formatCurrency(currentMonthlyExpenses)} | Monthly Mortgage: ${formatCurrency(monthlyMortgage)} | v2.1`,
     y0: "", y1: "", y2: "", y3: "", y4: "", y5: "", y10: "", y15: "", y25: "", y30: ""
   };
 
