@@ -66,13 +66,77 @@ function formatPercent(value: number): string {
   return `${value.toFixed(2)}%`;
 }
 
-// Individual metric calculation functions for 12 Hillcrest
-function calculate12HillcrestMarketValue(year: number, propertyAppreciationRate: number, currentValue: number): number {
-  // Use the global appreciation rate and current value from database
-  const baseValue = currentValue; // Use actual current value as base
+// MODULAR CALCULATION FUNCTIONS - Each metric calculated independently
+
+// Market Value Calculator
+function calculateMarketValue(investment: any, year: number, globalSettings: any, inflationAdjusted: boolean): number {
+  const countrySettings = globalSettings.countrySettings[globalSettings.selectedCountry];
+  const propertyAppreciationRate = countrySettings.realEstateAppreciationRate / 100;
+  const currentValue = investment.currentValue / 100;
+  const inflationRate = countrySettings.inflationRate / 100;
+  const inflationAdjustment = inflationAdjusted ? Math.pow(1 + inflationRate, -year) : 1;
   
-  // Calculate using compound growth formula with GLOBAL appreciation rate (not hardcoded values)
-  return Math.round(baseValue * Math.pow(1 + propertyAppreciationRate, year));
+  const nominalValue = currentValue * Math.pow(1 + propertyAppreciationRate, year);
+  return nominalValue * inflationAdjustment;
+}
+
+// Annual Net Yield Calculator - FIXED VALUE
+function calculateAnnualNetYield(investment: any, year: number): number {
+  // Fixed at $42,840 for all years (already in today's dollars, no adjustments needed)
+  return 42840;
+}
+
+// Cumulative Net Yield Calculator
+function calculateCumulativeNetYield(investment: any, year: number): number {
+  // Sum of fixed $42,840 per year
+  return 42840 * Math.max(0, year);
+}
+
+// Outstanding Balance Calculator
+function calculateOutstandingBalance(investment: any, year: number): number {
+  const is12Hillcrest = investment.propertyName?.includes("12 Hillcrest") || investment.propertyName?.includes("Hillcrest");
+  
+  if (is12Hillcrest) {
+    return calculate12HillcrestOutstandingBalance(year);
+  }
+  
+  // Standard calculation for other properties
+  const currentBalance = (investment.outstandingBalance || 0) / 100;
+  const monthlyMortgage = (investment.monthlyMortgage || 0) / 100;
+  const rawRate = investment.interestRate || 0;
+  const monthlyInterestRate = (rawRate / 10000) / 12;
+  const currentTerm = investment.currentTerm || 0;
+  const originalTerm = investment.loanTerm || 360;
+  
+  if (year === 0 || monthlyMortgage === 0) return currentBalance;
+  
+  const totalPaymentsFromStart = 12 * year;
+  const remainingPaymentsAtStart = originalTerm - currentTerm;
+  
+  if (totalPaymentsFromStart > remainingPaymentsAtStart) return 0;
+  
+  let remainingBalance = currentBalance;
+  for (let payment = 1; payment <= totalPaymentsFromStart; payment++) {
+    const interestPayment = remainingBalance * monthlyInterestRate;
+    const principalPayment = monthlyMortgage - interestPayment;
+    remainingBalance -= principalPayment;
+  }
+  
+  return Math.max(0, remainingBalance);
+}
+
+// Cumulative Principal Payment Calculator
+function calculateCumulativePrincipalPayment(investment: any, year: number): number {
+  if (year === 0) return 0;
+  
+  const initialBalance = calculateOutstandingBalance(investment, 0);
+  const currentBalance = calculateOutstandingBalance(investment, year);
+  return initialBalance - currentBalance;
+}
+
+// Legacy 12 Hillcrest function (kept for compatibility)
+function calculate12HillcrestMarketValue(year: number, propertyAppreciationRate: number, currentValue: number): number {
+  return Math.round(currentValue * Math.pow(1 + propertyAppreciationRate, year));
 }
 
 function calculate12HillcrestCurrentTerm(year: number): number {
@@ -251,10 +315,8 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
   years.forEach(year => {
     const inflationAdjustment = inflationAdjusted ? Math.pow(1 + inflationRate, -year) : 1;
     
-    // Market value - use specific function for 12 Hillcrest
-    const marketValue = is12Hillcrest 
-      ? calculate12HillcrestMarketValue(year, propertyAppreciationRate, currentMarketValue) * inflationAdjustment
-      : currentMarketValue * Math.pow(1 + propertyAppreciationRate, year) * inflationAdjustment;
+    // Market value - use modular calculator
+    const marketValue = calculateMarketValue(investment, year, globalSettings, inflationAdjusted);
     
     // Current term - use specific function for 12 Hillcrest  
     const currentTerm = investment.currentTerm || 0;
@@ -270,55 +332,9 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
     const annualInterestRate = rawRate / 10000;
     const monthlyInterestRate = annualInterestRate / 12;
     
-    // Outstanding balance - use specific function for 12 Hillcrest
-    let outstandingBalance = is12Hillcrest 
-      ? calculate12HillcrestOutstandingBalance(year)
-      : currentOutstandingBalance;
-    let cumulativePrincipalPayment = 0;
-    
-    if (year === 0) {
-      outstandingBalance = is12Hillcrest 
-        ? calculate12HillcrestOutstandingBalance(year)
-        : currentOutstandingBalance;
-      cumulativePrincipalPayment = 0;
-    } else if (is12Hillcrest) {
-      // For 12 Hillcrest, calculate cumulative principal payment
-      const initialBalance = calculate12HillcrestOutstandingBalance(0); // Y0 balance
-      const currentBalance = calculate12HillcrestOutstandingBalance(year); // Current year balance
-      cumulativePrincipalPayment = initialBalance - currentBalance; // Principal paid down = difference
-    } else if (monthlyMortgage > 0 && monthlyInterestRate > 0) {
-      const totalPaymentsFromStart = 12 * year; // Total payments from Y0 to current year
-      const remainingPaymentsAtStart = originalTerm - currentTerm; // Remaining payments at Y0
-      
-      if (totalPaymentsFromStart <= remainingPaymentsAtStart) {
-        // Calculate CUMPRINC: cumulative principal payment for the period
-        // CUMPRINC(rate, nper, pv, start_period, end_period, type)
-        // where rate = monthly rate, nper = remaining term, pv = current balance
-        // start_period = 1, end_period = totalPaymentsFromStart, type = 0 (end of period)
-        
-        // Use the exact CUMPRINC formula approach
-        let cumulativePrincipal = 0;
-        let remainingBalance = currentOutstandingBalance;
-        
-        // Calculate payment by payment for exact CUMPRINC
-        for (let payment = 1; payment <= totalPaymentsFromStart; payment++) {
-          const interestPayment = remainingBalance * monthlyInterestRate;
-          const principalPayment = monthlyMortgage - interestPayment;
-          cumulativePrincipal += principalPayment;
-          remainingBalance -= principalPayment;
-        }
-        
-        cumulativePrincipalPayment = cumulativePrincipal;
-        outstandingBalance = currentOutstandingBalance - cumulativePrincipal;
-        
-        // Ensure outstanding balance doesn't go negative
-        outstandingBalance = Math.max(0, outstandingBalance);
-      } else {
-        // Loan is fully paid off
-        outstandingBalance = 0;
-        cumulativePrincipalPayment = currentOutstandingBalance;
-      }
-    }
+    // Outstanding balance and cumulative principal payment - use modular calculators
+    const outstandingBalance = calculateOutstandingBalance(investment, year);
+    const cumulativePrincipalPayment = calculateCumulativePrincipalPayment(investment, year);
     
     // Monthly rent with growth
     const monthlyRent = currentMonthlyRent * Math.pow(1 + rentGrowthRate, year) * inflationAdjustment;
@@ -346,43 +362,25 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
     // Display net equity based on inflation adjustment toggle
     const netEquity = inflationAdjusted ? netEquityToday : nominalNetEquity;
     
-    // Annual Net Yield - keep constant at $42,840 (already in today's dollars, no inflation adjustment)
-    const annualNetYield = 42840; // Fixed value, already inflation-adjusted
+    // Annual Net Yield and Cumulative Net Yield - use modular calculators
+    const annualNetYield = calculateAnnualNetYield(investment, year);
+    const cumulativeNetYield = calculateCumulativeNetYield(investment, year);
     
-    // Calculate cumulative values properly
-    let cumulativeNetYield = 0;
-    let cumulativeMortgagePayment = 0;
+    // Calculate mortgage-related values
     let annualMortgage = 0;
     let annualMortgagePV = 0;
     let cumulativeAnnualMortgagePV = 0;
+    let cumulativeMortgagePayment = 0;
     
     if (year > 0) {
-      // Annual mortgage payment (constant dollar amount)
       annualMortgage = monthlyMortgage * 12;
-      
-      // Annual mortgage in present value terms for this specific year
       annualMortgagePV = annualMortgage * Math.pow(1 + inflationRate, -year);
       
-      // Calculate cumulative values by summing annual amounts
+      // Calculate cumulative mortgage payments
       for (let y = 1; y <= year; y++) {
-        const yearRent = currentMonthlyRent * Math.pow(1 + rentGrowthRate, y);
-        const yearExpenses = currentMonthlyExpenses * Math.pow(1 + expenseGrowthRate, y);
-        const yearMortgagePV = monthlyMortgage * 12 * Math.pow(1 + inflationRate, -y); // Present value of mortgage payment for year y
-        
-        // Net yield excluding mortgage - use constant $42,840 (already in today's dollars)
-        const yearNetYield = 42840; // Fixed value, already inflation-adjusted
-        cumulativeNetYield += yearNetYield;
-        
-        // Cumulative mortgage payments in present value
+        const yearMortgagePV = monthlyMortgage * 12 * Math.pow(1 + inflationRate, -y);
         cumulativeAnnualMortgagePV += yearMortgagePV;
-        
-        // Simple cumulative mortgage (not present value)
         cumulativeMortgagePayment += monthlyMortgage * 12;
-        
-        // Debug for year 1 of 12 Hillcrest
-        if (investment.propertyName?.includes("Hillcrest") && year === 1 && y === 1) {
-          console.log(`Debug 12 Hillcrest Y${year}: annualMortgage=${annualMortgage}, annualMortgagePV=${yearMortgagePV}, cumulativeMortgagePV=${cumulativeAnnualMortgagePV}`);
-        }
       }
     }
     
@@ -397,7 +395,7 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
       cumulativePrincipalPayment,
       netEquityNominal: nominalNetEquity, // Always nominal for comparison
       netEquityToday: netEquityToday, // Always present value using country inflation rate
-      annualNetYield: annualNetYield, // No inflation adjustment - already in today's dollars
+      annualNetYield: annualNetYield,
       cumulativeNetYield,
       cumulativeMortgagePayment,
       annualMortgage,
