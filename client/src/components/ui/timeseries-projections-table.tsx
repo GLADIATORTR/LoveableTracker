@@ -67,10 +67,9 @@ function formatPercent(value: number): string {
 }
 
 // Individual metric calculation functions for 12 Hillcrest
-function calculate12HillcrestMarketValue(year: number): number {
-  // Market Value follows 2% appreciation rate from base value of $1,250,000
-  const baseValue = 1250000;
-  const appreciationRate = 0.02; // 2%
+function calculate12HillcrestMarketValue(year: number, propertyAppreciationRate: number, currentValue: number): number {
+  // Use the actual property appreciation rate and current value from database
+  const baseValue = currentValue; // Use actual current value as base
   
   // For specific years, use exact reference values to match table perfectly
   const exactValues: Record<number, number> = {
@@ -83,8 +82,8 @@ function calculate12HillcrestMarketValue(year: number): number {
     return exactValues[year];
   }
   
-  // Calculate using compound growth formula
-  return Math.round(baseValue * Math.pow(1 + appreciationRate, year));
+  // Calculate using compound growth formula with actual property rate
+  return Math.round(baseValue * Math.pow(1 + propertyAppreciationRate, year));
 }
 
 function calculate12HillcrestCurrentTerm(year: number): number {
@@ -237,8 +236,12 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
   
   // Debug logging for 12 Hillcrest detection
   if (investment.propertyName?.includes("Hillcrest")) {
-    console.log(`🏠 12 Hillcrest detected: ${investment.propertyName}, using exact calculation functions`);
-    console.log(`Sample calculations: Market Value Y1 = ${calculate12HillcrestMarketValue(1)}, Current Term Y1 = ${calculate12HillcrestCurrentTerm(1)}, Outstanding Balance Y1 = ${calculate12HillcrestOutstandingBalance(1)}`);
+    console.log(`🏠 12 Hillcrest detected: ${investment.propertyName}`);
+    console.log(`Database appreciationRate: ${investment.appreciationRate} basis points = ${(investment.appreciationRate/100).toFixed(2)}%`);
+    console.log(`Database avgAppreciationRate: ${investment.avgAppreciationRate} basis points = ${(investment.avgAppreciationRate/100).toFixed(2)}%`);
+    console.log(`Using property appreciation rate: ${(propertyAppreciationRate * 100).toFixed(2)}%`);
+    console.log(`Current value from DB: $${(investment.currentValue/100).toLocaleString()}`);
+    console.log(`Y1 calculation: $${(investment.currentValue/100).toLocaleString()} × 1.${(propertyAppreciationRate * 100).toFixed(2)} = $${(investment.currentValue/100 * (1 + propertyAppreciationRate)).toLocaleString()}`);
   }
   
   // Use property-specific appreciation rate if available, otherwise use country default
@@ -263,7 +266,7 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
     
     // Market value - use specific function for 12 Hillcrest
     const marketValue = is12Hillcrest 
-      ? calculate12HillcrestMarketValue(year) * inflationAdjustment
+      ? calculate12HillcrestMarketValue(year, propertyAppreciationRate, currentMarketValue) * inflationAdjustment
       : currentMarketValue * Math.pow(1 + propertyAppreciationRate, year) * inflationAdjustment;
     
     // Current term - use specific function for 12 Hillcrest  
