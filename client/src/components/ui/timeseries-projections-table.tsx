@@ -18,6 +18,7 @@ interface ProjectionRow {
   y15: string;
   y25: string;
   y30: string;
+  isHighlighted?: boolean;
 }
 
 interface TimeSeriesProjectionsTableProps {
@@ -319,14 +320,19 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
       
       // Calculate cumulative mortgage payments - only add payments while loan was active
       for (let y = 1; y <= year; y++) {
-        // Get outstanding balance for year y to check if loan was still active
-        const yearOutstandingBalance = calculateOutstandingBalance(investment, y);
-        const yearLoanActive = yearOutstandingBalance > 0;
+        // Get outstanding balance for year y-1 to check if loan was still active at start of year y
+        const startOfYearBalance = calculateOutstandingBalance(investment, y - 1);
+        const yearLoanActive = startOfYearBalance > 0;
         
         if (yearLoanActive) {
           const yearMortgagePV = monthlyMortgage * 12 * Math.pow(1 + inflationRate, -y);
           cumulativeAnnualMortgagePV += yearMortgagePV;
           cumulativeMortgagePayment += monthlyMortgage * 12;
+        }
+        
+        // Debug logging for 12 Hillcrest cumulative calculation
+        if (investment.propertyName?.includes("Hillcrest") && y <= 16) {
+          console.log(`🔍 Y${y}: Balance at start=${startOfYearBalance.toFixed(0)}, Active=${yearLoanActive}, CumPV=${cumulativeAnnualMortgagePV.toFixed(0)}`);
         }
       }
     }
@@ -501,7 +507,7 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
       y30: formatCurrency(yearlyData[30].netEquityNominal),
     },
     {
-      metric: "🟡 Net Equity (Present Value - Today's Dollars)",
+      metric: "Net Equity (Present Value - Today's Dollars)",
       y0: formatCurrency(yearlyData[0].netEquityToday),
       y1: formatCurrency(yearlyData[1].netEquityToday),
       y2: formatCurrency(yearlyData[2].netEquityToday),
@@ -512,6 +518,7 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
       y15: formatCurrency(yearlyData[15].netEquityToday),
       y25: formatCurrency(yearlyData[25].netEquityToday),
       y30: formatCurrency(yearlyData[30].netEquityToday),
+      isHighlighted: true,
     },
     {
       metric: "Annual_Mortgage",
@@ -540,7 +547,7 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
       y30: formatCurrency(0), // Loan is paid off
     },
     {
-      metric: "🔵 Cumulative_Annual_Mortgage_PV",
+      metric: "Cumulative_Annual_Mortgage_PV",
       y0: formatCurrency(0),
       y1: formatCurrency(yearlyData[1].cumulativeAnnualMortgagePV || 0),
       y2: formatCurrency(yearlyData[2].cumulativeAnnualMortgagePV || 0),
@@ -551,6 +558,7 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
       y15: formatCurrency(yearlyData[15].cumulativeAnnualMortgagePV || 0),
       y25: formatCurrency(yearlyData[25].cumulativeAnnualMortgagePV || 0),
       y30: formatCurrency(yearlyData[30].cumulativeAnnualMortgagePV || 0),
+      isHighlighted: true,
     },
     {
       metric: "Annual Net Yield excluding Mortgage Payment (already in Today's Dollars)",
@@ -566,7 +574,7 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
       y30: formatCurrency(yearlyData[30].annualNetYield),
     },
     {
-      metric: "🟢 Cumulative Net Yield excluding Mortgage Payment (already in Today's Dollars)",
+      metric: "Cumulative Net Yield excluding Mortgage Payment (already in Today's Dollars)",
       y0: formatCurrency(yearlyData[0].cumulativeNetYield),
       y1: formatCurrency(yearlyData[1].cumulativeNetYield),
       y2: formatCurrency(yearlyData[2].cumulativeNetYield),
@@ -577,6 +585,7 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
       y15: formatCurrency(yearlyData[15].cumulativeNetYield),
       y25: formatCurrency(yearlyData[25].cumulativeNetYield),
       y30: formatCurrency(yearlyData[30].cumulativeNetYield),
+      isHighlighted: true,
     },
     {
       metric: "Net Gain (PV)",
@@ -691,8 +700,11 @@ export function TimeSeriesProjectionsTable({ investment, inflationAdjusted = fal
               {projectionRows.map((row, index) => {
                 // Style property header rows differently (first 4 rows are property details)
                 const isPropertyHeader = index < 4;
+                const isHighlighted = row.isHighlighted;
                 const rowClass = isPropertyHeader 
-                  ? "text-sm bg-muted/50 dark:bg-muted/30" 
+                  ? "text-sm bg-muted/50 dark:bg-muted/30"
+                  : isHighlighted
+                  ? "text-sm bg-blue-50/50 dark:bg-blue-950/30 border-l-2 border-blue-400"
                   : "text-sm";
                 const cellClass = isPropertyHeader 
                   ? "font-medium py-2 px-3 text-sm text-muted-foreground" 
