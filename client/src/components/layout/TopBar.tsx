@@ -56,15 +56,15 @@ export default function TopBar() {
   };
 
   return (
-    <header className="bg-gradient-to-r from-background to-background/95 border-b border-border/50 px-6 py-4 backdrop-blur-sm">
+    <header className="bg-white/95 border-b border-border/50 px-6 py-4 backdrop-blur-sm shadow-sm">
       <div className="flex items-center justify-between">
         {/* Breadcrumbs */}
         <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-          <span className="font-semibold text-lg text-foreground bg-gradient-to-r from-primary to-primary-600 bg-clip-text text-transparent">
+          <span className="font-semibold text-lg text-primary">
             {currentTitle}
           </span>
-          <span className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded-full font-mono">
-            v1629
+          <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full font-mono border border-emerald-200">
+            v4851
           </span>
           {location !== "/" && location !== "/dashboard" && (
             <>

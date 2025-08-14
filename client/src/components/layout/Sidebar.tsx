@@ -36,21 +36,21 @@ export default function Sidebar() {
 
   return (
     <div className={cn(
-      "flex flex-col bg-sidebar border-r border-sidebar-border transition-all duration-300 shadow-2xl",
+      "flex flex-col bg-sidebar border-r border-sidebar-border transition-all duration-300 shadow-xl",
       sidebarCollapsed ? "w-16" : "w-64"
     )}>
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-sidebar-border/50">
+      <div className="flex items-center justify-between p-4 border-b border-sidebar-border/30">
         {!sidebarCollapsed && (
           <div className="flex items-center space-x-3">
-            <div className="w-9 h-9 bg-gradient-to-br from-primary to-primary-600 rounded-xl flex items-center justify-center shadow-lg">
-              <Home className="w-5 h-5 text-primary-foreground" />
+            <div className="w-9 h-9 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
+              <Home className="w-5 h-5 text-white" />
             </div>
             <div className="flex flex-col">
-              <span className="text-lg font-bold text-sidebar-foreground bg-gradient-to-r from-primary to-primary-600 bg-clip-text text-transparent">
+              <span className="text-lg font-bold text-sidebar-foreground">
                 Real Estate
               </span>
-              <span className="text-xs text-sidebar-foreground/70 -mt-1">
+              <span className="text-xs text-emerald-500 -mt-1 font-medium">
                 Financials
               </span>
             </div>
@@ -101,10 +101,10 @@ export default function Sidebar() {
               <TooltipTrigger asChild>
                 <Link href={item.href}>
                   <div className={cn(
-                    "flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-300 group cursor-pointer relative overflow-hidden",
+                    "flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-300 group cursor-pointer relative overflow-hidden",
                     isActive
-                      ? "bg-gradient-to-r from-primary/20 to-primary-600/20 text-primary border border-primary/30 shadow-lg"
-                      : "text-sidebar-foreground/80 hover:bg-sidebar-accent/30 hover:text-sidebar-foreground hover:scale-[1.02] hover:shadow-md",
+                      ? "bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/25"
+                      : "text-sidebar-foreground/80 hover:text-sidebar-foreground hover:bg-sidebar-accent/50",
                     sidebarCollapsed && "justify-center px-2"
                   )}>
                     {isActive && (

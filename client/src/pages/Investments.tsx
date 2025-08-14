@@ -247,7 +247,7 @@ export default function Investments() {
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
           {investments.map((investment) => (
-            <Card key={investment.id} className="group hover:shadow-lg transition-all duration-200">
+            <Card key={investment.id} className="group hover:shadow-xl transition-all duration-300 border-border/40 bg-white/80 backdrop-blur-sm hover:bg-white">
               <CardHeader className="pb-4">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
@@ -258,7 +258,7 @@ export default function Investments() {
                       <MapPin className="w-4 h-4 mr-1 flex-shrink-0" />
                       <span className="truncate">{investment.address}</span>
                     </div>
-                    <Badge variant="secondary" className="text-xs">
+                    <Badge variant="secondary" className="text-xs bg-emerald-100 text-emerald-700 border-emerald-200">
                       {investment.propertyType}
                     </Badge>
                   </div>
@@ -381,13 +381,13 @@ export default function Investments() {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <div className="text-xs text-muted-foreground mb-1">Outstanding Balance</div>
-                      <div className="font-medium text-orange-600">
+                      <div className="font-medium text-primary">
                         {formatCurrency(investment.outstandingBalance || 0)}
                       </div>
                     </div>
                     <div>
                       <div className="text-xs text-muted-foreground mb-1">Monthly Mortgage</div>
-                      <div className="font-medium text-destructive">
+                      <div className="font-medium text-primary-600">
                         {formatCurrency(investment.monthlyMortgage || 0)}
                       </div>
                     </div>
@@ -398,7 +398,7 @@ export default function Investments() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <div className="text-xs text-muted-foreground mb-1">Monthly Rent</div>
-                    <div className="font-medium text-success">
+                    <div className="font-medium text-emerald-600">
                       +{formatCurrency(investment.monthlyRent)}
                     </div>
                   </div>
@@ -416,7 +416,7 @@ export default function Investments() {
                     <span className="text-sm font-medium text-muted-foreground">Net Cash Flow</span>
                     <span className={`font-semibold ${
                       calculateCashFlow(investment.monthlyRent, investment.monthlyExpenses) >= 0 
-                        ? 'text-success' 
+                        ? 'text-emerald-600' 
                         : 'text-destructive'
                     }`}>
                       {formatCurrency(calculateCashFlow(investment.monthlyRent, investment.monthlyExpenses))}
@@ -424,7 +424,7 @@ export default function Investments() {
                   </div>
                   <div className="flex justify-between items-center mt-1">
                     <span className="text-sm font-medium text-muted-foreground">Net Equity</span>
-                    <span className="font-semibold text-blue-600">
+                    <span className="font-semibold text-emerald-600">
                       {formatCurrency(investment.netEquity || 0)}
                     </span>
                   </div>

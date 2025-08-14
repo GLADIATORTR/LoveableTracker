@@ -34,6 +34,15 @@ export default {
           700: "hsl(var(--primary-700))",
           900: "hsl(var(--primary-900))",
         },
+        emerald: {
+          DEFAULT: "hsl(var(--emerald))",
+          foreground: "hsl(var(--emerald-foreground))",
+          50: "hsl(var(--emerald-50))",
+          100: "hsl(var(--emerald-100))",
+          500: "hsl(var(--emerald-500))",
+          600: "hsl(var(--emerald-600))",
+          700: "hsl(var(--emerald-700))",
+        },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
           foreground: "hsl(var(--secondary-foreground))",
@@ -64,6 +73,8 @@ export default {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
           border: "hsl(var(--sidebar-border))",
+          primary: "hsl(var(--sidebar-primary))",
+          accent: "hsl(var(--sidebar-accent))",
         },
         surface: {
           50: "hsl(var(--surface-50))",
