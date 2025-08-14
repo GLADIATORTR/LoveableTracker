@@ -309,14 +309,25 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
     let cumulativeMortgagePayment = 0;
     
     if (year > 0) {
-      annualMortgage = monthlyMortgage * 12;
-      annualMortgagePV = annualMortgage * Math.pow(1 + inflationRate, -year);
+      // Check if loan is still active (outstandingBalance > 0)
+      const loanActive = outstandingBalance > 0;
       
-      // Calculate cumulative mortgage payments
+      if (loanActive) {
+        annualMortgage = monthlyMortgage * 12;
+        annualMortgagePV = annualMortgage * Math.pow(1 + inflationRate, -year);
+      }
+      
+      // Calculate cumulative mortgage payments - only add payments while loan was active
       for (let y = 1; y <= year; y++) {
-        const yearMortgagePV = monthlyMortgage * 12 * Math.pow(1 + inflationRate, -y);
-        cumulativeAnnualMortgagePV += yearMortgagePV;
-        cumulativeMortgagePayment += monthlyMortgage * 12;
+        // Get outstanding balance for year y to check if loan was still active
+        const yearOutstandingBalance = calculateOutstandingBalance(investment, y);
+        const yearLoanActive = yearOutstandingBalance > 0;
+        
+        if (yearLoanActive) {
+          const yearMortgagePV = monthlyMortgage * 12 * Math.pow(1 + inflationRate, -y);
+          cumulativeAnnualMortgagePV += yearMortgagePV;
+          cumulativeMortgagePayment += monthlyMortgage * 12;
+        }
       }
     }
     
