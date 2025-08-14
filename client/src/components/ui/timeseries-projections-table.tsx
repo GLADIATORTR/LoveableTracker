@@ -93,6 +93,39 @@ function calculateCumulativeNetYield(investment: any, year: number): number {
   return 42840 * Math.max(0, year);
 }
 
+// Tax Benefits Calculator - Total Tax Benefits = Annual Depreciation + Mortgage Interest Deduction + Property Tax Deduction + Maintenance Deductions
+function calculateTotalTaxBenefits(investment: any, year: number, globalSettings: any): number {
+  if (year === 0) return 0;
+  
+  const currentValue = investment.currentValue / 100;
+  const countrySettings = globalSettings.countrySettings[globalSettings.selectedCountry];
+  
+  // Annual Depreciation - Cost Basis ÷ Depreciation Period (27.5 years residential, 39 years commercial)
+  const depreciationPeriod = investment.propertyType === 'Single Family' ? 27.5 : 39;
+  const purchasePrice = investment.purchasePrice / 100;
+  const buildingValue = purchasePrice * 0.8; // Typically 80% of property value is the building (depreciable)
+  const annualDepreciation = buildingValue / depreciationPeriod;
+  
+  // Mortgage Interest Deduction - Annual Mortgage Interest Payments
+  const outstandingBalance = calculateOutstandingBalance(investment, year - 1);
+  const rawRate = investment.interestRate || 0;
+  const annualInterestRate = rawRate / 10000;
+  const mortgageInterestDeduction = outstandingBalance * annualInterestRate;
+  
+  // Property Tax Deduction - Annual Property Tax Payments
+  const propertyTaxRate = 0.015; // 1.5% typical property tax rate
+  const marketValue = calculateMarketValue(investment, year - 1, globalSettings, false);
+  const propertyTaxDeduction = marketValue * propertyTaxRate;
+  
+  // Maintenance Deductions - Annual Maintenance and Repair Expenses
+  const maintenanceRate = 0.01; // 1% of property value annually
+  const maintenanceDeductions = currentValue * maintenanceRate;
+  
+  const totalTaxBenefits = annualDepreciation + mortgageInterestDeduction + propertyTaxDeduction + maintenanceDeductions;
+  
+  return totalTaxBenefits;
+}
+
 // Outstanding Balance Calculator - Uses actual mortgage amortization
 function calculateOutstandingBalance(investment: any, year: number): number {
   const is12Hillcrest = investment.propertyName?.includes("12 Hillcrest") || investment.propertyName?.includes("Hillcrest");
@@ -374,7 +407,8 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
       annualMortgage,
       annualMortgagePV,
       cumulativeAnnualMortgagePV,
-      netGain: netEquity + cumulativeNetYield - (investment.netEquity || 0) / 100
+      netGain: netEquity + cumulativeNetYield - (investment.netEquity || 0) / 100,
+      totalTaxBenefits: calculateTotalTaxBenefits(investment, year, globalSettings)
     };
   });
 
@@ -512,6 +546,19 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
       y15: formatCurrency(yearlyData[15].sellingCosts),
       y25: formatCurrency(yearlyData[25].sellingCosts),
       y30: formatCurrency(yearlyData[30].sellingCosts),
+    },
+    {
+      metric: "Total Tax Benefits (Depreciation + Interest + Property Tax + Maintenance)",
+      y0: formatCurrency(yearlyData[0].totalTaxBenefits),
+      y1: formatCurrency(yearlyData[1].totalTaxBenefits),
+      y2: formatCurrency(yearlyData[2].totalTaxBenefits),
+      y3: formatCurrency(yearlyData[3].totalTaxBenefits),
+      y4: formatCurrency(yearlyData[4].totalTaxBenefits),
+      y5: formatCurrency(yearlyData[5].totalTaxBenefits),
+      y10: formatCurrency(yearlyData[10].totalTaxBenefits),
+      y15: formatCurrency(yearlyData[15].totalTaxBenefits),
+      y25: formatCurrency(yearlyData[25].totalTaxBenefits),
+      y30: formatCurrency(yearlyData[30].totalTaxBenefits),
     },
     {
       metric: "Net Equity (Nominal)",
