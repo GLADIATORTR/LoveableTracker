@@ -358,13 +358,13 @@ export default function Investments() {
                   </div>
                 </div>
 
-                {/* Current Term */}
-                {investment.currentTerm && investment.currentTerm > 0 && (
+                {/* Current Term - Always show if loan exists */}
+                {investment.loanAmount && investment.loanAmount > 0 && (
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <div className="text-xs text-muted-foreground mb-1">Current Term</div>
                       <div className="font-medium text-foreground">
-                        {investment.currentTerm} months
+                        {investment.currentTerm || 0} months
                       </div>
                     </div>
                     <div>
@@ -376,21 +376,23 @@ export default function Investments() {
                   </div>
                 )}
 
-                {/* Outstanding Balance & Monthly Mortgage */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <div className="text-xs text-muted-foreground mb-1">Outstanding Balance</div>
-                    <div className="font-medium text-orange-600">
-                      {formatCurrency(investment.outstandingBalance || 0)}
+                {/* Outstanding Balance & Monthly Mortgage - Always show for loan properties */}
+                {investment.loanAmount && investment.loanAmount > 0 && (
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <div className="text-xs text-muted-foreground mb-1">Outstanding Balance</div>
+                      <div className="font-medium text-orange-600">
+                        {formatCurrency(investment.outstandingBalance || 0)}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-muted-foreground mb-1">Monthly Mortgage</div>
+                      <div className="font-medium text-destructive">
+                        {formatCurrency(investment.monthlyMortgage || 0)}
+                      </div>
                     </div>
                   </div>
-                  <div>
-                    <div className="text-xs text-muted-foreground mb-1">Monthly Mortgage</div>
-                    <div className="font-medium text-destructive">
-                      {formatCurrency(investment.monthlyMortgage || 0)}
-                    </div>
-                  </div>
-                </div>
+                )}
 
                 {/* Cash Flow */}
                 <div className="grid grid-cols-2 gap-4">

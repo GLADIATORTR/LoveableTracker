@@ -42,7 +42,7 @@ function getGlobalSettings() {
     countrySettings: {
       USA: {
         realEstateAppreciationRate: 3.5,
-        inflationRate: 2.8,
+        inflationRate: 3.5,
         sellingCosts: 6.0,
         capitalGainsTax: 25.0,
         currentMortgageRate: 6.5,
@@ -242,6 +242,7 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
   if (investment.propertyName?.includes("Hillcrest")) {
     console.log(`🏠 12 Hillcrest detected: ${investment.propertyName}`);
     console.log(`Using GLOBAL appreciation rate: ${(propertyAppreciationRate * 100).toFixed(2)}% (from ${globalSettings.selectedCountry} settings)`);
+    console.log(`Using GLOBAL inflation rate: ${(countrySettings.inflationRate).toFixed(2)}% (from ${globalSettings.selectedCountry} settings)`);
     console.log(`Current value from DB: $${(investment.currentValue/100).toLocaleString()}`);
     console.log(`Y1 calculation: $${(investment.currentValue/100).toLocaleString()} × ${(1 + propertyAppreciationRate).toFixed(4)} = $${(investment.currentValue/100 * (1 + propertyAppreciationRate)).toLocaleString()}`);
   }
