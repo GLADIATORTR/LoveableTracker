@@ -68,21 +68,10 @@ function formatPercent(value: number): string {
 
 // Individual metric calculation functions for 12 Hillcrest
 function calculate12HillcrestMarketValue(year: number, propertyAppreciationRate: number, currentValue: number): number {
-  // Use the actual property appreciation rate and current value from database
+  // Use the global appreciation rate and current value from database
   const baseValue = currentValue; // Use actual current value as base
   
-  // For specific years, use exact reference values to match table perfectly
-  const exactValues: Record<number, number> = {
-    0: 1250000, 1: 1275000, 2: 1300500, 3: 1326510, 4: 1353040, 
-    5: 1380608, 10: 1523248, 15: 1682336, 25: 2050756, 30: 2264202
-  };
-  
-  // Return exact value if available, otherwise calculate
-  if (exactValues[year] !== undefined) {
-    return exactValues[year];
-  }
-  
-  // Calculate using compound growth formula with actual property rate
+  // Calculate using compound growth formula with GLOBAL appreciation rate (not hardcoded values)
   return Math.round(baseValue * Math.pow(1 + propertyAppreciationRate, year));
 }
 
