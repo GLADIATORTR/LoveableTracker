@@ -93,7 +93,7 @@ export function InvestmentForm({ onSuccess, existingInvestment, onClose }: Inves
       monthlyExpenses: existingInvestment.monthlyExpenses / 100,
       netEquity: existingInvestment.netEquity / 100,
       loanAmount: existingInvestment.loanAmount ? existingInvestment.loanAmount / 100 : 0,
-      interestRate: existingInvestment.interestRate ? existingInvestment.interestRate / 100 : 0,
+      interestRate: existingInvestment.interestRate ? existingInvestment.interestRate / 10000 : 0,
       loanTerm: existingInvestment.loanTerm || 0,
       monthlyMortgage: existingInvestment.monthlyMortgage ? existingInvestment.monthlyMortgage / 100 : 0,
       outstandingBalance: existingInvestment.outstandingBalance ? existingInvestment.outstandingBalance / 100 : 0,
@@ -138,6 +138,12 @@ export function InvestmentForm({ onSuccess, existingInvestment, onClose }: Inves
         monthlyRent: existingInvestment.monthlyRent / 100,
         monthlyExpenses: existingInvestment.monthlyExpenses / 100,
         netEquity: existingInvestment.netEquity / 100,
+        loanAmount: existingInvestment.loanAmount ? existingInvestment.loanAmount / 100 : 0,
+        interestRate: existingInvestment.interestRate ? existingInvestment.interestRate / 10000 : 0,
+        loanTerm: existingInvestment.loanTerm || 0,
+        monthlyMortgage: existingInvestment.monthlyMortgage ? existingInvestment.monthlyMortgage / 100 : 0,
+        outstandingBalance: existingInvestment.outstandingBalance ? existingInvestment.outstandingBalance / 100 : 0,
+        currentTerm: existingInvestment.currentTerm || 0,
         description: existingInvestment.notes || "",
         categoryId: existingInvestment.category?.id || "",
       });
@@ -153,6 +159,12 @@ export function InvestmentForm({ onSuccess, existingInvestment, onClose }: Inves
         monthlyRent: Math.round(data.monthlyRent * 100),
         monthlyExpenses: Math.round(data.monthlyExpenses * 100),
         netEquity: Math.round(data.netEquity * 100),
+        loanAmount: data.loanAmount ? Math.round(data.loanAmount * 100) : 0,
+        interestRate: data.interestRate ? Math.round(data.interestRate * 10000) : 0, // Store as basis points
+        loanTerm: data.loanTerm || 0,
+        monthlyMortgage: data.monthlyMortgage ? Math.round(data.monthlyMortgage * 100) : 0,
+        outstandingBalance: data.outstandingBalance ? Math.round(data.outstandingBalance * 100) : 0,
+        currentTerm: data.currentTerm || 0,
         purchaseDate: new Date(data.purchaseDate),
       };
 
