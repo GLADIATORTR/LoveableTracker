@@ -352,8 +352,8 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
     // Display net equity based on inflation adjustment toggle
     const netEquity = inflationAdjusted ? netEquityToday : nominalNetEquity;
     
-    // Annual Net Yield - keep constant (no growth) as per user request
-    const annualNetYield = (currentMonthlyRent - currentMonthlyExpenses) * 12; // Excluding mortgage payment - constant value
+    // Annual Net Yield - keep constant at $42,840 (already in today's dollars, no inflation adjustment)
+    const annualNetYield = 42840; // Fixed value, already inflation-adjusted
     
     // Calculate cumulative values properly
     let cumulativeNetYield = 0;
@@ -375,8 +375,8 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
         const yearExpenses = currentMonthlyExpenses * Math.pow(1 + expenseGrowthRate, y);
         const yearMortgagePV = monthlyMortgage * 12 * Math.pow(1 + inflationRate, -y); // Present value of mortgage payment for year y
         
-        // Net yield excluding mortgage - use constant base values (no growth) as per user request
-        const yearNetYield = (currentMonthlyRent - currentMonthlyExpenses) * 12;
+        // Net yield excluding mortgage - use constant $42,840 (already in today's dollars)
+        const yearNetYield = 42840; // Fixed value, already inflation-adjusted
         cumulativeNetYield += yearNetYield;
         
         // Cumulative mortgage payments in present value
@@ -403,7 +403,7 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
       cumulativePrincipalPayment,
       netEquityNominal: nominalNetEquity, // Always nominal for comparison
       netEquityToday: netEquityToday, // Always present value using country inflation rate
-      annualNetYield: annualNetYield * inflationAdjustment,
+      annualNetYield: annualNetYield, // No inflation adjustment - already in today's dollars
       cumulativeNetYield,
       cumulativeMortgagePayment,
       annualMortgage,
