@@ -92,34 +92,35 @@ function calculateCumulativeNetYield(investment: any, year: number): number {
   return 42840 * Math.max(0, year);
 }
 
-// Outstanding Balance Calculator
+// Outstanding Balance Calculator - Uses actual mortgage amortization
 function calculateOutstandingBalance(investment: any, year: number): number {
   const is12Hillcrest = investment.propertyName?.includes("12 Hillcrest") || investment.propertyName?.includes("Hillcrest");
   
   if (is12Hillcrest) {
-    return calculate12HillcrestOutstandingBalance(year);
+    return calculate12HillcrestOutstandingBalance(investment, year);
   }
   
-  // Standard calculation for other properties
+  // Standard calculation for all properties using database values
   const currentBalance = (investment.outstandingBalance || 0) / 100;
   const monthlyMortgage = (investment.monthlyMortgage || 0) / 100;
   const rawRate = investment.interestRate || 0;
   const monthlyInterestRate = (rawRate / 10000) / 12;
-  const currentTerm = investment.currentTerm || 0;
-  const originalTerm = investment.loanTerm || 360;
   
   if (year === 0 || monthlyMortgage === 0) return currentBalance;
   
-  const totalPaymentsFromStart = 12 * year;
-  const remainingPaymentsAtStart = originalTerm - currentTerm;
-  
-  if (totalPaymentsFromStart > remainingPaymentsAtStart) return 0;
-  
+  // Calculate outstanding balance using proper mortgage amortization
   let remainingBalance = currentBalance;
-  for (let payment = 1; payment <= totalPaymentsFromStart; payment++) {
+  const totalPayments = 12 * year;
+  
+  for (let payment = 1; payment <= totalPayments; payment++) {
     const interestPayment = remainingBalance * monthlyInterestRate;
     const principalPayment = monthlyMortgage - interestPayment;
     remainingBalance -= principalPayment;
+    
+    // If balance becomes negative or zero, loan is paid off
+    if (remainingBalance <= 0) {
+      return 0;
+    }
   }
   
   return Math.max(0, remainingBalance);
@@ -159,124 +160,59 @@ function calculate12HillcrestCurrentTerm(year: number): number {
   return baseTerm + (year * 12);
 }
 
-function calculate12HillcrestOutstandingBalance(year: number): number {
-  // Outstanding Balance follows mortgage amortization
-  // Exact values from reference table
-  const exactValues: Record<number, number> = {
-    0: 538073, 1: 526158, 2: 513773, 3: 500923, 4: 487603, 5: 473814, 
-    10: 396149, 15: 302391, 25: 0, 30: 0
-  };
+function calculate12HillcrestOutstandingBalance(investment: any, year: number): number {
+  // Calculate using actual mortgage amortization with database values
+  const currentBalance = (investment.outstandingBalance || 0) / 100; // $338,073 from database
+  const monthlyMortgage = (investment.monthlyMortgage || 0) / 100; // $2,030 from database
+  const rawRate = investment.interestRate || 0; // 375 basis points (3.75%)
+  const monthlyInterestRate = (rawRate / 10000) / 12; // 0.003125 monthly rate
   
-  // Return exact value if available
-  if (exactValues[year] !== undefined) {
-    return exactValues[year];
+  if (year === 0 || monthlyMortgage === 0) {
+    return currentBalance;
   }
   
-  // For intermediate years not in the table, interpolate or calculate
-  // This is a complex mortgage amortization that would need the original loan terms
-  // For now, return 0 for years beyond 25 (loan paid off)
-  if (year >= 25) {
-    return 0;
-  }
+  // Calculate outstanding balance using proper mortgage amortization
+  let remainingBalance = currentBalance;
+  const totalPayments = 12 * year; // Total payments over the years
   
-  // For intermediate years, we'd need more detailed mortgage calculation
-  // Using linear interpolation as fallback for missing years
-  const knownYears = Object.keys(exactValues).map(Number).sort((a, b) => a - b);
-  
-  // Find bracketing years
-  let lowerYear = 0;
-  let upperYear = 30;
-  
-  for (let i = 0; i < knownYears.length - 1; i++) {
-    if (year > knownYears[i] && year < knownYears[i + 1]) {
-      lowerYear = knownYears[i];
-      upperYear = knownYears[i + 1];
-      break;
+  for (let payment = 1; payment <= totalPayments; payment++) {
+    const interestPayment = remainingBalance * monthlyInterestRate;
+    const principalPayment = monthlyMortgage - interestPayment;
+    remainingBalance -= principalPayment;
+    
+    // If balance becomes negative or zero, loan is paid off
+    if (remainingBalance <= 0) {
+      return 0;
     }
   }
   
-  if (lowerYear === upperYear) return exactValues[lowerYear];
-  
-  // Linear interpolation
-  const lowerValue = exactValues[lowerYear];
-  const upperValue = exactValues[upperYear];
-  const ratio = (year - lowerYear) / (upperYear - lowerYear);
-  
-  return Math.round(lowerValue + (upperValue - lowerValue) * ratio);
+  return Math.max(0, remainingBalance);
 }
 
-function calculate12HillcrestCapitalGainsTax(year: number): number {
-  // Capital Gains Tax calculation - exact values from reference table
-  const exactValues: Record<number, number> = {
-    0: 143750, 1: 154688, 2: 166088, 3: 177724, 4: 189851, 5: 202402, 
-    10: 272062, 15: 354747, 25: 569784, 30: 708373
-  };
+// Capital Gains Tax Calculator - Uses global settings and market value
+function calculateCapitalGainsTax(investment: any, year: number, globalSettings: any): number {
+  const countrySettings = globalSettings.countrySettings[globalSettings.selectedCountry];
+  const capitalGainsTaxRate = countrySettings.capitalGainsTax / 100; // 25% for USA
   
-  // Return exact value if available
-  if (exactValues[year] !== undefined) {
-    return exactValues[year];
-  }
+  // Calculate market value for the year
+  const marketValue = calculateMarketValue(investment, year, globalSettings, false); // Nominal value
+  const purchasePrice = investment.purchasePrice / 100;
   
-  // For intermediate years, use interpolation
-  const knownYears = Object.keys(exactValues).map(Number).sort((a, b) => a - b);
-  
-  // Find bracketing years
-  let lowerYear = 0;
-  let upperYear = 30;
-  
-  for (let i = 0; i < knownYears.length - 1; i++) {
-    if (year > knownYears[i] && year < knownYears[i + 1]) {
-      lowerYear = knownYears[i];
-      upperYear = knownYears[i + 1];
-      break;
-    }
-  }
-  
-  if (lowerYear === upperYear) return exactValues[lowerYear];
-  
-  // Linear interpolation
-  const lowerValue = exactValues[lowerYear];
-  const upperValue = exactValues[upperYear];
-  const ratio = (year - lowerYear) / (upperYear - lowerYear);
-  
-  return Math.round(lowerValue + (upperValue - lowerValue) * ratio);
+  // Capital gains = (Market Value - Purchase Price) × Tax Rate
+  const capitalGains = Math.max(0, marketValue - purchasePrice);
+  return capitalGains * capitalGainsTaxRate;
 }
 
-function calculate12HillcrestSellingCosts(year: number): number {
-  // Selling Costs calculation - exact values from reference table
-  const exactValues: Record<number, number> = {
-    0: 75000, 1: 77625, 2: 88142, 3: 83154, 4: 86964, 5: 89076, 
-    10: 105795, 15: 125651, 25: 172243, 30: 210510
-  };
+// Selling Costs Calculator - Uses global settings and market value  
+function calculateSellingCosts(investment: any, year: number, globalSettings: any): number {
+  const countrySettings = globalSettings.countrySettings[globalSettings.selectedCountry];
+  const sellingCostsRate = countrySettings.sellingCosts / 100; // 6% for USA
   
-  // Return exact value if available
-  if (exactValues[year] !== undefined) {
-    return exactValues[year];
-  }
+  // Calculate market value for the year
+  const marketValue = calculateMarketValue(investment, year, globalSettings, false); // Nominal value
   
-  // For intermediate years, use interpolation
-  const knownYears = Object.keys(exactValues).map(Number).sort((a, b) => a - b);
-  
-  // Find bracketing years
-  let lowerYear = 0;
-  let upperYear = 30;
-  
-  for (let i = 0; i < knownYears.length - 1; i++) {
-    if (year > knownYears[i] && year < knownYears[i + 1]) {
-      lowerYear = knownYears[i];
-      upperYear = knownYears[i + 1];
-      break;
-    }
-  }
-  
-  if (lowerYear === upperYear) return exactValues[lowerYear];
-  
-  // Linear interpolation
-  const lowerValue = exactValues[lowerYear];
-  const upperValue = exactValues[upperYear];
-  const ratio = (year - lowerYear) / (upperYear - lowerYear);
-  
-  return Math.round(lowerValue + (upperValue - lowerValue) * ratio);
+  // Selling costs = Market Value × Selling Costs Rate
+  return marketValue * sellingCostsRate;
 }
 
 function calculateProjections(investment: RealEstateInvestmentWithCategory, inflationAdjusted: boolean): ProjectionRow[] {
@@ -347,13 +283,8 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
       ? calculate12HillcrestMarketValue(year, propertyAppreciationRate, currentMarketValue)
       : currentMarketValue * Math.pow(1 + propertyAppreciationRate, year);
     
-    const capitalGainsTax = is12Hillcrest 
-      ? calculate12HillcrestCapitalGainsTax(year)
-      : (nominalMarketValue - purchasePrice) * (countrySettings.capitalGainsTax / 100);
-    
-    const sellingCosts = is12Hillcrest 
-      ? calculate12HillcrestSellingCosts(year)
-      : nominalMarketValue * (countrySettings.sellingCosts / 100);
+    const capitalGainsTax = calculateCapitalGainsTax(investment, year, globalSettings);
+    const sellingCosts = calculateSellingCosts(investment, year, globalSettings);
     
     // Net Equity = Market Value - Outstanding Balance - Capital Gains Tax - Selling Costs
     const nominalNetEquity = nominalMarketValue - outstandingBalance - capitalGainsTax - sellingCosts;
