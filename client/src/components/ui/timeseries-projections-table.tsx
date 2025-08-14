@@ -297,6 +297,11 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
     const annualNetYield = calculateAnnualNetYield(investment, year);
     const cumulativeNetYield = calculateCumulativeNetYield(investment, year);
     
+    // Debug logging to verify fixed values
+    if (investment.propertyName?.includes("Hillcrest") && year <= 2) {
+      console.log(`🔍 Debug Y${year} Annual Net Yield: calculateAnnualNetYield() returned ${annualNetYield}`);
+    }
+    
     // Calculate mortgage-related values
     let annualMortgage = 0;
     let annualMortgagePV = 0;
