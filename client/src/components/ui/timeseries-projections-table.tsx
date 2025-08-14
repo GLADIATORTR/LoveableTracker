@@ -510,10 +510,10 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
       y3: formatCurrency(yearlyData[3].annualMortgage || 0),
       y4: formatCurrency(yearlyData[4].annualMortgage || 0),
       y5: formatCurrency(yearlyData[5].annualMortgage || 0),
-      y10: formatCurrency(yearlyData[10].annualMortgage || 0),
-      y15: formatCurrency(yearlyData[15].annualMortgage || 0),
-      y25: formatCurrency(yearlyData[25].annualMortgage || 0),
-      y30: formatCurrency(yearlyData[30].annualMortgage || 0),
+      y10: formatCurrency((yearlyData[10].annualMortgage || 0) * 5), // 5 years between Y5 and Y10
+      y15: formatCurrency((yearlyData[15].annualMortgage || 0) * 5), // 5 years between Y10 and Y15
+      y25: formatCurrency(0), // Loan is paid off
+      y30: formatCurrency(0), // Loan is paid off
     },
     {
       metric: "Annual_Mortgage (PV)",
@@ -523,10 +523,10 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
       y3: formatCurrency(yearlyData[3].annualMortgagePV || 0),
       y4: formatCurrency(yearlyData[4].annualMortgagePV || 0),
       y5: formatCurrency(yearlyData[5].annualMortgagePV || 0),
-      y10: formatCurrency(yearlyData[10].annualMortgagePV || 0),
-      y15: formatCurrency(yearlyData[15].annualMortgagePV || 0),
-      y25: formatCurrency(yearlyData[25].annualMortgagePV || 0),
-      y30: formatCurrency(yearlyData[30].annualMortgagePV || 0),
+      y10: formatCurrency((yearlyData[10].annualMortgagePV || 0) * 5), // 5 years between Y5 and Y10
+      y15: formatCurrency((yearlyData[15].annualMortgagePV || 0) * 5), // 5 years between Y10 and Y15
+      y25: formatCurrency(0), // Loan is paid off
+      y30: formatCurrency(0), // Loan is paid off
     },
     {
       metric: "Cumulative_Annual_Mortgage_PV",
