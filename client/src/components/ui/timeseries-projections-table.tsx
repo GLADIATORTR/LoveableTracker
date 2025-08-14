@@ -1,7 +1,8 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Copy, Check } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Copy, Check, Info } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import type { RealEstateInvestmentWithCategory } from "@shared/schema";
@@ -124,6 +125,59 @@ function calculateTotalTaxBenefits(investment: any, year: number, globalSettings
   const totalTaxBenefits = annualDepreciation + mortgageInterestDeduction + propertyTaxDeduction + maintenanceDeductions;
   
   return totalTaxBenefits;
+}
+
+// Tax Benefits Breakdown Calculator - Returns detailed breakdown for tooltip
+function calculateTaxBenefitsBreakdown(investment: any, year: number, globalSettings: any): { 
+  annualDepreciation: number;
+  mortgageInterestDeduction: number;
+  propertyTaxDeduction: number;
+  maintenanceDeductions: number;
+  total: number;
+} {
+  if (year === 0) {
+    return {
+      annualDepreciation: 0,
+      mortgageInterestDeduction: 0,
+      propertyTaxDeduction: 0,
+      maintenanceDeductions: 0,
+      total: 0
+    };
+  }
+  
+  const currentValue = investment.currentValue / 100;
+  const countrySettings = globalSettings.countrySettings[globalSettings.selectedCountry];
+  
+  // Annual Depreciation - Cost Basis ÷ Depreciation Period (27.5 years residential, 39 years commercial)
+  const depreciationPeriod = investment.propertyType === 'Single Family' ? 27.5 : 39;
+  const purchasePrice = investment.purchasePrice / 100;
+  const buildingValue = purchasePrice * 0.8; // Typically 80% of property value is the building (depreciable)
+  const annualDepreciation = buildingValue / depreciationPeriod;
+  
+  // Mortgage Interest Deduction - Annual Mortgage Interest Payments
+  const outstandingBalance = calculateOutstandingBalance(investment, year - 1);
+  const rawRate = investment.interestRate || 0;
+  const annualInterestRate = rawRate / 10000;
+  const mortgageInterestDeduction = outstandingBalance * annualInterestRate;
+  
+  // Property Tax Deduction - Annual Property Tax Payments
+  const propertyTaxRate = 0.015; // 1.5% typical property tax rate
+  const marketValue = calculateMarketValue(investment, year - 1, globalSettings, false);
+  const propertyTaxDeduction = marketValue * propertyTaxRate;
+  
+  // Maintenance Deductions - Annual Maintenance and Repair Expenses
+  const maintenanceRate = 0.01; // 1% of property value annually
+  const maintenanceDeductions = currentValue * maintenanceRate;
+  
+  const total = annualDepreciation + mortgageInterestDeduction + propertyTaxDeduction + maintenanceDeductions;
+  
+  return {
+    annualDepreciation,
+    mortgageInterestDeduction,
+    propertyTaxDeduction,
+    maintenanceDeductions,
+    total
+  };
 }
 
 // Outstanding Balance Calculator - Uses actual mortgage amortization
@@ -672,6 +726,54 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
   return rows;
 }
 
+// TaxBenefitsTooltip component for showing breakdown
+function TaxBenefitsTooltip({ investment, year, children }: { investment: any; year: number; children: React.ReactNode }) {
+  const globalSettings = getGlobalSettings();
+  const breakdown = calculateTaxBenefitsBreakdown(investment, year, globalSettings);
+  
+  if (breakdown.total === 0) {
+    return <>{children}</>;
+  }
+  
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <div className="cursor-help flex items-center gap-1">
+          {children}
+          <Info className="w-3 h-3 opacity-50" />
+        </div>
+      </TooltipTrigger>
+      <TooltipContent side="top" className="max-w-xs">
+        <div className="text-sm space-y-1">
+          <div className="font-semibold">Tax Benefits Breakdown (Year {year}):</div>
+          <div className="space-y-0.5 text-xs">
+            <div className="flex justify-between">
+              <span>Annual Depreciation:</span>
+              <span className="font-mono">{formatCurrency(breakdown.annualDepreciation)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Mortgage Interest:</span>
+              <span className="font-mono">{formatCurrency(breakdown.mortgageInterestDeduction)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Property Tax:</span>
+              <span className="font-mono">{formatCurrency(breakdown.propertyTaxDeduction)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Maintenance:</span>
+              <span className="font-mono">{formatCurrency(breakdown.maintenanceDeductions)}</span>
+            </div>
+            <div className="border-t pt-0.5 flex justify-between font-semibold">
+              <span>Total:</span>
+              <span className="font-mono">{formatCurrency(breakdown.total)}</span>
+            </div>
+          </div>
+        </div>
+      </TooltipContent>
+    </Tooltip>
+  );
+}
+
 export function TimeSeriesProjectionsTable({ investment, inflationAdjusted = false }: TimeSeriesProjectionsTableProps) {
   const projectionRows = calculateProjections(investment, inflationAdjusted);
   const [copied, setCopied] = useState(false);
@@ -720,34 +822,35 @@ export function TimeSeriesProjectionsTable({ investment, inflationAdjusted = fal
   };
 
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <span>{investment.propertyName}</span>
-            <span className="text-sm font-normal text-muted-foreground">
-              {investment.address}
-            </span>
-            {inflationAdjusted && (
-              <span className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded-full">
-                Inflation Adjusted
+    <TooltipProvider>
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <span>{investment.propertyName}</span>
+              <span className="text-sm font-normal text-muted-foreground">
+                {investment.address}
               </span>
-            )}
-          </div>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={copyDataToClipboard}
-            className="flex items-center gap-2"
-          >
-            {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-            {copied ? "Copied!" : "Copy Data"}
-          </Button>
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="overflow-x-auto">
-          <Table>
+              {inflationAdjusted && (
+                <span className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded-full">
+                  Inflation Adjusted
+                </span>
+              )}
+            </div>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={copyDataToClipboard}
+              className="flex items-center gap-2"
+            >
+              {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+              {copied ? "Copied!" : "Copy Data"}
+            </Button>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <Table>
             <TableHeader>
               <TableRow>
                 <TableHead className="w-80 font-semibold">Property / Metric v9314</TableHead>
@@ -777,6 +880,9 @@ export function TimeSeriesProjectionsTable({ investment, inflationAdjusted = fal
                   ? "font-medium py-2 px-3 text-sm text-muted-foreground" 
                   : "font-medium py-2 px-3";
                 
+                // Check if this is the Tax Benefits row to add tooltips
+                const isTaxBenefitsRow = row.metric.includes("Total Tax Benefits");
+                
                 return (
                   <TableRow key={index} className={rowClass}>
                     <TableCell className={cellClass} colSpan={isPropertyHeader ? 11 : 1}>
@@ -784,16 +890,76 @@ export function TimeSeriesProjectionsTable({ investment, inflationAdjusted = fal
                     </TableCell>
                     {!isPropertyHeader && (
                       <>
-                        <TableCell className="text-center py-2 px-3 font-mono">{row.y0}</TableCell>
-                        <TableCell className="text-center py-2 px-3 font-mono">{row.y1}</TableCell>
-                        <TableCell className="text-center py-2 px-3 font-mono">{row.y2}</TableCell>
-                        <TableCell className="text-center py-2 px-3 font-mono">{row.y3}</TableCell>
-                        <TableCell className="text-center py-2 px-3 font-mono">{row.y4}</TableCell>
-                        <TableCell className="text-center py-2 px-3 font-mono">{row.y5}</TableCell>
-                        <TableCell className="text-center py-2 px-3 font-mono">{row.y10}</TableCell>
-                        <TableCell className="text-center py-2 px-3 font-mono">{row.y15}</TableCell>
-                        <TableCell className="text-center py-2 px-3 font-mono">{row.y25}</TableCell>
-                        <TableCell className="text-center py-2 px-3 font-mono">{row.y30}</TableCell>
+                        <TableCell className="text-center py-2 px-3 font-mono">
+                          {isTaxBenefitsRow ? (
+                            <TaxBenefitsTooltip investment={investment} year={0}>
+                              {row.y0}
+                            </TaxBenefitsTooltip>
+                          ) : row.y0}
+                        </TableCell>
+                        <TableCell className="text-center py-2 px-3 font-mono">
+                          {isTaxBenefitsRow ? (
+                            <TaxBenefitsTooltip investment={investment} year={1}>
+                              {row.y1}
+                            </TaxBenefitsTooltip>
+                          ) : row.y1}
+                        </TableCell>
+                        <TableCell className="text-center py-2 px-3 font-mono">
+                          {isTaxBenefitsRow ? (
+                            <TaxBenefitsTooltip investment={investment} year={2}>
+                              {row.y2}
+                            </TaxBenefitsTooltip>
+                          ) : row.y2}
+                        </TableCell>
+                        <TableCell className="text-center py-2 px-3 font-mono">
+                          {isTaxBenefitsRow ? (
+                            <TaxBenefitsTooltip investment={investment} year={3}>
+                              {row.y3}
+                            </TaxBenefitsTooltip>
+                          ) : row.y3}
+                        </TableCell>
+                        <TableCell className="text-center py-2 px-3 font-mono">
+                          {isTaxBenefitsRow ? (
+                            <TaxBenefitsTooltip investment={investment} year={4}>
+                              {row.y4}
+                            </TaxBenefitsTooltip>
+                          ) : row.y4}
+                        </TableCell>
+                        <TableCell className="text-center py-2 px-3 font-mono">
+                          {isTaxBenefitsRow ? (
+                            <TaxBenefitsTooltip investment={investment} year={5}>
+                              {row.y5}
+                            </TaxBenefitsTooltip>
+                          ) : row.y5}
+                        </TableCell>
+                        <TableCell className="text-center py-2 px-3 font-mono">
+                          {isTaxBenefitsRow ? (
+                            <TaxBenefitsTooltip investment={investment} year={10}>
+                              {row.y10}
+                            </TaxBenefitsTooltip>
+                          ) : row.y10}
+                        </TableCell>
+                        <TableCell className="text-center py-2 px-3 font-mono">
+                          {isTaxBenefitsRow ? (
+                            <TaxBenefitsTooltip investment={investment} year={15}>
+                              {row.y15}
+                            </TaxBenefitsTooltip>
+                          ) : row.y15}
+                        </TableCell>
+                        <TableCell className="text-center py-2 px-3 font-mono">
+                          {isTaxBenefitsRow ? (
+                            <TaxBenefitsTooltip investment={investment} year={25}>
+                              {row.y25}
+                            </TaxBenefitsTooltip>
+                          ) : row.y25}
+                        </TableCell>
+                        <TableCell className="text-center py-2 px-3 font-mono">
+                          {isTaxBenefitsRow ? (
+                            <TaxBenefitsTooltip investment={investment} year={30}>
+                              {row.y30}
+                            </TaxBenefitsTooltip>
+                          ) : row.y30}
+                        </TableCell>
                       </>
                     )}
                   </TableRow>
@@ -804,5 +970,6 @@ export function TimeSeriesProjectionsTable({ investment, inflationAdjusted = fal
         </div>
       </CardContent>
     </Card>
+    </TooltipProvider>
   );
 }
