@@ -98,7 +98,12 @@ function calculateOutstandingBalance(investment: any, year: number): number {
   const is12Hillcrest = investment.propertyName?.includes("12 Hillcrest") || investment.propertyName?.includes("Hillcrest");
   
   if (is12Hillcrest) {
-    return calculate12HillcrestOutstandingBalance(investment, year);
+    const balance = calculate12HillcrestOutstandingBalance(investment, year);
+    // Debug logging for 12 Hillcrest balance tracking
+    if (year <= 16) {
+      console.log(`📊 12 Hillcrest Y${year} Outstanding Balance: $${balance.toFixed(0)}`);
+    }
+    return balance;
   }
   
   // Standard calculation for all properties using database values
@@ -332,7 +337,8 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
         
         // Debug logging for 12 Hillcrest cumulative calculation
         if (investment.propertyName?.includes("Hillcrest") && y <= 16) {
-          console.log(`🔍 Y${y}: Balance at start=${startOfYearBalance.toFixed(0)}, Active=${yearLoanActive}, CumPV=${cumulativeAnnualMortgagePV.toFixed(0)}`);
+          const yearPV = yearLoanActive ? (monthlyMortgage * 12 * Math.pow(1 + inflationRate, -y)) : 0;
+          console.log(`🔍 Y${y}: StartBalance=$${startOfYearBalance.toFixed(0)}, Active=${yearLoanActive}, YearPV=$${yearPV.toFixed(0)}, CumPV=$${cumulativeAnnualMortgagePV.toFixed(0)}`);
         }
       }
     }
