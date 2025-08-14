@@ -231,21 +231,19 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
   const globalSettings = getGlobalSettings();
   const countrySettings = globalSettings.countrySettings[globalSettings.selectedCountry];
   
+  // Always use global country settings for appreciation rate (no property-specific rates)
+  const propertyAppreciationRate = countrySettings.realEstateAppreciationRate / 100;
+  
   // Check if this is 12 Hillcrest property
   const is12Hillcrest = investment.propertyName?.includes("12 Hillcrest") || investment.propertyName?.includes("Hillcrest");
   
   // Debug logging for 12 Hillcrest detection
   if (investment.propertyName?.includes("Hillcrest")) {
     console.log(`🏠 12 Hillcrest detected: ${investment.propertyName}`);
-    console.log(`Database appreciationRate: ${investment.appreciationRate} basis points = ${(investment.appreciationRate/100).toFixed(2)}%`);
-    console.log(`Database avgAppreciationRate: ${investment.avgAppreciationRate} basis points = ${(investment.avgAppreciationRate/100).toFixed(2)}%`);
-    console.log(`Using property appreciation rate: ${(propertyAppreciationRate * 100).toFixed(2)}%`);
+    console.log(`Using GLOBAL appreciation rate: ${(propertyAppreciationRate * 100).toFixed(2)}% (from ${globalSettings.selectedCountry} settings)`);
     console.log(`Current value from DB: $${(investment.currentValue/100).toLocaleString()}`);
-    console.log(`Y1 calculation: $${(investment.currentValue/100).toLocaleString()} × 1.${(propertyAppreciationRate * 100).toFixed(2)} = $${(investment.currentValue/100 * (1 + propertyAppreciationRate)).toLocaleString()}`);
+    console.log(`Y1 calculation: $${(investment.currentValue/100).toLocaleString()} × ${(1 + propertyAppreciationRate).toFixed(4)} = $${(investment.currentValue/100 * (1 + propertyAppreciationRate)).toLocaleString()}`);
   }
-  
-  // Use property-specific appreciation rate if available, otherwise use country default
-  const propertyAppreciationRate = investment.appreciationRate ? (investment.appreciationRate / 10000) : (countrySettings.realEstateAppreciationRate / 100);
   const inflationRate = countrySettings.inflationRate / 100;
   const rentGrowthRate = propertyAppreciationRate * 0.7; // Rent growth is typically 70% of appreciation
   const expenseGrowthRate = 0.02; // 2% annual expense growth
@@ -336,7 +334,7 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
     
     // Net equity calculations - use specific functions for 12 Hillcrest
     const nominalMarketValue = is12Hillcrest 
-      ? calculate12HillcrestMarketValue(year)
+      ? calculate12HillcrestMarketValue(year, propertyAppreciationRate, currentMarketValue)
       : currentMarketValue * Math.pow(1 + propertyAppreciationRate, year);
     
     const capitalGainsTax = is12Hillcrest 
