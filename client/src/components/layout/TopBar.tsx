@@ -64,7 +64,7 @@ export default function TopBar() {
             {currentTitle}
           </span>
           <span className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded-full font-mono">
-            v7492
+            v8134
           </span>
           {location !== "/" && location !== "/dashboard" && (
             <>

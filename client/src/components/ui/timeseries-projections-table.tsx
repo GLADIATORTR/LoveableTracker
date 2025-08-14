@@ -281,7 +281,12 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
         ? calculate12HillcrestOutstandingBalance(year)
         : currentOutstandingBalance;
       cumulativePrincipalPayment = 0;
-    } else if (monthlyMortgage > 0 && monthlyInterestRate > 0 && !is12Hillcrest) {
+    } else if (is12Hillcrest) {
+      // For 12 Hillcrest, calculate cumulative principal payment
+      const initialBalance = calculate12HillcrestOutstandingBalance(0); // Y0 balance
+      const currentBalance = calculate12HillcrestOutstandingBalance(year); // Current year balance
+      cumulativePrincipalPayment = initialBalance - currentBalance; // Principal paid down = difference
+    } else if (monthlyMortgage > 0 && monthlyInterestRate > 0) {
       const totalPaymentsFromStart = 12 * year; // Total payments from Y0 to current year
       const remainingPaymentsAtStart = originalTerm - currentTerm; // Remaining payments at Y0
       
