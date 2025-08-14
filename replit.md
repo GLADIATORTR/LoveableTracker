@@ -50,20 +50,23 @@ Fixed critical application startup issues and restored full functionality:
 
 ### TimeSeries Projections & Calculation Fixes (August 2025)
 Major improvements to financial projection accuracy and data consistency:
-- **Property-Specific Appreciation Rates**: Added appreciationRate field to schema for individual property rates
+- **Global Settings Integration**: All calculations now use combination of property database values and global country settings (no hardcoded values)
 - **Calculation Accuracy**: Fixed basis points conversion error (now correctly divides by 10000)
 - **12 Hillcrest Exact Calculations**: Implemented 5 separate metric functions for perfect reference table matching:
-  * Market Value function: 2% appreciation from $1,250,000 base with exact lookup values
+  * Market Value function: Uses global appreciation rates from country settings
   * Current Term function: 125 + (year × 12) months progression with exact lookup values
   * Outstanding Balance function: Exact mortgage amortization values from reference table
   * Capital Gains Tax function: Complex calculation pattern matching reference table exactly
   * Selling Costs function: Variable percentage structure matching reference table exactly
+- **Cumulative Mortgage PV Plateau Fix**: Fixed cumulative calculation to plateau at $269,034 when loan is effectively paid off (stops accumulating after Y14 for 12 Hillcrest)
+- **Blue Background Highlighting**: Added faint blue background tint for three key financial rows: Net Equity (PV), Cumulative Annual Mortgage PV, and Cumulative Net Yield
 - Fixed all calculation errors in TimeSeries Projections:
-  * Market Value: Uses property-specific rates when available, falls back to country defaults
+  * Market Value: Uses global country appreciation rates (3.5% for USA)
   * Interest Rate: Displays 3.75% correctly (not 375.00%)
   * Outstanding Balance: Uses proper mortgage amortization formula
   * Capital Gains Tax: Correctly calculates as (Market Value - Purchase Price) × Tax Rate
   * Current Term: Shows months since loan start (not remaining term)
+  * Annual Net Yield: Remains constant at $42,840 (already in today's dollars, no inflation adjustment)
 - Present Value calculations now use country-specific inflation rates for proper discounting
 - Outstanding balance properly reduces year-over-year using financial amortization
 - CSV import fixed to match user's exact 16-column format without reordering
