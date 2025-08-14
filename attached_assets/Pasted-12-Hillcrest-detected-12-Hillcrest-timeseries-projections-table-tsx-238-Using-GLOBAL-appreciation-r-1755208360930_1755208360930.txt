@@ -1,0 +1,350 @@
+12 Hillcrest detected: 12 Hillcrest
+timeseries-projections-table.tsx:238 Using GLOBAL appreciation rate: 3.50% (from USA settings)
+timeseries-projections-table.tsx:239 Current value from DB: $1,250,000
+timeseries-projections-table.tsx:240 Y1 calculation: $1,250,000 × 1.0350 = $1,293,750
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y0 Outstanding Balance: $338073
+timeseries-projections-table.tsx:308 🔍 Debug Y0 Annual Net Yield: calculateAnnualNetYield() returned 42840
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y1 Outstanding Balance: $326188
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y0 Outstanding Balance: $338073
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y1 Outstanding Balance: $326188
+timeseries-projections-table.tsx:308 🔍 Debug Y1 Annual Net Yield: calculateAnnualNetYield() returned 42840
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y0 Outstanding Balance: $338073
+timeseries-projections-table.tsx:341 🔍 Y1: StartBalance=$338073, Active=true, YearPV=$23696, CumPV=$23696
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y2 Outstanding Balance: $313849
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y0 Outstanding Balance: $338073
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y2 Outstanding Balance: $313849
+timeseries-projections-table.tsx:308 🔍 Debug Y2 Annual Net Yield: calculateAnnualNetYield() returned 42840
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y0 Outstanding Balance: $338073
+timeseries-projections-table.tsx:341 🔍 Y1: StartBalance=$338073, Active=true, YearPV=$23696, CumPV=$23696
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y1 Outstanding Balance: $326188
+timeseries-projections-table.tsx:341 🔍 Y2: StartBalance=$326188, Active=true, YearPV=$23051, CumPV=$46748
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y3 Outstanding Balance: $301040
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y0 Outstanding Balance: $338073
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y3 Outstanding Balance: $301040
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y0 Outstanding Balance: $338073
+timeseries-projections-table.tsx:341 🔍 Y1: StartBalance=$338073, Active=true, YearPV=$23696, CumPV=$23696
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y1 Outstanding Balance: $326188
+timeseries-projections-table.tsx:341 🔍 Y2: StartBalance=$326188, Active=true, YearPV=$23051, CumPV=$46748
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y2 Outstanding Balance: $313849
+timeseries-projections-table.tsx:341 🔍 Y3: StartBalance=$313849, Active=true, YearPV=$22423, CumPV=$69171
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y4 Outstanding Balance: $287742
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y0 Outstanding Balance: $338073
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y4 Outstanding Balance: $287742
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y0 Outstanding Balance: $338073
+timeseries-projections-table.tsx:341 🔍 Y1: StartBalance=$338073, Active=true, YearPV=$23696, CumPV=$23696
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y1 Outstanding Balance: $326188
+timeseries-projections-table.tsx:341 🔍 Y2: StartBalance=$326188, Active=true, YearPV=$23051, CumPV=$46748
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y2 Outstanding Balance: $313849
+timeseries-projections-table.tsx:341 🔍 Y3: StartBalance=$313849, Active=true, YearPV=$22423, CumPV=$69171
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y3 Outstanding Balance: $301040
+timeseries-projections-table.tsx:341 🔍 Y4: StartBalance=$301040, Active=true, YearPV=$21812, CumPV=$90983
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y5 Outstanding Balance: $273937
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y0 Outstanding Balance: $338073
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y5 Outstanding Balance: $273937
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y0 Outstanding Balance: $338073
+timeseries-projections-table.tsx:341 🔍 Y1: StartBalance=$338073, Active=true, YearPV=$23696, CumPV=$23696
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y1 Outstanding Balance: $326188
+timeseries-projections-table.tsx:341 🔍 Y2: StartBalance=$326188, Active=true, YearPV=$23051, CumPV=$46748
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y2 Outstanding Balance: $313849
+timeseries-projections-table.tsx:341 🔍 Y3: StartBalance=$313849, Active=true, YearPV=$22423, CumPV=$69171
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y3 Outstanding Balance: $301040
+timeseries-projections-table.tsx:341 🔍 Y4: StartBalance=$301040, Active=true, YearPV=$21812, CumPV=$90983
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y4 Outstanding Balance: $287742
+timeseries-projections-table.tsx:341 🔍 Y5: StartBalance=$287742, Active=true, YearPV=$21218, CumPV=$112202
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y10 Outstanding Balance: $196596
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y0 Outstanding Balance: $338073
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y10 Outstanding Balance: $196596
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y0 Outstanding Balance: $338073
+timeseries-projections-table.tsx:341 🔍 Y1: StartBalance=$338073, Active=true, YearPV=$23696, CumPV=$23696
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y1 Outstanding Balance: $326188
+timeseries-projections-table.tsx:341 🔍 Y2: StartBalance=$326188, Active=true, YearPV=$23051, CumPV=$46748
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y2 Outstanding Balance: $313849
+timeseries-projections-table.tsx:341 🔍 Y3: StartBalance=$313849, Active=true, YearPV=$22423, CumPV=$69171
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y3 Outstanding Balance: $301040
+timeseries-projections-table.tsx:341 🔍 Y4: StartBalance=$301040, Active=true, YearPV=$21812, CumPV=$90983
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y4 Outstanding Balance: $287742
+timeseries-projections-table.tsx:341 🔍 Y5: StartBalance=$287742, Active=true, YearPV=$21218, CumPV=$112202
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y5 Outstanding Balance: $273937
+timeseries-projections-table.tsx:341 🔍 Y6: StartBalance=$273937, Active=true, YearPV=$20640, CumPV=$132842
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y6 Outstanding Balance: $259605
+timeseries-projections-table.tsx:341 🔍 Y7: StartBalance=$259605, Active=true, YearPV=$20078, CumPV=$152920
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y7 Outstanding Balance: $244726
+timeseries-projections-table.tsx:341 🔍 Y8: StartBalance=$244726, Active=true, YearPV=$19531, CumPV=$172452
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y8 Outstanding Balance: $229279
+timeseries-projections-table.tsx:341 🔍 Y9: StartBalance=$229279, Active=true, YearPV=$18999, CumPV=$191451
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y9 Outstanding Balance: $213243
+timeseries-projections-table.tsx:341 🔍 Y10: StartBalance=$213243, Active=true, YearPV=$18482, CumPV=$209933
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y15 Outstanding Balance: $103332
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y0 Outstanding Balance: $338073
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y15 Outstanding Balance: $103332
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y0 Outstanding Balance: $338073
+timeseries-projections-table.tsx:341 🔍 Y1: StartBalance=$338073, Active=true, YearPV=$23696, CumPV=$23696
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y1 Outstanding Balance: $326188
+timeseries-projections-table.tsx:341 🔍 Y2: StartBalance=$326188, Active=true, YearPV=$23051, CumPV=$46748
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y2 Outstanding Balance: $313849
+timeseries-projections-table.tsx:341 🔍 Y3: StartBalance=$313849, Active=true, YearPV=$22423, CumPV=$69171
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y3 Outstanding Balance: $301040
+timeseries-projections-table.tsx:341 🔍 Y4: StartBalance=$301040, Active=true, YearPV=$21812, CumPV=$90983
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y4 Outstanding Balance: $287742
+timeseries-projections-table.tsx:341 🔍 Y5: StartBalance=$287742, Active=true, YearPV=$21218, CumPV=$112202
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y5 Outstanding Balance: $273937
+timeseries-projections-table.tsx:341 🔍 Y6: StartBalance=$273937, Active=true, YearPV=$20640, CumPV=$132842
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y6 Outstanding Balance: $259605
+timeseries-projections-table.tsx:341 🔍 Y7: StartBalance=$259605, Active=true, YearPV=$20078, CumPV=$152920
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y7 Outstanding Balance: $244726
+timeseries-projections-table.tsx:341 🔍 Y8: StartBalance=$244726, Active=true, YearPV=$19531, CumPV=$172452
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y8 Outstanding Balance: $229279
+timeseries-projections-table.tsx:341 🔍 Y9: StartBalance=$229279, Active=true, YearPV=$18999, CumPV=$191451
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y9 Outstanding Balance: $213243
+timeseries-projections-table.tsx:341 🔍 Y10: StartBalance=$213243, Active=true, YearPV=$18482, CumPV=$209933
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y10 Outstanding Balance: $196596
+timeseries-projections-table.tsx:341 🔍 Y11: StartBalance=$196596, Active=true, YearPV=$17978, CumPV=$227911
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y11 Outstanding Balance: $179313
+timeseries-projections-table.tsx:341 🔍 Y12: StartBalance=$179313, Active=true, YearPV=$17489, CumPV=$245400
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y12 Outstanding Balance: $161371
+timeseries-projections-table.tsx:341 🔍 Y13: StartBalance=$161371, Active=true, YearPV=$17012, CumPV=$262413
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y13 Outstanding Balance: $142745
+timeseries-projections-table.tsx:341 🔍 Y14: StartBalance=$142745, Active=true, YearPV=$16549, CumPV=$278962
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y14 Outstanding Balance: $123407
+timeseries-projections-table.tsx:341 🔍 Y15: StartBalance=$123407, Active=true, YearPV=$16098, CumPV=$295060
+2timeseries-projections-table.tsx:104 📊 12 Hillcrest Y0 Outstanding Balance: $338073
+timeseries-projections-table.tsx:341 🔍 Y1: StartBalance=$338073, Active=true, YearPV=$23696, CumPV=$23696
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y1 Outstanding Balance: $326188
+timeseries-projections-table.tsx:341 🔍 Y2: StartBalance=$326188, Active=true, YearPV=$23051, CumPV=$46748
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y2 Outstanding Balance: $313849
+timeseries-projections-table.tsx:341 🔍 Y3: StartBalance=$313849, Active=true, YearPV=$22423, CumPV=$69171
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y3 Outstanding Balance: $301040
+timeseries-projections-table.tsx:341 🔍 Y4: StartBalance=$301040, Active=true, YearPV=$21812, CumPV=$90983
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y4 Outstanding Balance: $287742
+timeseries-projections-table.tsx:341 🔍 Y5: StartBalance=$287742, Active=true, YearPV=$21218, CumPV=$112202
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y5 Outstanding Balance: $273937
+timeseries-projections-table.tsx:341 🔍 Y6: StartBalance=$273937, Active=true, YearPV=$20640, CumPV=$132842
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y6 Outstanding Balance: $259605
+timeseries-projections-table.tsx:341 🔍 Y7: StartBalance=$259605, Active=true, YearPV=$20078, CumPV=$152920
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y7 Outstanding Balance: $244726
+timeseries-projections-table.tsx:341 🔍 Y8: StartBalance=$244726, Active=true, YearPV=$19531, CumPV=$172452
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y8 Outstanding Balance: $229279
+timeseries-projections-table.tsx:341 🔍 Y9: StartBalance=$229279, Active=true, YearPV=$18999, CumPV=$191451
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y9 Outstanding Balance: $213243
+timeseries-projections-table.tsx:341 🔍 Y10: StartBalance=$213243, Active=true, YearPV=$18482, CumPV=$209933
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y10 Outstanding Balance: $196596
+timeseries-projections-table.tsx:341 🔍 Y11: StartBalance=$196596, Active=true, YearPV=$17978, CumPV=$227911
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y11 Outstanding Balance: $179313
+timeseries-projections-table.tsx:341 🔍 Y12: StartBalance=$179313, Active=true, YearPV=$17489, CumPV=$245400
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y12 Outstanding Balance: $161371
+timeseries-projections-table.tsx:341 🔍 Y13: StartBalance=$161371, Active=true, YearPV=$17012, CumPV=$262413
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y13 Outstanding Balance: $142745
+timeseries-projections-table.tsx:341 🔍 Y14: StartBalance=$142745, Active=true, YearPV=$16549, CumPV=$278962
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y14 Outstanding Balance: $123407
+timeseries-projections-table.tsx:341 🔍 Y15: StartBalance=$123407, Active=true, YearPV=$16098, CumPV=$295060
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y15 Outstanding Balance: $103332
+timeseries-projections-table.tsx:341 🔍 Y16: StartBalance=$103332, Active=true, YearPV=$15660, CumPV=$310720
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y16 Outstanding Balance: $82492
+2timeseries-projections-table.tsx:104 📊 12 Hillcrest Y0 Outstanding Balance: $338073
+timeseries-projections-table.tsx:341 🔍 Y1: StartBalance=$338073, Active=true, YearPV=$23696, CumPV=$23696
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y1 Outstanding Balance: $326188
+timeseries-projections-table.tsx:341 🔍 Y2: StartBalance=$326188, Active=true, YearPV=$23051, CumPV=$46748
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y2 Outstanding Balance: $313849
+timeseries-projections-table.tsx:341 🔍 Y3: StartBalance=$313849, Active=true, YearPV=$22423, CumPV=$69171
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y3 Outstanding Balance: $301040
+timeseries-projections-table.tsx:341 🔍 Y4: StartBalance=$301040, Active=true, YearPV=$21812, CumPV=$90983
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y4 Outstanding Balance: $287742
+timeseries-projections-table.tsx:341 🔍 Y5: StartBalance=$287742, Active=true, YearPV=$21218, CumPV=$112202
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y5 Outstanding Balance: $273937
+timeseries-projections-table.tsx:341 🔍 Y6: StartBalance=$273937, Active=true, YearPV=$20640, CumPV=$132842
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y6 Outstanding Balance: $259605
+timeseries-projections-table.tsx:341 🔍 Y7: StartBalance=$259605, Active=true, YearPV=$20078, CumPV=$152920
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y7 Outstanding Balance: $244726
+timeseries-projections-table.tsx:341 🔍 Y8: StartBalance=$244726, Active=true, YearPV=$19531, CumPV=$172452
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y8 Outstanding Balance: $229279
+timeseries-projections-table.tsx:341 🔍 Y9: StartBalance=$229279, Active=true, YearPV=$18999, CumPV=$191451
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y9 Outstanding Balance: $213243
+timeseries-projections-table.tsx:341 🔍 Y10: StartBalance=$213243, Active=true, YearPV=$18482, CumPV=$209933
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y10 Outstanding Balance: $196596
+timeseries-projections-table.tsx:341 🔍 Y11: StartBalance=$196596, Active=true, YearPV=$17978, CumPV=$227911
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y11 Outstanding Balance: $179313
+timeseries-projections-table.tsx:341 🔍 Y12: StartBalance=$179313, Active=true, YearPV=$17489, CumPV=$245400
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y12 Outstanding Balance: $161371
+timeseries-projections-table.tsx:341 🔍 Y13: StartBalance=$161371, Active=true, YearPV=$17012, CumPV=$262413
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y13 Outstanding Balance: $142745
+timeseries-projections-table.tsx:341 🔍 Y14: StartBalance=$142745, Active=true, YearPV=$16549, CumPV=$278962
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y14 Outstanding Balance: $123407
+timeseries-projections-table.tsx:341 🔍 Y15: StartBalance=$123407, Active=true, YearPV=$16098, CumPV=$295060
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y15 Outstanding Balance: $103332
+timeseries-projections-table.tsx:341 🔍 Y16: StartBalance=$103332, Active=true, YearPV=$15660, CumPV=$310720
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y16 Outstanding Balance: $82492
+timeseries-projections-table.tsx:237 🏠 12 Hillcrest detected: 12 Hillcrest
+timeseries-projections-table.tsx:238 Using GLOBAL appreciation rate: 3.50% (from USA settings)
+timeseries-projections-table.tsx:239 Current value from DB: $1,250,000
+timeseries-projections-table.tsx:240 Y1 calculation: $1,250,000 × 1.0350 = $1,293,750
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y0 Outstanding Balance: $338073
+timeseries-projections-table.tsx:308 🔍 Debug Y0 Annual Net Yield: calculateAnnualNetYield() returned 42840
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y1 Outstanding Balance: $326188
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y0 Outstanding Balance: $338073
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y1 Outstanding Balance: $326188
+timeseries-projections-table.tsx:308 🔍 Debug Y1 Annual Net Yield: calculateAnnualNetYield() returned 42840
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y0 Outstanding Balance: $338073
+timeseries-projections-table.tsx:341 🔍 Y1: StartBalance=$338073, Active=true, YearPV=$23696, CumPV=$23696
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y2 Outstanding Balance: $313849
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y0 Outstanding Balance: $338073
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y2 Outstanding Balance: $313849
+timeseries-projections-table.tsx:308 🔍 Debug Y2 Annual Net Yield: calculateAnnualNetYield() returned 42840
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y0 Outstanding Balance: $338073
+timeseries-projections-table.tsx:341 🔍 Y1: StartBalance=$338073, Active=true, YearPV=$23696, CumPV=$23696
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y1 Outstanding Balance: $326188
+timeseries-projections-table.tsx:341 🔍 Y2: StartBalance=$326188, Active=true, YearPV=$23051, CumPV=$46748
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y3 Outstanding Balance: $301040
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y0 Outstanding Balance: $338073
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y3 Outstanding Balance: $301040
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y0 Outstanding Balance: $338073
+timeseries-projections-table.tsx:341 🔍 Y1: StartBalance=$338073, Active=true, YearPV=$23696, CumPV=$23696
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y1 Outstanding Balance: $326188
+timeseries-projections-table.tsx:341 🔍 Y2: StartBalance=$326188, Active=true, YearPV=$23051, CumPV=$46748
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y2 Outstanding Balance: $313849
+timeseries-projections-table.tsx:341 🔍 Y3: StartBalance=$313849, Active=true, YearPV=$22423, CumPV=$69171
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y4 Outstanding Balance: $287742
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y0 Outstanding Balance: $338073
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y4 Outstanding Balance: $287742
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y0 Outstanding Balance: $338073
+timeseries-projections-table.tsx:341 🔍 Y1: StartBalance=$338073, Active=true, YearPV=$23696, CumPV=$23696
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y1 Outstanding Balance: $326188
+timeseries-projections-table.tsx:341 🔍 Y2: StartBalance=$326188, Active=true, YearPV=$23051, CumPV=$46748
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y2 Outstanding Balance: $313849
+timeseries-projections-table.tsx:341 🔍 Y3: StartBalance=$313849, Active=true, YearPV=$22423, CumPV=$69171
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y3 Outstanding Balance: $301040
+timeseries-projections-table.tsx:341 🔍 Y4: StartBalance=$301040, Active=true, YearPV=$21812, CumPV=$90983
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y5 Outstanding Balance: $273937
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y0 Outstanding Balance: $338073
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y5 Outstanding Balance: $273937
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y0 Outstanding Balance: $338073
+timeseries-projections-table.tsx:341 🔍 Y1: StartBalance=$338073, Active=true, YearPV=$23696, CumPV=$23696
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y1 Outstanding Balance: $326188
+timeseries-projections-table.tsx:341 🔍 Y2: StartBalance=$326188, Active=true, YearPV=$23051, CumPV=$46748
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y2 Outstanding Balance: $313849
+timeseries-projections-table.tsx:341 🔍 Y3: StartBalance=$313849, Active=true, YearPV=$22423, CumPV=$69171
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y3 Outstanding Balance: $301040
+timeseries-projections-table.tsx:341 🔍 Y4: StartBalance=$301040, Active=true, YearPV=$21812, CumPV=$90983
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y4 Outstanding Balance: $287742
+timeseries-projections-table.tsx:341 🔍 Y5: StartBalance=$287742, Active=true, YearPV=$21218, CumPV=$112202
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y10 Outstanding Balance: $196596
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y0 Outstanding Balance: $338073
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y10 Outstanding Balance: $196596
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y0 Outstanding Balance: $338073
+timeseries-projections-table.tsx:341 🔍 Y1: StartBalance=$338073, Active=true, YearPV=$23696, CumPV=$23696
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y1 Outstanding Balance: $326188
+timeseries-projections-table.tsx:341 🔍 Y2: StartBalance=$326188, Active=true, YearPV=$23051, CumPV=$46748
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y2 Outstanding Balance: $313849
+timeseries-projections-table.tsx:341 🔍 Y3: StartBalance=$313849, Active=true, YearPV=$22423, CumPV=$69171
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y3 Outstanding Balance: $301040
+timeseries-projections-table.tsx:341 🔍 Y4: StartBalance=$301040, Active=true, YearPV=$21812, CumPV=$90983
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y4 Outstanding Balance: $287742
+timeseries-projections-table.tsx:341 🔍 Y5: StartBalance=$287742, Active=true, YearPV=$21218, CumPV=$112202
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y5 Outstanding Balance: $273937
+timeseries-projections-table.tsx:341 🔍 Y6: StartBalance=$273937, Active=true, YearPV=$20640, CumPV=$132842
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y6 Outstanding Balance: $259605
+timeseries-projections-table.tsx:341 🔍 Y7: StartBalance=$259605, Active=true, YearPV=$20078, CumPV=$152920
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y7 Outstanding Balance: $244726
+timeseries-projections-table.tsx:341 🔍 Y8: StartBalance=$244726, Active=true, YearPV=$19531, CumPV=$172452
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y8 Outstanding Balance: $229279
+timeseries-projections-table.tsx:341 🔍 Y9: StartBalance=$229279, Active=true, YearPV=$18999, CumPV=$191451
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y9 Outstanding Balance: $213243
+timeseries-projections-table.tsx:341 🔍 Y10: StartBalance=$213243, Active=true, YearPV=$18482, CumPV=$209933
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y15 Outstanding Balance: $103332
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y0 Outstanding Balance: $338073
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y15 Outstanding Balance: $103332
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y0 Outstanding Balance: $338073
+timeseries-projections-table.tsx:341 🔍 Y1: StartBalance=$338073, Active=true, YearPV=$23696, CumPV=$23696
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y1 Outstanding Balance: $326188
+timeseries-projections-table.tsx:341 🔍 Y2: StartBalance=$326188, Active=true, YearPV=$23051, CumPV=$46748
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y2 Outstanding Balance: $313849
+timeseries-projections-table.tsx:341 🔍 Y3: StartBalance=$313849, Active=true, YearPV=$22423, CumPV=$69171
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y3 Outstanding Balance: $301040
+timeseries-projections-table.tsx:341 🔍 Y4: StartBalance=$301040, Active=true, YearPV=$21812, CumPV=$90983
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y4 Outstanding Balance: $287742
+timeseries-projections-table.tsx:341 🔍 Y5: StartBalance=$287742, Active=true, YearPV=$21218, CumPV=$112202
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y5 Outstanding Balance: $273937
+timeseries-projections-table.tsx:341 🔍 Y6: StartBalance=$273937, Active=true, YearPV=$20640, CumPV=$132842
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y6 Outstanding Balance: $259605
+timeseries-projections-table.tsx:341 🔍 Y7: StartBalance=$259605, Active=true, YearPV=$20078, CumPV=$152920
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y7 Outstanding Balance: $244726
+timeseries-projections-table.tsx:341 🔍 Y8: StartBalance=$244726, Active=true, YearPV=$19531, CumPV=$172452
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y8 Outstanding Balance: $229279
+timeseries-projections-table.tsx:341 🔍 Y9: StartBalance=$229279, Active=true, YearPV=$18999, CumPV=$191451
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y9 Outstanding Balance: $213243
+timeseries-projections-table.tsx:341 🔍 Y10: StartBalance=$213243, Active=true, YearPV=$18482, CumPV=$209933
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y10 Outstanding Balance: $196596
+timeseries-projections-table.tsx:341 🔍 Y11: StartBalance=$196596, Active=true, YearPV=$17978, CumPV=$227911
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y11 Outstanding Balance: $179313
+timeseries-projections-table.tsx:341 🔍 Y12: StartBalance=$179313, Active=true, YearPV=$17489, CumPV=$245400
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y12 Outstanding Balance: $161371
+timeseries-projections-table.tsx:341 🔍 Y13: StartBalance=$161371, Active=true, YearPV=$17012, CumPV=$262413
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y13 Outstanding Balance: $142745
+timeseries-projections-table.tsx:341 🔍 Y14: StartBalance=$142745, Active=true, YearPV=$16549, CumPV=$278962
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y14 Outstanding Balance: $123407
+timeseries-projections-table.tsx:341 🔍 Y15: StartBalance=$123407, Active=true, YearPV=$16098, CumPV=$295060
+2timeseries-projections-table.tsx:104 📊 12 Hillcrest Y0 Outstanding Balance: $338073
+timeseries-projections-table.tsx:341 🔍 Y1: StartBalance=$338073, Active=true, YearPV=$23696, CumPV=$23696
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y1 Outstanding Balance: $326188
+timeseries-projections-table.tsx:341 🔍 Y2: StartBalance=$326188, Active=true, YearPV=$23051, CumPV=$46748
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y2 Outstanding Balance: $313849
+timeseries-projections-table.tsx:341 🔍 Y3: StartBalance=$313849, Active=true, YearPV=$22423, CumPV=$69171
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y3 Outstanding Balance: $301040
+timeseries-projections-table.tsx:341 🔍 Y4: StartBalance=$301040, Active=true, YearPV=$21812, CumPV=$90983
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y4 Outstanding Balance: $287742
+timeseries-projections-table.tsx:341 🔍 Y5: StartBalance=$287742, Active=true, YearPV=$21218, CumPV=$112202
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y5 Outstanding Balance: $273937
+timeseries-projections-table.tsx:341 🔍 Y6: StartBalance=$273937, Active=true, YearPV=$20640, CumPV=$132842
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y6 Outstanding Balance: $259605
+timeseries-projections-table.tsx:341 🔍 Y7: StartBalance=$259605, Active=true, YearPV=$20078, CumPV=$152920
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y7 Outstanding Balance: $244726
+timeseries-projections-table.tsx:341 🔍 Y8: StartBalance=$244726, Active=true, YearPV=$19531, CumPV=$172452
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y8 Outstanding Balance: $229279
+timeseries-projections-table.tsx:341 🔍 Y9: StartBalance=$229279, Active=true, YearPV=$18999, CumPV=$191451
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y9 Outstanding Balance: $213243
+timeseries-projections-table.tsx:341 🔍 Y10: StartBalance=$213243, Active=true, YearPV=$18482, CumPV=$209933
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y10 Outstanding Balance: $196596
+timeseries-projections-table.tsx:341 🔍 Y11: StartBalance=$196596, Active=true, YearPV=$17978, CumPV=$227911
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y11 Outstanding Balance: $179313
+timeseries-projections-table.tsx:341 🔍 Y12: StartBalance=$179313, Active=true, YearPV=$17489, CumPV=$245400
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y12 Outstanding Balance: $161371
+timeseries-projections-table.tsx:341 🔍 Y13: StartBalance=$161371, Active=true, YearPV=$17012, CumPV=$262413
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y13 Outstanding Balance: $142745
+timeseries-projections-table.tsx:341 🔍 Y14: StartBalance=$142745, Active=true, YearPV=$16549, CumPV=$278962
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y14 Outstanding Balance: $123407
+timeseries-projections-table.tsx:341 🔍 Y15: StartBalance=$123407, Active=true, YearPV=$16098, CumPV=$295060
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y15 Outstanding Balance: $103332
+timeseries-projections-table.tsx:341 🔍 Y16: StartBalance=$103332, Active=true, YearPV=$15660, CumPV=$310720
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y16 Outstanding Balance: $82492
+2timeseries-projections-table.tsx:104 📊 12 Hillcrest Y0 Outstanding Balance: $338073
+timeseries-projections-table.tsx:341 🔍 Y1: StartBalance=$338073, Active=true, YearPV=$23696, CumPV=$23696
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y1 Outstanding Balance: $326188
+timeseries-projections-table.tsx:341 🔍 Y2: StartBalance=$326188, Active=true, YearPV=$23051, CumPV=$46748
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y2 Outstanding Balance: $313849
+timeseries-projections-table.tsx:341 🔍 Y3: StartBalance=$313849, Active=true, YearPV=$22423, CumPV=$69171
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y3 Outstanding Balance: $301040
+timeseries-projections-table.tsx:341 🔍 Y4: StartBalance=$301040, Active=true, YearPV=$21812, CumPV=$90983
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y4 Outstanding Balance: $287742
+timeseries-projections-table.tsx:341 🔍 Y5: StartBalance=$287742, Active=true, YearPV=$21218, CumPV=$112202
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y5 Outstanding Balance: $273937
+timeseries-projections-table.tsx:341 🔍 Y6: StartBalance=$273937, Active=true, YearPV=$20640, CumPV=$132842
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y6 Outstanding Balance: $259605
+timeseries-projections-table.tsx:341 🔍 Y7: StartBalance=$259605, Active=true, YearPV=$20078, CumPV=$152920
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y7 Outstanding Balance: $244726
+timeseries-projections-table.tsx:341 🔍 Y8: StartBalance=$244726, Active=true, YearPV=$19531, CumPV=$172452
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y8 Outstanding Balance: $229279
+timeseries-projections-table.tsx:341 🔍 Y9: StartBalance=$229279, Active=true, YearPV=$18999, CumPV=$191451
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y9 Outstanding Balance: $213243
+timeseries-projections-table.tsx:341 🔍 Y10: StartBalance=$213243, Active=true, YearPV=$18482, CumPV=$209933
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y10 Outstanding Balance: $196596
+timeseries-projections-table.tsx:341 🔍 Y11: StartBalance=$196596, Active=true, YearPV=$17978, CumPV=$227911
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y11 Outstanding Balance: $179313
+timeseries-projections-table.tsx:341 🔍 Y12: StartBalance=$179313, Active=true, YearPV=$17489, CumPV=$245400
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y12 Outstanding Balance: $161371
+timeseries-projections-table.tsx:341 🔍 Y13: StartBalance=$161371, Active=true, YearPV=$17012, CumPV=$262413
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y13 Outstanding Balance: $142745
+timeseries-projections-table.tsx:341 🔍 Y14: StartBalance=$142745, Active=true, YearPV=$16549, CumPV=$278962
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y14 Outstanding Balance: $123407
+timeseries-projections-table.tsx:341 🔍 Y15: StartBalance=$123407, Active=true, YearPV=$16098, CumPV=$295060
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y15 Outstanding Balance: $103332
+timeseries-projections-table.tsx:341 🔍 Y16: StartBalance=$103332, Active=true, YearPV=$15660, CumPV=$310720
+timeseries-projections-table.tsx:104 📊 12 Hillcrest Y16 Outstanding Balance: $82492
