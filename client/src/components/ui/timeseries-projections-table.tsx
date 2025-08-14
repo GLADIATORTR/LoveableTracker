@@ -501,7 +501,7 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
       y30: formatCurrency(yearlyData[30].netEquityNominal),
     },
     {
-      metric: "Net Equity (Present Value - Today's Dollars)",
+      metric: "🟡 Net Equity (Present Value - Today's Dollars)",
       y0: formatCurrency(yearlyData[0].netEquityToday),
       y1: formatCurrency(yearlyData[1].netEquityToday),
       y2: formatCurrency(yearlyData[2].netEquityToday),
@@ -540,7 +540,7 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
       y30: formatCurrency(0), // Loan is paid off
     },
     {
-      metric: "Cumulative_Annual_Mortgage_PV",
+      metric: "🔵 Cumulative_Annual_Mortgage_PV",
       y0: formatCurrency(0),
       y1: formatCurrency(yearlyData[1].cumulativeAnnualMortgagePV || 0),
       y2: formatCurrency(yearlyData[2].cumulativeAnnualMortgagePV || 0),
@@ -566,7 +566,7 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
       y30: formatCurrency(yearlyData[30].annualNetYield),
     },
     {
-      metric: "Cumulative Net Yield excluding Mortgage Payment (already in Today's Dollars)",
+      metric: "🟢 Cumulative Net Yield excluding Mortgage Payment (already in Today's Dollars)",
       y0: formatCurrency(yearlyData[0].cumulativeNetYield),
       y1: formatCurrency(yearlyData[1].cumulativeNetYield),
       y2: formatCurrency(yearlyData[2].cumulativeNetYield),

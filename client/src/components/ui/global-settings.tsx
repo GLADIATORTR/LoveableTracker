@@ -23,17 +23,17 @@ interface GlobalSettings {
 const DEFAULT_COUNTRY_SETTINGS: Record<string, CountrySettings> = {
   USA: {
     realEstateAppreciationRate: 3.5,
-    inflationRate: 2.8,
+    inflationRate: 3.5,
     sellingCosts: 6.0,
     capitalGainsTax: 25.0,
     currentMortgageRate: 6.5,
   },
   Turkey: {
-    realEstateAppreciationRate: 15.0,
-    inflationRate: 45.0,
-    sellingCosts: 8.0,
-    capitalGainsTax: 20.0,
-    currentMortgageRate: 35.0,
+    realEstateAppreciationRate: 3.5,
+    inflationRate: 3.5,
+    sellingCosts: 2.0,
+    capitalGainsTax: 0.0,
+    currentMortgageRate: 6.5,
   },
   Canada: {
     realEstateAppreciationRate: 4.2,
