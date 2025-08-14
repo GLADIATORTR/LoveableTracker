@@ -14,10 +14,24 @@ import { z } from "zod";
 import { insertRealEstateInvestmentSchema, type InsertRealEstateInvestment, type Category, type RealEstateInvestmentWithCategory } from "@shared/schema";
 
 // Create a simpler form schema for the UI
-const formSchema = insertRealEstateInvestmentSchema.omit({ id: true, createdAt: true, updatedAt: true }).extend({
-  purchaseDate: insertRealEstateInvestmentSchema.shape.purchaseDate.transform(date => 
-    typeof date === 'string' ? date : date.toISOString().split('T')[0]
-  ),
+const formSchema = z.object({
+  propertyName: z.string().min(1, "Property name is required"),
+  address: z.string().min(1, "Address is required"),
+  propertyType: z.string(),
+  purchasePrice: z.number().min(0, "Purchase price must be positive"),
+  currentValue: z.number().min(0, "Current value must be positive"),
+  purchaseDate: z.string(),
+  monthlyRent: z.number().min(0, "Monthly rent must be positive"),
+  monthlyExpenses: z.number().min(0, "Monthly expenses must be positive"),
+  netEquity: z.number(),
+  loanAmount: z.number().optional(),
+  interestRate: z.number().optional(),
+  loanTerm: z.number().optional(),
+  monthlyMortgage: z.number().optional(),
+  outstandingBalance: z.number().optional(),
+  currentTerm: z.number().optional(),
+  description: z.string().optional(),
+  categoryId: z.string().optional(),
 });
 
 type FormData = {
@@ -74,7 +88,7 @@ export function InvestmentForm({ onSuccess, existingInvestment, onClose }: Inves
       currentValue: existingInvestment.currentValue / 100,
       purchaseDate: typeof existingInvestment.purchaseDate === 'string' 
         ? existingInvestment.purchaseDate.split('T')[0] 
-        : existingInvestment.purchaseDate.toISOString().split('T')[0],
+        : new Date(existingInvestment.purchaseDate).toISOString().split('T')[0],
       monthlyRent: existingInvestment.monthlyRent / 100,
       monthlyExpenses: existingInvestment.monthlyExpenses / 100,
       netEquity: existingInvestment.netEquity / 100,
@@ -85,6 +99,7 @@ export function InvestmentForm({ onSuccess, existingInvestment, onClose }: Inves
       outstandingBalance: existingInvestment.outstandingBalance ? existingInvestment.outstandingBalance / 100 : 0,
       currentTerm: existingInvestment.currentTerm || 0,
       description: existingInvestment.notes || "",
+      categoryId: existingInvestment.category?.id || "",
     } : {
       propertyName: "",
       address: "",
@@ -102,25 +117,9 @@ export function InvestmentForm({ onSuccess, existingInvestment, onClose }: Inves
       outstandingBalance: 0,
       currentTerm: 0,
       description: "",
+      categoryId: "",
     },
-    resolver: zodResolver(z.object({
-      propertyName: z.string().min(1, "Property name is required"),
-      address: z.string().min(1, "Address is required"),
-      propertyType: z.string(),
-      purchasePrice: z.number().min(0, "Purchase price must be positive"),
-      currentValue: z.number().min(0, "Current value must be positive"),
-      purchaseDate: z.string(),
-      monthlyRent: z.number().min(0, "Monthly rent must be positive"),
-      monthlyExpenses: z.number().min(0, "Monthly expenses must be positive"),
-      netEquity: z.number(),
-      loanAmount: z.number().min(0).optional(),
-      interestRate: z.number().min(0).optional(),
-      loanTerm: z.number().min(0).optional(),
-      monthlyMortgage: z.number().min(0).optional(),
-      outstandingBalance: z.number().min(0).optional(),
-      currentTerm: z.number().min(0).optional(),
-      description: z.string().optional(),
-    })),
+    resolver: zodResolver(formSchema),
   });
 
   // Handle editing mode
@@ -135,12 +134,12 @@ export function InvestmentForm({ onSuccess, existingInvestment, onClose }: Inves
         currentValue: existingInvestment.currentValue / 100,
         purchaseDate: typeof existingInvestment.purchaseDate === 'string' 
           ? existingInvestment.purchaseDate.split('T')[0] 
-          : existingInvestment.purchaseDate.toISOString().split('T')[0],
+          : new Date(existingInvestment.purchaseDate).toISOString().split('T')[0],
         monthlyRent: existingInvestment.monthlyRent / 100,
         monthlyExpenses: existingInvestment.monthlyExpenses / 100,
         netEquity: existingInvestment.netEquity / 100,
-        description: existingInvestment.description || "",
-        categoryId: existingInvestment.categoryId?.toString() || "",
+        description: existingInvestment.notes || "",
+        categoryId: existingInvestment.category?.id || "",
       });
     }
   }, [existingInvestment, form]);

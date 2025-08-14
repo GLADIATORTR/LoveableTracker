@@ -124,6 +124,28 @@ export const insertActivitySchema = createInsertSchema(activities).omit({
   createdAt: true,
 });
 
+// Dictionary entries table for asset definitions
+export const dictionaryEntries = pgTable("dictionary_entries", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),
+  description: text("description").notNull(),
+  type: text("type"), // asset type, financial term, etc.
+  categoryId: varchar("category_id").references(() => categories.id),
+  estimatedValue: integer("estimated_value"), // Store as cents
+  expectedLifecycle: text("expected_lifecycle"),
+  specifications: jsonb("specifications").default({}),
+  usageCount: integer("usage_count").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertDictionaryEntrySchema = createInsertSchema(dictionaryEntries).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  usageCount: true,
+});
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -140,12 +162,19 @@ export type InsertInvestmentScenario = z.infer<typeof insertInvestmentScenarioSc
 export type Activity = typeof activities.$inferSelect;
 export type InsertActivity = z.infer<typeof insertActivitySchema>;
 
+export type DictionaryEntry = typeof dictionaryEntries.$inferSelect;
+export type InsertDictionaryEntry = z.infer<typeof insertDictionaryEntrySchema>;
+
 // Extended types for UI
 export type RealEstateInvestmentWithCategory = RealEstateInvestment & {
   category?: Category;
 };
 
 export type InvestmentScenarioWithCategory = InvestmentScenario & {
+  category?: Category;
+};
+
+export type DictionaryEntryWithCategory = DictionaryEntry & {
   category?: Category;
 };
 

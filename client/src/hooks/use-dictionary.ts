@@ -1,27 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
-
-// Temporary dictionary types until full implementation
-interface DictionaryEntry {
-  id: string;
-  term: string;
-  definition: string;
-  category?: string;
-  examples?: string[];
-  tags?: string[];
-}
-
-interface DictionaryEntryWithCategory extends DictionaryEntry {
-  category?: { id: string; name: string; color: string; };
-}
-
-interface InsertDictionaryEntry {
-  term: string;
-  definition: string;
-  category?: string;
-  examples?: string[];
-  tags?: string[];
-}
+import type { DictionaryEntryWithCategory, InsertDictionaryEntry } from "@shared/schema";
 
 export function useDictionaryEntries(filters?: { categoryId?: string; search?: string }) {
   const queryKey = ["/api/dictionary", filters];
