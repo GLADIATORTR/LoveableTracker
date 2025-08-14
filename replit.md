@@ -15,7 +15,7 @@ Updated application name from "Asset Tracker" to "Real Estate Financials":
 - **Frontend Display**: Updated TopBar component to show "Real Estate Financials" as fallback title
 - **HTML Title**: Changed browser title to "Real Estate Financials - Professional Portfolio Management"
 - **PWA Manifest**: Updated PWA app name to "Real Estate Financials" and short name to "RE Financials"
-- **Version Tracking**: Added visible version number v8247 in TopBar for easy identification across browser sessions
+- **Version Tracking**: Added visible version number v9314 in TopBar for easy identification across browser sessions
 - **Cache Management**: Set staleTime to 0 in React Query to prevent cache discrepancies between regular and incognito windows
 
 ### Database Implementation & Dummy User Account (August 2025)

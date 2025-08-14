@@ -574,32 +574,6 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
       y30: formatCurrency(yearlyData[30].netEquityToday),
     },
     {
-      metric: "Annual Net Yield excluding Mortgage Payment (already in Today's Dollars)",
-      y0: formatCurrency(yearlyData[0].annualNetYield),
-      y1: formatCurrency(yearlyData[1].annualNetYield),
-      y2: formatCurrency(yearlyData[2].annualNetYield),
-      y3: formatCurrency(yearlyData[3].annualNetYield),
-      y4: formatCurrency(yearlyData[4].annualNetYield),
-      y5: formatCurrency(yearlyData[5].annualNetYield),
-      y10: formatCurrency(yearlyData[10].annualNetYield),
-      y15: formatCurrency(yearlyData[15].annualNetYield),
-      y25: formatCurrency(yearlyData[25].annualNetYield),
-      y30: formatCurrency(yearlyData[30].annualNetYield),
-    },
-    {
-      metric: "Cumulative Net Yield excluding Mortgage Payment (already in Today's Dollars)",
-      y0: formatCurrency(yearlyData[0].cumulativeNetYield),
-      y1: formatCurrency(yearlyData[1].cumulativeNetYield),
-      y2: formatCurrency(yearlyData[2].cumulativeNetYield),
-      y3: formatCurrency(yearlyData[3].cumulativeNetYield),
-      y4: formatCurrency(yearlyData[4].cumulativeNetYield),
-      y5: formatCurrency(yearlyData[5].cumulativeNetYield),
-      y10: formatCurrency(yearlyData[10].cumulativeNetYield),
-      y15: formatCurrency(yearlyData[15].cumulativeNetYield),
-      y25: formatCurrency(yearlyData[25].cumulativeNetYield),
-      y30: formatCurrency(yearlyData[30].cumulativeNetYield),
-    },
-    {
       metric: "Annual_Mortgage",
       y0: formatCurrency(0),
       y1: formatCurrency(yearlyData[1].annualMortgage || 0),
@@ -760,7 +734,7 @@ export function TimeSeriesProjectionsTable({ investment, inflationAdjusted = fal
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-80 font-semibold">Property / Metric v2.2</TableHead>
+                <TableHead className="w-80 font-semibold">Property / Metric v9314</TableHead>
                 <TableHead className="text-center font-semibold">Y0</TableHead>
                 <TableHead className="text-center font-semibold">Y1</TableHead>
                 <TableHead className="text-center font-semibold">Y2</TableHead>
