@@ -314,6 +314,34 @@ function calculateSellingCosts(investment: any, year: number, globalSettings: an
   return marketValue * sellingCostsRate;
 }
 
+// Market Value Present Value Calculator
+function calculateMarketValuePV(investment: any, year: number, globalSettings: any): number {
+  const countrySettings = globalSettings.countrySettings[globalSettings.selectedCountry];
+  const inflationRate = countrySettings.inflationRate / 100;
+  
+  // Get nominal market value for the year
+  const nominalMarketValue = calculateMarketValue(investment, year, globalSettings, false);
+  
+  // Convert to present value using inflation discount rate
+  const marketValuePV = nominalMarketValue * Math.pow(1 + inflationRate, -year);
+  
+  return marketValuePV;
+}
+
+// Capital Gains Tax Present Value Calculator
+function calculateCapitalGainsTaxPV(investment: any, year: number, globalSettings: any): number {
+  const countrySettings = globalSettings.countrySettings[globalSettings.selectedCountry];
+  const inflationRate = countrySettings.inflationRate / 100;
+  
+  // Get nominal capital gains tax for the year
+  const nominalCapitalGainsTax = calculateCapitalGainsTax(investment, year, globalSettings);
+  
+  // Convert to present value using inflation discount rate
+  const capitalGainsTaxPV = nominalCapitalGainsTax * Math.pow(1 + inflationRate, -year);
+  
+  return capitalGainsTaxPV;
+}
+
 function calculateProjections(investment: RealEstateInvestmentWithCategory, inflationAdjusted: boolean): ProjectionRow[] {
   const years = [0, 1, 2, 3, 4, 5, 10, 15, 25, 30];
   const globalSettings = getGlobalSettings();
@@ -444,13 +472,19 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
       }
     }
     
+    // Calculate Present Value versions
+    const marketValuePV = calculateMarketValuePV(investment, year, globalSettings);
+    const capitalGainsTaxPV = calculateCapitalGainsTaxPV(investment, year, globalSettings);
+
     yearlyData[year] = {
       marketValue,
+      marketValuePV,
       currentTerm: currentTermAtYear,
       remainingTerm: remainingMonths,
       interestRate: annualInterestRate * 100, // Store as percentage for display
       outstandingBalance,
       capitalGainsTax,
+      capitalGainsTaxPV,
       sellingCosts,
       cumulativePrincipalPayment,
       netEquityNominal: nominalNetEquity, // Always nominal for comparison
@@ -509,6 +543,19 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
       y15: formatCurrency(yearlyData[15].marketValue),
       y25: formatCurrency(yearlyData[25].marketValue),
       y30: formatCurrency(yearlyData[30].marketValue),
+    },
+    {
+      metric: "Market Value (Present Value)",
+      y0: formatCurrency(yearlyData[0].marketValuePV),
+      y1: formatCurrency(yearlyData[1].marketValuePV),
+      y2: formatCurrency(yearlyData[2].marketValuePV),
+      y3: formatCurrency(yearlyData[3].marketValuePV),
+      y4: formatCurrency(yearlyData[4].marketValuePV),
+      y5: formatCurrency(yearlyData[5].marketValuePV),
+      y10: formatCurrency(yearlyData[10].marketValuePV),
+      y15: formatCurrency(yearlyData[15].marketValuePV),
+      y25: formatCurrency(yearlyData[25].marketValuePV),
+      y30: formatCurrency(yearlyData[30].marketValuePV),
     },
     {
       metric: "Current Term (months since loan start)",
@@ -587,6 +634,19 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
       y15: formatCurrency(yearlyData[15].capitalGainsTax),
       y25: formatCurrency(yearlyData[25].capitalGainsTax),
       y30: formatCurrency(yearlyData[30].capitalGainsTax),
+    },
+    {
+      metric: "Capital Gains Tax (Present Value)",
+      y0: formatCurrency(yearlyData[0].capitalGainsTaxPV),
+      y1: formatCurrency(yearlyData[1].capitalGainsTaxPV),
+      y2: formatCurrency(yearlyData[2].capitalGainsTaxPV),
+      y3: formatCurrency(yearlyData[3].capitalGainsTaxPV),
+      y4: formatCurrency(yearlyData[4].capitalGainsTaxPV),
+      y5: formatCurrency(yearlyData[5].capitalGainsTaxPV),
+      y10: formatCurrency(yearlyData[10].capitalGainsTaxPV),
+      y15: formatCurrency(yearlyData[15].capitalGainsTaxPV),
+      y25: formatCurrency(yearlyData[25].capitalGainsTaxPV),
+      y30: formatCurrency(yearlyData[30].capitalGainsTaxPV),
     },
     {
       metric: "Selling Costs (based on global settings per country)",
