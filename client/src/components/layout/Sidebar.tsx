@@ -16,12 +16,14 @@ import {
   Sun,
   ChevronLeft,
   ChevronRight,
+  TrendingUp,
 } from "lucide-react";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Investments", href: "/investments", icon: Home },
   { name: "TimeSeries Projections", href: "/reports", icon: BarChart3 },
+  { name: "Charts", href: "/charts", icon: TrendingUp },
   { name: "Settings", href: "/settings", icon: Settings },
 ];
 

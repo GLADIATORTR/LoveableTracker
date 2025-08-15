@@ -12,6 +12,7 @@ import Dashboard from "@/pages/SimpleDashboard";
 import Scenarios from "@/pages/Scenarios";
 import Investments from "@/pages/Investments";
 import Reports from "@/pages/Reports";
+import Charts from "@/pages/Charts";
 import Settings from "@/pages/Settings";
 import Dictionary from "@/pages/Dictionary";
 import NotFound from "@/pages/not-found";
@@ -24,6 +25,7 @@ function Router() {
 
       <Route path="/investments" component={Investments} />
       <Route path="/reports" component={Reports} />
+      <Route path="/charts" component={Charts} />
       <Route path="/settings" component={Settings} />
       <Route path="/dictionary" component={Dictionary} />
       <Route component={NotFound} />
