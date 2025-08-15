@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { EconomicScenarioSliders, type EconomicParameters } from "@/components/ui/economic-scenario-sliders";
+import { EconomicScenarioSliders, type EconomicParameters, type CountrySpecificParameters } from "@/components/ui/economic-scenario-sliders";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
@@ -31,11 +31,19 @@ function getGlobalSettings() {
   };
 }
 
-// Create effective settings by merging global settings with scenario overrides
-function getEffectiveSettings(scenarioParams?: EconomicParameters) {
+// Create effective settings by merging global settings with country-specific scenario overrides
+function getEffectiveSettings(investment: any, scenarioParams?: CountrySpecificParameters) {
   const globalSettings = getGlobalSettings();
   
-  if (!scenarioParams) {
+  if (!scenarioParams || Object.keys(scenarioParams).length === 0) {
+    return globalSettings;
+  }
+  
+  // Determine the country for this investment
+  const investmentCountry = getInvestmentCountry(investment);
+  const countryOverrides = scenarioParams[investmentCountry];
+  
+  if (!countryOverrides) {
     return globalSettings;
   }
   
@@ -43,15 +51,35 @@ function getEffectiveSettings(scenarioParams?: EconomicParameters) {
     ...globalSettings,
     countrySettings: {
       ...globalSettings.countrySettings,
-      [globalSettings.selectedCountry]: {
-        ...globalSettings.countrySettings[globalSettings.selectedCountry],
-        realEstateAppreciationRate: scenarioParams.appreciationRate,
-        inflationRate: scenarioParams.inflationRate,
-        sellingCosts: scenarioParams.sellingCosts,
-        capitalGainsTax: scenarioParams.capitalGainsTax,
+      [investmentCountry]: {
+        ...globalSettings.countrySettings[investmentCountry],
+        realEstateAppreciationRate: countryOverrides.appreciationRate,
+        inflationRate: countryOverrides.inflationRate,
+        sellingCosts: countryOverrides.sellingCosts,
+        capitalGainsTax: countryOverrides.capitalGainsTax,
       }
     }
   };
+}
+
+// Determine which country an investment belongs to based on its properties
+function getInvestmentCountry(investment: any): string {
+  // For now, use a simple heuristic based on property location or default to USA
+  // You could enhance this by adding a country field to the investment data
+  const address = investment.address?.toLowerCase() || '';
+  
+  if (address.includes('turkey') || address.includes('istanbul') || address.includes('ankara')) {
+    return 'Turkey';
+  }
+  if (address.includes('canada')) {
+    return 'Canada';
+  }
+  if (address.includes('uk') || address.includes('london')) {
+    return 'UK';
+  }
+  
+  // Default to USA
+  return 'USA';
 }
 
 // Market Value Calculator (same as TimeSeries)
@@ -238,16 +266,25 @@ function calculateNetGainPresentValue(investment: any, year: number, effectiveSe
 
 export default function Charts() {
   const [selectedProperties, setSelectedProperties] = useState<string[]>([]);
-  const [scenarioParams, setScenarioParams] = useState<EconomicParameters | null>(null);
+  const [scenarioParams, setScenarioParams] = useState<CountrySpecificParameters>({});
   
   // Get global settings for initial values
   const globalSettings = getGlobalSettings();
-  const defaultParams: EconomicParameters = {
-    appreciationRate: globalSettings.countrySettings[globalSettings.selectedCountry].realEstateAppreciationRate,
-    capitalGainsTax: globalSettings.countrySettings[globalSettings.selectedCountry].capitalGainsTax,
-    inflationRate: globalSettings.countrySettings[globalSettings.selectedCountry].inflationRate,
-    sellingCosts: globalSettings.countrySettings[globalSettings.selectedCountry].sellingCosts,
+  const getDefaultCountryParams = (): CountrySpecificParameters => {
+    const params: CountrySpecificParameters = {};
+    Object.keys(globalSettings.countrySettings).forEach(country => {
+      const settings = globalSettings.countrySettings[country];
+      params[country] = {
+        appreciationRate: settings.realEstateAppreciationRate,
+        capitalGainsTax: settings.capitalGainsTax,
+        inflationRate: settings.inflationRate,
+        sellingCosts: settings.sellingCosts,
+      };
+    });
+    return params;
   };
+  
+  const defaultCountryParams = getDefaultCountryParams();
 
   const { data: investments = [], isLoading } = useQuery<RealEstateInvestmentWithCategory[]>({
     queryKey: ['/api/investments']
@@ -256,7 +293,6 @@ export default function Charts() {
   // Generate chart data for selected properties
   const generateChartData = () => {
     const years = [0, 1, 2, 3, 4, 5, 10, 15, 25, 30];
-    const effectiveSettings = getEffectiveSettings(scenarioParams || undefined);
     
     const selectedInvestments = selectedProperties.length > 0 
       ? investments.filter(inv => selectedProperties.includes(inv.id))
@@ -266,6 +302,8 @@ export default function Charts() {
       const dataPoint: any = { year };
       
       selectedInvestments.forEach(investment => {
+        // Get effective settings for this specific investment
+        const effectiveSettings = getEffectiveSettings(investment, scenarioParams);
         const netGainPV = calculateNetGainPresentValue(investment, year, effectiveSettings);
         dataPoint[investment.propertyName || `Property ${investment.id.slice(0, 8)}`] = Math.round(netGainPV);
       });
@@ -301,15 +339,19 @@ export default function Charts() {
     });
   };
   
-  const handleParametersChange = (newParams: EconomicParameters) => {
-    setScenarioParams(newParams);
+  const handleParametersChange = (country: string, newParams: EconomicParameters) => {
+    setScenarioParams(prev => ({
+      ...prev,
+      [country]: newParams
+    }));
   };
   
   const handleReset = () => {
-    setScenarioParams(null);
+    setScenarioParams({});
   };
   
-  const currentParams = scenarioParams || defaultParams;
+  // Merge default params with any overrides
+  const currentCountryParams = { ...defaultCountryParams, ...scenarioParams };
 
   if (isLoading) {
     return (
@@ -327,9 +369,10 @@ export default function Charts() {
 
       {/* Economic Scenario Sliders */}
       <EconomicScenarioSliders
-        parameters={currentParams}
+        countryParameters={currentCountryParams}
         onParametersChange={handleParametersChange}
         onReset={handleReset}
+        selectedCountry={globalSettings.selectedCountry}
       />
 
       {/* Property Selection */}

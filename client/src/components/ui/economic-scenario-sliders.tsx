@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
-import { RotateCcw } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { RotateCcw, Globe } from "lucide-react";
 
 export interface EconomicParameters {
   appreciationRate: number;
@@ -10,22 +12,78 @@ export interface EconomicParameters {
   sellingCosts: number;
 }
 
+export interface CountrySpecificParameters {
+  [country: string]: EconomicParameters;
+}
+
 interface EconomicScenarioSlidersProps {
-  parameters: EconomicParameters;
-  onParametersChange: (parameters: EconomicParameters) => void;
+  countryParameters: CountrySpecificParameters;
+  onParametersChange: (country: string, parameters: EconomicParameters) => void;
   onReset: () => void;
+  selectedCountry?: string;
 }
 
 export function EconomicScenarioSliders({ 
-  parameters, 
+  countryParameters, 
   onParametersChange, 
-  onReset 
+  onReset,
+  selectedCountry = 'USA'
 }: EconomicScenarioSlidersProps) {
+  const [currentCountry, setCurrentCountry] = useState(selectedCountry);
+  
+  // Get available countries from global settings
+  const getAvailableCountries = () => {
+    try {
+      const saved = localStorage.getItem('global-settings');
+      if (saved) {
+        const settings = JSON.parse(saved);
+        return Object.keys(settings.countrySettings || { USA: {} });
+      }
+    } catch (error) {
+      console.error('Failed to parse global settings:', error);
+    }
+    return ['USA'];
+  };
+  
+  const availableCountries = getAvailableCountries();
+  
+  // Get default parameters for a country
+  const getDefaultParametersForCountry = (country: string): EconomicParameters => {
+    try {
+      const saved = localStorage.getItem('global-settings');
+      if (saved) {
+        const settings = JSON.parse(saved);
+        const countrySettings = settings.countrySettings?.[country];
+        if (countrySettings) {
+          return {
+            appreciationRate: countrySettings.realEstateAppreciationRate,
+            capitalGainsTax: countrySettings.capitalGainsTax,
+            inflationRate: countrySettings.inflationRate,
+            sellingCosts: countrySettings.sellingCosts,
+          };
+        }
+      }
+    } catch (error) {
+      console.error('Failed to get country settings:', error);
+    }
+    
+    // Fallback defaults
+    return {
+      appreciationRate: 3.5,
+      capitalGainsTax: 25.0,
+      inflationRate: 3.5,
+      sellingCosts: 6.0,
+    };
+  };
+  
+  const parameters = countryParameters[currentCountry] || getDefaultParametersForCountry(currentCountry);
+  
   const updateParameter = (key: keyof EconomicParameters, value: number[]) => {
-    onParametersChange({
+    const newParameters = {
       ...parameters,
       [key]: value[0]
-    });
+    };
+    onParametersChange(currentCountry, newParameters);
   };
 
   const formatPercent = (value: number) => `${value.toFixed(1)}%`;
@@ -33,7 +91,27 @@ export function EconomicScenarioSliders({
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-        <CardTitle className="text-lg">Economic Scenario Analysis</CardTitle>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <Globe className="w-5 h-5 text-muted-foreground" />
+            <CardTitle className="text-lg">Economic Scenario Analysis</CardTitle>
+          </div>
+          
+          {/* Country Selection */}
+          <Select value={currentCountry} onValueChange={setCurrentCountry}>
+            <SelectTrigger className="w-32">
+              <SelectValue placeholder="Country" />
+            </SelectTrigger>
+            <SelectContent>
+              {availableCountries.map(country => (
+                <SelectItem key={country} value={country}>
+                  {country}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        
         <Button
           variant="outline"
           size="sm"
@@ -144,8 +222,8 @@ export function EconomicScenarioSliders({
         </div>
 
         <div className="text-xs text-muted-foreground bg-muted/50 p-3 rounded-lg">
-          <p className="font-medium mb-1">Scenario Analysis</p>
-          <p>Adjust the sliders above to see how different economic scenarios impact your investment projections. Changes are applied in real-time to both charts and tables.</p>
+          <p className="font-medium mb-1">Country-Specific Scenario Analysis</p>
+          <p>Adjust the sliders above to see how different economic scenarios impact your investment projections for <strong>{currentCountry}</strong> properties only. Changes are applied in real-time to both charts and tables.</p>
         </div>
       </CardContent>
     </Card>

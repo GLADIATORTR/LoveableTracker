@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { EconomicScenarioSliders, type EconomicParameters } from "@/components/ui/economic-scenario-sliders";
+import { EconomicScenarioSliders, type EconomicParameters, type CountrySpecificParameters } from "@/components/ui/economic-scenario-sliders";
 import { useToast } from "@/hooks/use-toast";
 import { TimeSeriesProjectionsTable } from "@/components/ui/timeseries-projections-table";
 import { 
@@ -19,7 +19,7 @@ export default function Reports() {
   const { toast } = useToast();
   const [inflationAdjusted, setInflationAdjusted] = useState(false);
   const [selectedPropertyId, setSelectedPropertyId] = useState<string>("");
-  const [scenarioParams, setScenarioParams] = useState<EconomicParameters | null>(null);
+  const [scenarioParams, setScenarioParams] = useState<CountrySpecificParameters>({});
 
   const { data: investments, isLoading } = useQuery<RealEstateInvestmentWithCategory[]>({
     queryKey: ["/api/investments"],
@@ -60,12 +60,21 @@ export default function Reports() {
   };
   
   const globalSettings = getGlobalSettings();
-  const defaultParams: EconomicParameters = {
-    appreciationRate: globalSettings.countrySettings[globalSettings.selectedCountry].realEstateAppreciationRate,
-    capitalGainsTax: globalSettings.countrySettings[globalSettings.selectedCountry].capitalGainsTax,
-    inflationRate: globalSettings.countrySettings[globalSettings.selectedCountry].inflationRate,
-    sellingCosts: globalSettings.countrySettings[globalSettings.selectedCountry].sellingCosts,
+  const getDefaultCountryParams = (): CountrySpecificParameters => {
+    const params: CountrySpecificParameters = {};
+    Object.keys(globalSettings.countrySettings).forEach(country => {
+      const settings = globalSettings.countrySettings[country];
+      params[country] = {
+        appreciationRate: settings.realEstateAppreciationRate,
+        capitalGainsTax: settings.capitalGainsTax,
+        inflationRate: settings.inflationRate,
+        sellingCosts: settings.sellingCosts,
+      };
+    });
+    return params;
   };
+  
+  const defaultCountryParams = getDefaultCountryParams();
 
   const handleExportReport = () => {
     toast({
@@ -74,15 +83,19 @@ export default function Reports() {
     });
   };
   
-  const handleParametersChange = (newParams: EconomicParameters) => {
-    setScenarioParams(newParams);
+  const handleParametersChange = (country: string, newParams: EconomicParameters) => {
+    setScenarioParams(prev => ({
+      ...prev,
+      [country]: newParams
+    }));
   };
   
   const handleReset = () => {
-    setScenarioParams(null);
+    setScenarioParams({});
   };
   
-  const currentParams = scenarioParams || defaultParams;
+  // Merge default params with any overrides
+  const currentCountryParams = { ...defaultCountryParams, ...scenarioParams };
 
   if (!investments || investments.length === 0) {
     return (
@@ -139,9 +152,10 @@ export default function Reports() {
 
       {/* Economic Scenario Sliders */}
       <EconomicScenarioSliders
-        parameters={currentParams}
+        countryParameters={currentCountryParams}
         onParametersChange={handleParametersChange}
         onReset={handleReset}
+        selectedCountry={globalSettings.selectedCountry}
       />
 
       {/* Selected Property Projections */}

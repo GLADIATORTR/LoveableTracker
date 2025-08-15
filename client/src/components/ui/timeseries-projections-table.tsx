@@ -5,7 +5,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Copy, Check, Info } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import type { EconomicParameters } from "@/components/ui/economic-scenario-sliders";
+import type { EconomicParameters, CountrySpecificParameters } from "@/components/ui/economic-scenario-sliders";
 import type { RealEstateInvestmentWithCategory } from "@shared/schema";
 
 interface ProjectionRow {
@@ -26,7 +26,7 @@ interface ProjectionRow {
 interface TimeSeriesProjectionsTableProps {
   investment: RealEstateInvestmentWithCategory;
   inflationAdjusted?: boolean;
-  scenarioParams?: EconomicParameters | null;
+  scenarioParams?: CountrySpecificParameters;
 }
 
 // Get global settings from localStorage
@@ -54,11 +54,19 @@ function getGlobalSettings() {
   };
 }
 
-// Create effective settings by merging global settings with scenario overrides
-function getEffectiveSettings(scenarioParams?: EconomicParameters) {
+// Create effective settings by merging global settings with country-specific scenario overrides
+function getEffectiveSettings(investment: any, scenarioParams?: CountrySpecificParameters) {
   const globalSettings = getGlobalSettings();
   
-  if (!scenarioParams) {
+  if (!scenarioParams || Object.keys(scenarioParams).length === 0) {
+    return globalSettings;
+  }
+  
+  // Determine the country for this investment
+  const investmentCountry = getInvestmentCountry(investment);
+  const countryOverrides = scenarioParams[investmentCountry];
+  
+  if (!countryOverrides) {
     return globalSettings;
   }
   
@@ -66,15 +74,35 @@ function getEffectiveSettings(scenarioParams?: EconomicParameters) {
     ...globalSettings,
     countrySettings: {
       ...globalSettings.countrySettings,
-      [globalSettings.selectedCountry]: {
-        ...globalSettings.countrySettings[globalSettings.selectedCountry],
-        realEstateAppreciationRate: scenarioParams.appreciationRate,
-        inflationRate: scenarioParams.inflationRate,
-        sellingCosts: scenarioParams.sellingCosts,
-        capitalGainsTax: scenarioParams.capitalGainsTax,
+      [investmentCountry]: {
+        ...globalSettings.countrySettings[investmentCountry],
+        realEstateAppreciationRate: countryOverrides.appreciationRate,
+        inflationRate: countryOverrides.inflationRate,
+        sellingCosts: countryOverrides.sellingCosts,
+        capitalGainsTax: countryOverrides.capitalGainsTax,
       }
     }
   };
+}
+
+// Determine which country an investment belongs to based on its properties
+function getInvestmentCountry(investment: any): string {
+  // For now, use a simple heuristic based on property location or default to USA
+  // You could enhance this by adding a country field to the investment data
+  const address = investment.address?.toLowerCase() || '';
+  
+  if (address.includes('turkey') || address.includes('istanbul') || address.includes('ankara')) {
+    return 'Turkey';
+  }
+  if (address.includes('canada')) {
+    return 'Canada';
+  }
+  if (address.includes('uk') || address.includes('london')) {
+    return 'UK';
+  }
+  
+  // Default to USA
+  return 'USA';
 }
 
 function formatCurrency(amount: number): string {
@@ -859,7 +887,7 @@ function TaxBenefitsTooltip({ investment, year, effectiveSettings, children }: {
 }
 
 export function TimeSeriesProjectionsTable({ investment, inflationAdjusted = false, scenarioParams }: TimeSeriesProjectionsTableProps) {
-  const effectiveSettings = getEffectiveSettings(scenarioParams || undefined);
+  const effectiveSettings = getEffectiveSettings(investment, scenarioParams);
   const projectionRows = calculateProjections(investment, inflationAdjusted, effectiveSettings);
   const [copied, setCopied] = useState(false);
   const { toast } = useToast();
