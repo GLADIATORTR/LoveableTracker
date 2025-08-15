@@ -131,7 +131,7 @@ function calculateNetGainPV(investment: RealEstateInvestmentWithCategory, year: 
 export default function Charts() {
   const [selectedProperties, setSelectedProperties] = useState<string[]>([]);
   
-  const { data: investments, isLoading } = useQuery<RealEstateInvestmentWithCategory[]>({
+  const { data: investments, isLoading, error } = useQuery<RealEstateInvestmentWithCategory[]>({
     queryKey: ["/api/investments"],
   });
 
@@ -139,6 +139,15 @@ export default function Charts() {
     return (
       <div className="container mx-auto p-6">
         <div className="text-center">Loading investments...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    console.error('Charts page error:', error);
+    return (
+      <div className="container mx-auto p-6">
+        <div className="text-center text-red-500">Error loading investments: {String(error)}</div>
       </div>
     );
   }
