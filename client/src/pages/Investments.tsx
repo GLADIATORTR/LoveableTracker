@@ -118,66 +118,75 @@ export default function Investments() {
       return;
     }
 
-    const csvHeaders = [
-      'Property Name',
-      'Address',
-      'Investment Property Type',
-      'Country',
-      'Purchase Price',
-      'Current Value',
-      'Monthly Rent',
-      'Monthly Expenses',
-      'Purchase Date',
-      'Down Payment',
-      'Loan Amount',
-      'Interest Rate',
-      'Loan Term',
-      'Outstanding Balance',
-      'Monthly Mortgage',
-      'Net Cash Flow',
-      'Net Equity',
-      'ROI %'
-    ];
+    try {
+      const csvHeaders = [
+        'Property Name',
+        'Address',
+        'Investment Property Type',
+        'Country',
+        'Purchase Price',
+        'Current Value',
+        'Monthly Rent',
+        'Monthly Expenses',
+        'Purchase Date',
+        'Down Payment',
+        'Loan Amount',
+        'Interest Rate (%)',
+        'Loan Term (Years)',
+        'Outstanding Balance',
+        'Monthly Mortgage',
+        'Net Cash Flow',
+        'Net Equity',
+        'ROI (%)'
+      ];
 
-    const csvData = investments.map(inv => [
-      inv.propertyName,
-      inv.address,
-      inv.propertyType,
-      inv.country || 'USA',
-      (inv.purchasePrice / 100).toString(),
-      (inv.currentValue / 100).toString(),
-      (inv.monthlyRent / 100).toString(),
-      (inv.monthlyExpenses / 100).toString(),
-      formatDate(inv.purchaseDate),
-      ((inv.downPayment || 0) / 100).toString(),
-      ((inv.loanAmount || 0) / 100).toString(),
-      ((inv.interestRate || 0) / 100).toFixed(2),
-      Math.round((inv.loanTerm || 0) / 12).toString(),
-      ((inv.outstandingBalance || 0) / 100).toString(),
-      ((inv.monthlyMortgage || 0) / 100).toString(),
-      (calculateCashFlow(inv.monthlyRent, inv.monthlyExpenses) / 100).toString(),
-      ((inv.netEquity || 0) / 100).toString(),
-      calculateROI(inv.currentValue, inv.purchasePrice).toFixed(2)
-    ]);
+      const csvData = investments.map(inv => [
+        inv.propertyName || '',
+        inv.address || '',
+        inv.propertyType || '',
+        inv.country || 'USA',
+        (inv.purchasePrice / 100).toFixed(2),
+        (inv.currentValue / 100).toFixed(2),
+        (inv.monthlyRent / 100).toFixed(2),
+        (inv.monthlyExpenses / 100).toFixed(2),
+        formatDate(inv.purchaseDate),
+        ((inv.downPayment || 0) / 100).toFixed(2),
+        ((inv.loanAmount || 0) / 100).toFixed(2),
+        ((inv.interestRate || 0) / 10000).toFixed(2),
+        Math.round((inv.loanTerm || 0) / 12).toString(),
+        ((inv.outstandingBalance || 0) / 100).toFixed(2),
+        ((inv.monthlyMortgage || 0) / 100).toFixed(2),
+        (calculateCashFlow(inv.monthlyRent, inv.monthlyExpenses) / 100).toFixed(2),
+        ((inv.netEquity || 0) / 100).toFixed(2),
+        calculateROI(inv.currentValue, inv.purchasePrice).toFixed(2)
+      ]);
 
-    const csvContent = [csvHeaders, ...csvData]
-      .map(row => row.map(field => `"${field}"`).join(','))
-      .join('\n');
+      const csvContent = [csvHeaders, ...csvData]
+        .map(row => row.map(field => `"${field?.toString().replace(/"/g, '""')}"`).join(','))
+        .join('\n');
 
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `investments_${new Date().toISOString().split('T')[0]}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `real_estate_investments_${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
 
-    toast({
-      title: "Export Complete",
-      description: "Investment data has been exported to CSV.",
-    });
+      toast({
+        title: "Export Complete",
+        description: `${investments.length} investment properties exported to CSV successfully.`,
+      });
+    } catch (error) {
+      console.error('Export failed:', error);
+      toast({
+        title: "Export Failed",
+        description: "Failed to export investment data. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   if (isLoading) {
@@ -223,7 +232,7 @@ export default function Investments() {
           <CSVTemplate />
           <Button variant="outline" size="sm" onClick={exportInvestments}>
             <Download className="w-4 h-4 mr-2" />
-            Export
+            Export Data
           </Button>
           <InvestmentForm 
             onSuccess={handleSuccess}

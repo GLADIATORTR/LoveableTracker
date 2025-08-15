@@ -842,9 +842,10 @@ export function TimeSeriesProjectionsTable({ investment, inflationAdjusted = fal
               size="sm" 
               onClick={copyDataToClipboard}
               className="flex items-center gap-2"
+              disabled={copied}
             >
               {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-              {copied ? "Copied!" : "Copy Data"}
+              {copied ? "Copied!" : "Copy Table"}
             </Button>
           </CardTitle>
         </CardHeader>
