@@ -406,6 +406,93 @@
   @apply focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2;
 }
 
+/* Mobile-specific utilities */
+.mobile-safe-area {
+  @apply pb-safe-bottom;
+}
+
+.mobile-scroll {
+  -webkit-overflow-scrolling: touch;
+}
+
+.mobile-tap-highlight {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Touch-friendly buttons */
+.touch-target {
+  @apply min-h-[44px] min-w-[44px] flex items-center justify-center;
+}
+
+/* Responsive text utilities */
+.text-responsive-xs {
+  @apply text-xs sm:text-sm;
+}
+
+.text-responsive-sm {
+  @apply text-sm sm:text-base;
+}
+
+.text-responsive-base {
+  @apply text-base sm:text-lg;
+}
+
+.text-responsive-lg {
+  @apply text-lg sm:text-xl lg:text-2xl;
+}
+
+.text-responsive-xl {
+  @apply text-xl sm:text-2xl lg:text-3xl;
+}
+
+/* Mobile-first spacing */
+.space-mobile {
+  @apply space-y-4 sm:space-y-6;
+}
+
+.gap-mobile {
+  @apply gap-3 sm:gap-4 lg:gap-6;
+}
+
+.p-mobile {
+  @apply p-4 sm:p-6;
+}
+
+.px-mobile {
+  @apply px-4 sm:px-6;
+}
+
+.py-mobile {
+  @apply py-4 sm:py-6;
+}
+
+/* Mobile card optimizations */
+.card-mobile {
+  @apply bg-card rounded-lg shadow-sm border border-border hover:shadow-md transition-all duration-200 p-4 sm:p-6;
+}
+
+/* Line clamp utilities for mobile */
+.line-clamp-1 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+}
+
+.line-clamp-2 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.line-clamp-3 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
 /* Toast animation */
 .toast-enter {
   transform: translateX(100%);

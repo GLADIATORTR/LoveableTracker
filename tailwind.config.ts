@@ -4,6 +4,18 @@ export default {
   darkMode: ["class"],
   content: ["./client/index.html", "./client/src/**/*.{js,jsx,ts,tsx}"],
   theme: {
+    screens: {
+      'xs': '475px',
+      'sm': '640px',
+      'md': '768px',
+      'lg': '1024px',
+      'xl': '1280px',
+      '2xl': '1536px',
+      // Mobile-first approach
+      'mobile': {'max': '767px'},
+      'tablet': {'min': '768px', 'max': '1023px'},
+      'desktop': {'min': '1024px'},
+    },
     extend: {
       fontFamily: {
         sans: ["Inter", "system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "Helvetica Neue", "Arial", "sans-serif"],
@@ -82,8 +94,25 @@ export default {
           200: "hsl(var(--surface-200))",
         },
         success: "hsl(var(--success))",
+        "success-foreground": "hsl(var(--success-foreground))",
         warning: "hsl(var(--warning))",
+        "warning-foreground": "hsl(var(--warning-foreground))",
         error: "hsl(var(--error))",
+        "error-foreground": "hsl(var(--error-foreground))",
+      },
+      spacing: {
+        "18": "4.5rem",
+        "88": "22rem",
+        "safe-top": "env(safe-area-inset-top)",
+        "safe-bottom": "env(safe-area-inset-bottom)",
+        "safe-left": "env(safe-area-inset-left)",
+        "safe-right": "env(safe-area-inset-right)",
+      },
+      minHeight: {
+        'touch': '44px', // Apple's recommended minimum touch target size
+      },
+      minWidth: {
+        'touch': '44px',
       },
       keyframes: {
         "accordion-down": {

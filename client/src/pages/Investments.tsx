@@ -219,75 +219,87 @@ export default function Investments() {
   }
 
   return (
-    <div className="animate-fade-in space-y-8">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div className="animate-fade-in space-y-6">
+      {/* Header - Mobile Optimized */}
+      <div className="space-y-4">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Investment Properties</h1>
-          <p className="text-muted-foreground mt-2">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground">Investment Properties</h1>
+          <p className="text-muted-foreground mt-1 text-sm sm:text-base">
             Manage your real estate investment portfolio
           </p>
         </div>
-        <div className="flex gap-2">
-          <CSVTemplate />
-          <Button variant="outline" size="sm" onClick={exportInvestments}>
-            <Download className="w-4 h-4 mr-2" />
-            Export Data
-          </Button>
-          <InvestmentForm 
-            onSuccess={handleSuccess}
-            existingInvestment={editingInvestment}
-            onClose={() => setEditingInvestment(null)}
-          />
-          <CSVImport onSuccess={handleSuccess} />
+        
+        {/* Mobile-First Action Buttons */}
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-2">
+          {/* Primary Actions Row */}
+          <div className="flex gap-2 flex-1">
+            <InvestmentForm 
+              onSuccess={handleSuccess}
+              existingInvestment={editingInvestment}
+              onClose={() => setEditingInvestment(null)}
+            />
+            <CSVImport onSuccess={handleSuccess} />
+          </div>
+          
+          {/* Secondary Actions Row */}
+          <div className="flex gap-2 sm:ml-auto">
+            <CSVTemplate />
+            <Button variant="outline" size="sm" onClick={exportInvestments} className="flex-1 sm:flex-none">
+              <Download className="w-4 h-4 mr-2" />
+              <span className="hidden sm:inline">Export Data</span>
+              <span className="sm:hidden">Export</span>
+            </Button>
+          </div>
         </div>
       </div>
 
-      {/* Investments Grid */}
+      {/* Investments Grid - Mobile Optimized */}
       {!investments || investments.length === 0 ? (
-        <div className="text-center py-12">
-          <Home className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-foreground mb-2">No investments yet</h3>
-          <p className="text-muted-foreground mb-6">
+        <div className="text-center py-8 sm:py-12">
+          <Home className="h-10 w-10 sm:h-12 sm:w-12 text-muted-foreground mx-auto mb-3 sm:mb-4" />
+          <h3 className="text-base sm:text-lg font-medium text-foreground mb-2">No investments yet</h3>
+          <p className="text-muted-foreground mb-4 sm:mb-6 text-sm sm:text-base px-4">
             Start building your real estate portfolio by adding your first investment property.
           </p>
           <InvestmentForm onSuccess={handleSuccess} />
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
           {investments.map((investment) => (
-            <Card key={investment.id} className="group hover:shadow-xl transition-all duration-300 border-border/40 bg-white/80 backdrop-blur-sm hover:bg-white">
-              <CardHeader className="pb-4">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <CardTitle className="text-lg font-semibold text-foreground mb-1">
+            <Card key={investment.id} className="group hover:shadow-lg transition-all duration-300 border-border/40 bg-white/95 backdrop-blur-sm hover:bg-white">
+              <CardHeader className="pb-3 sm:pb-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1 min-w-0">
+                    <CardTitle className="text-base sm:text-lg font-semibold text-foreground mb-1 line-clamp-1">
                       {investment.propertyName}
                     </CardTitle>
-                    <div className="flex items-center text-sm text-muted-foreground mb-2">
-                      <MapPin className="w-4 h-4 mr-1 flex-shrink-0" />
-                      <span className="truncate">{investment.address}</span>
+                    <div className="flex items-start text-xs sm:text-sm text-muted-foreground mb-2">
+                      <MapPin className="w-3 h-3 sm:w-4 sm:h-4 mr-1 flex-shrink-0 mt-0.5" />
+                      <span className="line-clamp-2">{investment.address}</span>
                     </div>
-                    <Badge variant="secondary" className="text-xs bg-emerald-100 text-emerald-700 border-emerald-200">
+                    <Badge variant="secondary" className="text-xs bg-emerald-100 text-emerald-700 border-emerald-200 w-fit">
                       {investment.propertyType}
                     </Badge>
                   </div>
-                  <div className="flex gap-1 ml-2">
+                  
+                  {/* Mobile-Friendly Action Buttons */}
+                  <div className="flex flex-col gap-1">
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => setEditingInvestment(investment)}
-                      className="opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="sm:opacity-0 sm:group-hover:opacity-100 transition-opacity p-2 h-8 w-8"
                     >
-                      <Edit className="w-4 h-4" />
+                      <Edit className="w-3 h-3 sm:w-4 sm:h-4" />
                     </Button>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive"
+                          className="sm:opacity-0 sm:group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive p-2 h-8 w-8"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
                         </Button>
                       </AlertDialogTrigger>
                       <AlertDialogContent>
@@ -312,9 +324,9 @@ export default function Investments() {
                 </div>
               </CardHeader>
               
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-3 sm:space-y-4 pt-0">
                 {/* Financial Overview */}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-3 sm:gap-4">
                   <div>
                     <div className="flex items-center text-xs text-muted-foreground mb-1">
                       <DollarSign className="w-3 h-3 mr-1" />

@@ -30,7 +30,7 @@ const navigation = [
 export default function Sidebar() {
   const [location] = useLocation();
   const { theme, setTheme } = useTheme();
-  const { sidebarCollapsed, setSidebarCollapsed, user } = useAppContext();
+  const { sidebarCollapsed, setSidebarCollapsed, user, isMobile, setMobileMenuOpen } = useAppContext();
 
   const toggleTheme = () => {
     setTheme(theme === "dark" ? "light" : "dark");
@@ -38,8 +38,9 @@ export default function Sidebar() {
 
   return (
     <div className={cn(
-      "flex flex-col bg-sidebar border-r border-sidebar-border transition-all duration-300 shadow-xl",
-      sidebarCollapsed ? "w-16" : "w-64"
+      "flex flex-col bg-sidebar border-r border-sidebar-border transition-all duration-300 shadow-xl h-full",
+      sidebarCollapsed && !isMobile ? "w-16" : "w-64",
+      isMobile && "w-80 max-w-[80vw]"
     )}>
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-sidebar-border/30">
