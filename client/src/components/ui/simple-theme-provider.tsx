@@ -22,22 +22,21 @@ const ThemeProviderContext = createContext<ThemeProviderState>(initialState);
 
 export function SimpleThemeProvider({
   children,
-  defaultTheme = "system",
+  defaultTheme = "light",
   storageKey = "real-estate-financials-theme",
   ...props
 }: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>(defaultTheme);
-
-  useEffect(() => {
+  const [theme, setTheme] = useState<Theme>(() => {
+    if (typeof window === 'undefined') return defaultTheme;
     try {
       const stored = localStorage.getItem(storageKey) as Theme;
-      if (stored) {
-        setTheme(stored);
-      }
+      return stored || defaultTheme;
     } catch {
-      // Ignore storage errors
+      return defaultTheme;
     }
-  }, [storageKey]);
+  });
+
+  // Remove duplicate localStorage access - already handled in useState initializer
 
   useEffect(() => {
     const root = window.document.documentElement;
