@@ -85,24 +85,10 @@ function getEffectiveSettings(investment: any, scenarioParams?: CountrySpecificP
   };
 }
 
-// Determine which country an investment belongs to based on its properties
+// Determine which country an investment belongs to based on its country field
 function getInvestmentCountry(investment: any): string {
-  // For now, use a simple heuristic based on property location or default to USA
-  // You could enhance this by adding a country field to the investment data
-  const address = investment.address?.toLowerCase() || '';
-  
-  if (address.includes('turkey') || address.includes('istanbul') || address.includes('ankara')) {
-    return 'Turkey';
-  }
-  if (address.includes('canada')) {
-    return 'Canada';
-  }
-  if (address.includes('uk') || address.includes('london')) {
-    return 'UK';
-  }
-  
-  // Default to USA
-  return 'USA';
+  // Use the explicit country field from the investment data
+  return investment.country || 'USA';
 }
 
 function formatCurrency(amount: number): string {

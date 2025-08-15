@@ -18,6 +18,7 @@ const formSchema = z.object({
   propertyName: z.string().min(1, "Property name is required"),
   address: z.string().min(1, "Address is required"),
   propertyType: z.string(),
+  country: z.string().min(1, "Country is required"),
   purchasePrice: z.number().min(0, "Purchase price must be positive"),
   currentValue: z.number().min(0, "Current value must be positive"),
   purchaseDate: z.string(),
@@ -38,6 +39,7 @@ type FormData = {
   propertyName: string;
   address: string;
   propertyType: string;
+  country: string;
   purchasePrice: number;
   currentValue: number;
   purchaseDate: string;
@@ -64,6 +66,17 @@ const propertyTypes = [
   "Other"
 ];
 
+const countries = [
+  "USA",
+  "Turkey",
+  "Canada",
+  "UK",
+  "Germany",
+  "France",
+  "Australia",
+  "Other"
+];
+
 interface InvestmentFormProps {
   onSuccess?: () => void;
   existingInvestment?: RealEstateInvestmentWithCategory | null;
@@ -84,11 +97,12 @@ export function InvestmentForm({ onSuccess, existingInvestment, onClose }: Inves
       propertyName: existingInvestment.propertyName,
       address: existingInvestment.address,
       propertyType: existingInvestment.propertyType,
+      country: existingInvestment.country || "USA",
       purchasePrice: existingInvestment.purchasePrice / 100,
       currentValue: existingInvestment.currentValue / 100,
-      purchaseDate: typeof existingInvestment.purchaseDate === 'string' 
-        ? existingInvestment.purchaseDate.split('T')[0] 
-        : new Date(existingInvestment.purchaseDate).toISOString().split('T')[0],
+      purchaseDate: existingInvestment.purchaseDate 
+        ? new Date(existingInvestment.purchaseDate).toISOString().split('T')[0]
+        : new Date().toISOString().split('T')[0],
       monthlyRent: existingInvestment.monthlyRent / 100,
       monthlyExpenses: existingInvestment.monthlyExpenses / 100,
       netEquity: existingInvestment.netEquity / 100,
@@ -104,6 +118,7 @@ export function InvestmentForm({ onSuccess, existingInvestment, onClose }: Inves
       propertyName: "",
       address: "",
       propertyType: "Single Family",
+      country: "USA",
       purchasePrice: 0,
       currentValue: 0,
       purchaseDate: new Date().toISOString().split('T')[0],
@@ -130,11 +145,12 @@ export function InvestmentForm({ onSuccess, existingInvestment, onClose }: Inves
         propertyName: existingInvestment.propertyName,
         address: existingInvestment.address,
         propertyType: existingInvestment.propertyType,
+        country: existingInvestment.country || "USA",
         purchasePrice: existingInvestment.purchasePrice / 100,
         currentValue: existingInvestment.currentValue / 100,
-        purchaseDate: typeof existingInvestment.purchaseDate === 'string' 
-          ? existingInvestment.purchaseDate.split('T')[0] 
-          : new Date(existingInvestment.purchaseDate).toISOString().split('T')[0],
+        purchaseDate: existingInvestment.purchaseDate 
+          ? new Date(existingInvestment.purchaseDate).toISOString().split('T')[0]
+          : new Date().toISOString().split('T')[0],
         monthlyRent: existingInvestment.monthlyRent / 100,
         monthlyExpenses: existingInvestment.monthlyExpenses / 100,
         netEquity: existingInvestment.netEquity / 100,
@@ -166,6 +182,7 @@ export function InvestmentForm({ onSuccess, existingInvestment, onClose }: Inves
         outstandingBalance: data.outstandingBalance ? Math.round(data.outstandingBalance * 100) : 0,
         currentTerm: data.currentTerm || 0,
         purchaseDate: new Date(data.purchaseDate),
+        country: data.country,
       };
 
       const url = existingInvestment ? `/api/investments/${existingInvestment.id}` : "/api/investments";
@@ -231,7 +248,7 @@ export function InvestmentForm({ onSuccess, existingInvestment, onClose }: Inves
         
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <FormField
                 control={form.control}
                 name="propertyName"
@@ -262,6 +279,31 @@ export function InvestmentForm({ onSuccess, existingInvestment, onClose }: Inves
                         {propertyTypes.map((type) => (
                           <SelectItem key={type} value={type}>
                             {type}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="country"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Country *</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select country" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {countries.map((country) => (
+                          <SelectItem key={country} value={country}>
+                            {country}
                           </SelectItem>
                         ))}
                       </SelectContent>
