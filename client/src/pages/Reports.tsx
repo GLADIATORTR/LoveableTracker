@@ -10,10 +10,8 @@ import { TimeSeriesProjectionsTable } from "@/components/ui/timeseries-projectio
 import { 
   Download,
   Home,
-  TrendingUp,
-  BarChart4
+  TrendingUp
 } from "lucide-react";
-import { Link } from "wouter";
 import type { RealEstateInvestmentWithCategory } from "@shared/schema";
 
 export default function Reports() {
@@ -64,12 +62,6 @@ export default function Reports() {
           </p>
         </div>
         <div className="flex items-center gap-3 flex-wrap">
-          <Link href="/charts">
-            <Button variant="outline" size="sm">
-              <BarChart4 className="w-4 h-4 mr-2" />
-              View Charts
-            </Button>
-          </Link>
           <Select value={selectedPropertyId} onValueChange={setSelectedPropertyId}>
             <SelectTrigger className="w-64">
               <SelectValue placeholder="Select a property" />

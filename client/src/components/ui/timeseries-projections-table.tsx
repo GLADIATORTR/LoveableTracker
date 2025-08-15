@@ -1,8 +1,7 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-// Temporarily remove tooltip imports to fix React hook errors
-// import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Copy, Check, Info } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -787,10 +786,52 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
   return rows;
 }
 
-// TaxBenefitsTooltip component - simplified without tooltip to fix React hook errors
+// TaxBenefitsTooltip component for showing breakdown
 function TaxBenefitsTooltip({ investment, year, children }: { investment: any; year: number; children: React.ReactNode }) {
-  // Simply return the children without tooltip for now
-  return <>{children}</>;
+  const globalSettings = getGlobalSettings();
+  const breakdown = calculateTaxBenefitsBreakdown(investment, year, globalSettings);
+  
+  if (breakdown.total === 0) {
+    return <>{children}</>;
+  }
+  
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <div className="cursor-help flex items-center gap-1">
+          {children}
+          <Info className="w-3 h-3 opacity-50" />
+        </div>
+      </TooltipTrigger>
+      <TooltipContent side="top" className="max-w-xs">
+        <div className="text-sm space-y-1">
+          <div className="font-semibold">Tax Benefits Breakdown (Year {year}):</div>
+          <div className="space-y-0.5 text-xs">
+            <div className="flex justify-between">
+              <span>Annual Depreciation:</span>
+              <span className="font-mono">{formatCurrency(breakdown.annualDepreciation)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Mortgage Interest:</span>
+              <span className="font-mono">{formatCurrency(breakdown.mortgageInterestDeduction)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Property Tax:</span>
+              <span className="font-mono">{formatCurrency(breakdown.propertyTaxDeduction)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Maintenance:</span>
+              <span className="font-mono">{formatCurrency(breakdown.maintenanceDeductions)}</span>
+            </div>
+            <div className="border-t pt-0.5 flex justify-between font-semibold">
+              <span>Total:</span>
+              <span className="font-mono">{formatCurrency(breakdown.total)}</span>
+            </div>
+          </div>
+        </div>
+      </TooltipContent>
+    </Tooltip>
+  );
 }
 
 export function TimeSeriesProjectionsTable({ investment, inflationAdjusted = false }: TimeSeriesProjectionsTableProps) {
@@ -841,7 +882,8 @@ export function TimeSeriesProjectionsTable({ investment, inflationAdjusted = fal
   };
 
   return (
-    <Card className="w-full">
+    <TooltipProvider>
+      <Card className="w-full">
         <CardHeader>
           <CardTitle className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
@@ -989,5 +1031,6 @@ export function TimeSeriesProjectionsTable({ investment, inflationAdjusted = fal
         </div>
       </CardContent>
     </Card>
+    </TooltipProvider>
   );
 }

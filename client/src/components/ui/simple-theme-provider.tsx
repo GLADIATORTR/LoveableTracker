@@ -1,9 +1,9 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 
 type Theme = "dark" | "light" | "system";
 
 type ThemeProviderProps = {
-  children: ReactNode;
+  children: React.ReactNode;
   defaultTheme?: Theme;
   storageKey?: string;
 };
@@ -22,21 +22,22 @@ const ThemeProviderContext = createContext<ThemeProviderState>(initialState);
 
 export function SimpleThemeProvider({
   children,
-  defaultTheme = "light",
+  defaultTheme = "system",
   storageKey = "real-estate-financials-theme",
   ...props
 }: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>(() => {
-    if (typeof window === 'undefined') return defaultTheme;
+  const [theme, setTheme] = useState<Theme>(defaultTheme);
+
+  useEffect(() => {
     try {
       const stored = localStorage.getItem(storageKey) as Theme;
-      return stored || defaultTheme;
+      if (stored) {
+        setTheme(stored);
+      }
     } catch {
-      return defaultTheme;
+      // Ignore storage errors
     }
-  });
-
-  // Remove duplicate localStorage access - already handled in useState initializer
+  }, [storageKey]);
 
   useEffect(() => {
     const root = window.document.documentElement;

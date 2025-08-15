@@ -4,15 +4,13 @@ import { useAppContext } from "@/contexts/AppContext";
 import { useTheme } from "@/components/ui/simple-theme-provider";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-// Tooltip imports removed to fix React hook errors
-// import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { GlobalSettings } from "@/components/ui/global-settings";
 import { 
   LayoutDashboard, 
   Calculator, 
   Home, 
   BarChart3, 
-  FileText,
   Settings, 
   Moon, 
   Sun,
@@ -24,7 +22,6 @@ const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Investments", href: "/investments", icon: Home },
   { name: "TimeSeries Projections", href: "/reports", icon: BarChart3 },
-  { name: "Charts", href: "/charts", icon: FileText },
   { name: "Settings", href: "/settings", icon: Settings },
 ];
 
@@ -61,25 +58,35 @@ export default function Sidebar() {
         )}
         
         <div className="flex items-center space-x-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={toggleTheme}
-            className="text-sidebar-foreground hover:bg-accent"
-            title="Toggle theme"
-          >
-            {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={toggleTheme}
+                className="text-sidebar-foreground hover:bg-accent"
+              >
+                {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Toggle theme</TooltipContent>
+          </Tooltip>
           
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-            className="text-sidebar-foreground hover:bg-accent"
-            title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-          >
-            {sidebarCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
-          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+                className="text-sidebar-foreground hover:bg-accent"
+              >
+                {sidebarCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              {sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            </TooltipContent>
+          </Tooltip>
         </div>
       </div>
 
@@ -90,39 +97,43 @@ export default function Sidebar() {
           const Icon = item.icon;
           
           return (
-            <Link key={item.name} href={item.href}>
-              <div 
-                className={cn(
-                  "flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-300 group cursor-pointer relative overflow-hidden",
-                  isActive
-                    ? "bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/25"
-                    : "text-sidebar-foreground/80 hover:text-sidebar-foreground hover:bg-sidebar-accent/50",
-                  sidebarCollapsed && "justify-center px-2"
-                )}
-                title={sidebarCollapsed ? item.name : undefined}
-              >
-                {isActive && (
-                  <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-primary-600/5 rounded-xl" />
-                )}
-                <Icon className={cn(
-                  "w-5 h-5 transition-all duration-300 relative z-10",
-                  isActive 
-                    ? "text-primary scale-110 drop-shadow-sm" 
-                    : "group-hover:scale-105 group-hover:text-sidebar-foreground"
-                )} />
-                {!sidebarCollapsed && (
-                  <span className={cn(
-                    "font-medium transition-all duration-300 relative z-10",
-                    isActive ? "text-primary font-semibold" : "group-hover:text-sidebar-foreground"
+            <Tooltip key={item.name}>
+              <TooltipTrigger asChild>
+                <Link href={item.href}>
+                  <div className={cn(
+                    "flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-300 group cursor-pointer relative overflow-hidden",
+                    isActive
+                      ? "bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/25"
+                      : "text-sidebar-foreground/80 hover:text-sidebar-foreground hover:bg-sidebar-accent/50",
+                    sidebarCollapsed && "justify-center px-2"
                   )}>
-                    {item.name}
-                  </span>
-                )}
-                {isActive && !sidebarCollapsed && (
-                  <div className="absolute right-2 w-1 h-8 bg-gradient-to-b from-primary to-primary-600 rounded-full" />
-                )}
-              </div>
-            </Link>
+                    {isActive && (
+                      <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-primary-600/5 rounded-xl" />
+                    )}
+                    <Icon className={cn(
+                      "w-5 h-5 transition-all duration-300 relative z-10",
+                      isActive 
+                        ? "text-primary scale-110 drop-shadow-sm" 
+                        : "group-hover:scale-105 group-hover:text-sidebar-foreground"
+                    )} />
+                    {!sidebarCollapsed && (
+                      <span className={cn(
+                        "font-medium transition-all duration-300 relative z-10",
+                        isActive ? "text-primary font-semibold" : "group-hover:text-sidebar-foreground"
+                      )}>
+                        {item.name}
+                      </span>
+                    )}
+                    {isActive && !sidebarCollapsed && (
+                      <div className="absolute right-2 w-1 h-8 bg-gradient-to-b from-primary to-primary-600 rounded-full" />
+                    )}
+                  </div>
+                </Link>
+              </TooltipTrigger>
+              {sidebarCollapsed && (
+                <TooltipContent side="right">{item.name}</TooltipContent>
+              )}
+            </Tooltip>
           );
         })}
         
@@ -139,29 +150,38 @@ export default function Sidebar() {
 
       {/* User Profile */}
       <div className="p-4 border-t border-sidebar-border">
-        <div 
-          className={cn(
-            "flex items-center space-x-3 p-2 rounded-lg hover:bg-accent transition-colors cursor-pointer",
-            sidebarCollapsed && "justify-center"
-          )}
-          title={sidebarCollapsed ? `${user.name} - ${user.email}` : undefined}
-        >
-          <Avatar className="w-8 h-8">
-            <AvatarFallback className="bg-primary text-primary-foreground font-semibold text-sm">
-              {user.initials}
-            </AvatarFallback>
-          </Avatar>
-          {!sidebarCollapsed && (
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-sidebar-foreground truncate">
-                {user.name}
-              </p>
-              <p className="text-xs text-muted-foreground truncate">
-                {user.email}
-              </p>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className={cn(
+              "flex items-center space-x-3 p-2 rounded-lg hover:bg-accent transition-colors cursor-pointer",
+              sidebarCollapsed && "justify-center"
+            )}>
+              <Avatar className="w-8 h-8">
+                <AvatarFallback className="bg-primary text-primary-foreground font-semibold text-sm">
+                  {user.initials}
+                </AvatarFallback>
+              </Avatar>
+              {!sidebarCollapsed && (
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-sidebar-foreground truncate">
+                    {user.name}
+                  </p>
+                  <p className="text-xs text-muted-foreground truncate">
+                    {user.email}
+                  </p>
+                </div>
+              )}
             </div>
+          </TooltipTrigger>
+          {sidebarCollapsed && (
+            <TooltipContent side="right">
+              <div>
+                <p className="font-medium">{user.name}</p>
+                <p className="text-xs text-muted-foreground">{user.email}</p>
+              </div>
+            </TooltipContent>
           )}
-        </div>
+        </Tooltip>
       </div>
     </div>
   );
