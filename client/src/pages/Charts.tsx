@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { EconomicScenarioSliders, type EconomicParameters } from "@/components/ui/economic-scenario-sliders";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
@@ -30,9 +31,32 @@ function getGlobalSettings() {
   };
 }
 
+// Create effective settings by merging global settings with scenario overrides
+function getEffectiveSettings(scenarioParams?: EconomicParameters) {
+  const globalSettings = getGlobalSettings();
+  
+  if (!scenarioParams) {
+    return globalSettings;
+  }
+  
+  return {
+    ...globalSettings,
+    countrySettings: {
+      ...globalSettings.countrySettings,
+      [globalSettings.selectedCountry]: {
+        ...globalSettings.countrySettings[globalSettings.selectedCountry],
+        realEstateAppreciationRate: scenarioParams.appreciationRate,
+        inflationRate: scenarioParams.inflationRate,
+        sellingCosts: scenarioParams.sellingCosts,
+        capitalGainsTax: scenarioParams.capitalGainsTax,
+      }
+    }
+  };
+}
+
 // Market Value Calculator (same as TimeSeries)
-function calculateMarketValue(investment: any, year: number, globalSettings: any, inflationAdjusted: boolean): number {
-  const countrySettings = globalSettings.countrySettings[globalSettings.selectedCountry];
+function calculateMarketValue(investment: any, year: number, effectiveSettings: any, inflationAdjusted: boolean): number {
+  const countrySettings = effectiveSettings.countrySettings[effectiveSettings.selectedCountry];
   const propertyAppreciationRate = countrySettings.realEstateAppreciationRate / 100;
   const currentValue = investment.currentValue / 100;
   const inflationRate = countrySettings.inflationRate / 100;
@@ -112,11 +136,11 @@ function calculateOutstandingBalance(investment: any, year: number): number {
 }
 
 // Capital Gains Tax Calculator (same as TimeSeries)
-function calculateCapitalGainsTax(investment: any, year: number, globalSettings: any): number {
-  const countrySettings = globalSettings.countrySettings[globalSettings.selectedCountry];
+function calculateCapitalGainsTax(investment: any, year: number, effectiveSettings: any): number {
+  const countrySettings = effectiveSettings.countrySettings[effectiveSettings.selectedCountry];
   const capitalGainsTaxRate = countrySettings.capitalGainsTax / 100;
   
-  const marketValue = calculateMarketValue(investment, year, globalSettings, false);
+  const marketValue = calculateMarketValue(investment, year, effectiveSettings, false);
   const purchasePrice = investment.purchasePrice / 100;
   
   const capitalGains = Math.max(0, marketValue - purchasePrice);
@@ -124,11 +148,11 @@ function calculateCapitalGainsTax(investment: any, year: number, globalSettings:
 }
 
 // Selling Costs Calculator (same as TimeSeries)
-function calculateSellingCosts(investment: any, year: number, globalSettings: any): number {
-  const countrySettings = globalSettings.countrySettings[globalSettings.selectedCountry];
+function calculateSellingCosts(investment: any, year: number, effectiveSettings: any): number {
+  const countrySettings = effectiveSettings.countrySettings[effectiveSettings.selectedCountry];
   const sellingCostsRate = countrySettings.sellingCosts / 100;
   
-  const marketValue = calculateMarketValue(investment, year, globalSettings, false);
+  const marketValue = calculateMarketValue(investment, year, effectiveSettings, false);
   return marketValue * sellingCostsRate;
 }
 
@@ -143,10 +167,10 @@ function calculateCumulativeNetYield(investment: any, year: number): number {
 }
 
 // Calculate cumulative annual mortgage payments in present value (same as TimeSeries)
-function calculateCumulativeAnnualMortgagePV(investment: any, year: number, globalSettings: any): number {
+function calculateCumulativeAnnualMortgagePV(investment: any, year: number, effectiveSettings: any): number {
   if (year === 0) return 0;
   
-  const countrySettings = globalSettings.countrySettings[globalSettings.selectedCountry];
+  const countrySettings = effectiveSettings.countrySettings[effectiveSettings.selectedCountry];
   const inflationRate = countrySettings.inflationRate / 100;
   const monthlyMortgage = (investment.monthlyMortgage || 0) / 100;
   
@@ -179,8 +203,8 @@ function calculate12HillcrestMarketValue(year: number, propertyAppreciationRate:
 }
 
 // Calculate Net Gain Present Value for chart (EXACT same logic as TimeSeries)
-function calculateNetGainPresentValue(investment: any, year: number, globalSettings: any): number {
-  const countrySettings = globalSettings.countrySettings[globalSettings.selectedCountry];
+function calculateNetGainPresentValue(investment: any, year: number, effectiveSettings: any): number {
+  const countrySettings = effectiveSettings.countrySettings[effectiveSettings.selectedCountry];
   const propertyAppreciationRate = countrySettings.realEstateAppreciationRate / 100;
   const inflationRate = countrySettings.inflationRate / 100;
   
@@ -195,14 +219,14 @@ function calculateNetGainPresentValue(investment: any, year: number, globalSetti
     : currentMarketValue * Math.pow(1 + propertyAppreciationRate, year);
   
   const outstandingBalance = calculateOutstandingBalance(investment, year);
-  const capitalGainsTax = calculateCapitalGainsTax(investment, year, globalSettings);
-  const sellingCosts = calculateSellingCosts(investment, year, globalSettings);
+  const capitalGainsTax = calculateCapitalGainsTax(investment, year, effectiveSettings);
+  const sellingCosts = calculateSellingCosts(investment, year, effectiveSettings);
   
   const nominalNetEquity = nominalMarketValue - outstandingBalance - capitalGainsTax - sellingCosts;
   const netEquityToday = nominalNetEquity * Math.pow(1 + inflationRate, -year);
   
   const cumulativeNetYield = calculateCumulativeNetYield(investment, year);
-  const cumulativeAnnualMortgagePV = calculateCumulativeAnnualMortgagePV(investment, year, globalSettings);
+  const cumulativeAnnualMortgagePV = calculateCumulativeAnnualMortgagePV(investment, year, effectiveSettings);
   
   // EXACT formula from TimeSeries "Net Gain (PV)" row:
   if (year === 0) {
@@ -214,6 +238,16 @@ function calculateNetGainPresentValue(investment: any, year: number, globalSetti
 
 export default function Charts() {
   const [selectedProperties, setSelectedProperties] = useState<string[]>([]);
+  const [scenarioParams, setScenarioParams] = useState<EconomicParameters | null>(null);
+  
+  // Get global settings for initial values
+  const globalSettings = getGlobalSettings();
+  const defaultParams: EconomicParameters = {
+    appreciationRate: globalSettings.countrySettings[globalSettings.selectedCountry].realEstateAppreciationRate,
+    capitalGainsTax: globalSettings.countrySettings[globalSettings.selectedCountry].capitalGainsTax,
+    inflationRate: globalSettings.countrySettings[globalSettings.selectedCountry].inflationRate,
+    sellingCosts: globalSettings.countrySettings[globalSettings.selectedCountry].sellingCosts,
+  };
 
   const { data: investments = [], isLoading } = useQuery<RealEstateInvestmentWithCategory[]>({
     queryKey: ['/api/investments']
@@ -222,7 +256,7 @@ export default function Charts() {
   // Generate chart data for selected properties
   const generateChartData = () => {
     const years = [0, 1, 2, 3, 4, 5, 10, 15, 25, 30];
-    const globalSettings = getGlobalSettings();
+    const effectiveSettings = getEffectiveSettings(scenarioParams || undefined);
     
     const selectedInvestments = selectedProperties.length > 0 
       ? investments.filter(inv => selectedProperties.includes(inv.id))
@@ -232,7 +266,7 @@ export default function Charts() {
       const dataPoint: any = { year };
       
       selectedInvestments.forEach(investment => {
-        const netGainPV = calculateNetGainPresentValue(investment, year, globalSettings);
+        const netGainPV = calculateNetGainPresentValue(investment, year, effectiveSettings);
         dataPoint[investment.propertyName || `Property ${investment.id.slice(0, 8)}`] = Math.round(netGainPV);
       });
       
@@ -266,6 +300,16 @@ export default function Charts() {
       }
     });
   };
+  
+  const handleParametersChange = (newParams: EconomicParameters) => {
+    setScenarioParams(newParams);
+  };
+  
+  const handleReset = () => {
+    setScenarioParams(null);
+  };
+  
+  const currentParams = scenarioParams || defaultParams;
 
   if (isLoading) {
     return (
@@ -280,6 +324,13 @@ export default function Charts() {
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Investment Charts</h1>
       </div>
+
+      {/* Economic Scenario Sliders */}
+      <EconomicScenarioSliders
+        parameters={currentParams}
+        onParametersChange={handleParametersChange}
+        onReset={handleReset}
+      />
 
       {/* Property Selection */}
       <Card>

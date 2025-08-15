@@ -5,6 +5,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Copy, Check, Info } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import type { EconomicParameters } from "@/components/ui/economic-scenario-sliders";
 import type { RealEstateInvestmentWithCategory } from "@shared/schema";
 
 interface ProjectionRow {
@@ -25,6 +26,7 @@ interface ProjectionRow {
 interface TimeSeriesProjectionsTableProps {
   investment: RealEstateInvestmentWithCategory;
   inflationAdjusted?: boolean;
+  scenarioParams?: EconomicParameters | null;
 }
 
 // Get global settings from localStorage
@@ -52,6 +54,29 @@ function getGlobalSettings() {
   };
 }
 
+// Create effective settings by merging global settings with scenario overrides
+function getEffectiveSettings(scenarioParams?: EconomicParameters) {
+  const globalSettings = getGlobalSettings();
+  
+  if (!scenarioParams) {
+    return globalSettings;
+  }
+  
+  return {
+    ...globalSettings,
+    countrySettings: {
+      ...globalSettings.countrySettings,
+      [globalSettings.selectedCountry]: {
+        ...globalSettings.countrySettings[globalSettings.selectedCountry],
+        realEstateAppreciationRate: scenarioParams.appreciationRate,
+        inflationRate: scenarioParams.inflationRate,
+        sellingCosts: scenarioParams.sellingCosts,
+        capitalGainsTax: scenarioParams.capitalGainsTax,
+      }
+    }
+  };
+}
+
 function formatCurrency(amount: number): string {
   if (isNaN(amount) || !isFinite(amount)) {
     return '$NaN';
@@ -71,8 +96,8 @@ function formatPercent(value: number): string {
 // MODULAR CALCULATION FUNCTIONS - Each metric calculated independently
 
 // Market Value Calculator
-function calculateMarketValue(investment: any, year: number, globalSettings: any, inflationAdjusted: boolean): number {
-  const countrySettings = globalSettings.countrySettings[globalSettings.selectedCountry];
+function calculateMarketValue(investment: any, year: number, effectiveSettings: any, inflationAdjusted: boolean): number {
+  const countrySettings = effectiveSettings.countrySettings[effectiveSettings.selectedCountry];
   const propertyAppreciationRate = countrySettings.realEstateAppreciationRate / 100;
   const currentValue = investment.currentValue / 100;
   const inflationRate = countrySettings.inflationRate / 100;
@@ -95,11 +120,11 @@ function calculateCumulativeNetYield(investment: any, year: number): number {
 }
 
 // Tax Benefits Calculator - Total Tax Benefits = Annual Depreciation + Mortgage Interest Deduction + Property Tax Deduction + Maintenance Deductions
-function calculateTotalTaxBenefits(investment: any, year: number, globalSettings: any): number {
+function calculateTotalTaxBenefits(investment: any, year: number, effectiveSettings: any): number {
   if (year === 0) return 0;
   
   const currentValue = investment.currentValue / 100;
-  const countrySettings = globalSettings.countrySettings[globalSettings.selectedCountry];
+  const countrySettings = effectiveSettings.countrySettings[effectiveSettings.selectedCountry];
   
   // Annual Depreciation - Cost Basis ÷ Depreciation Period (27.5 years residential, 39 years commercial)
   const depreciationPeriod = investment.propertyType === 'Single Family' ? 27.5 : 39;
@@ -115,7 +140,7 @@ function calculateTotalTaxBenefits(investment: any, year: number, globalSettings
   
   // Property Tax Deduction - Annual Property Tax Payments
   const propertyTaxRate = 0.015; // 1.5% typical property tax rate
-  const marketValue = calculateMarketValue(investment, year - 1, globalSettings, false);
+  const marketValue = calculateMarketValue(investment, year - 1, effectiveSettings, false);
   const propertyTaxDeduction = marketValue * propertyTaxRate;
   
   // Maintenance Deductions - Annual Maintenance and Repair Expenses
@@ -128,7 +153,7 @@ function calculateTotalTaxBenefits(investment: any, year: number, globalSettings
 }
 
 // Tax Benefits Breakdown Calculator - Returns detailed breakdown for tooltip
-function calculateTaxBenefitsBreakdown(investment: any, year: number, globalSettings: any): { 
+function calculateTaxBenefitsBreakdown(investment: any, year: number, effectiveSettings: any): { 
   annualDepreciation: number;
   mortgageInterestDeduction: number;
   propertyTaxDeduction: number;
@@ -146,7 +171,7 @@ function calculateTaxBenefitsBreakdown(investment: any, year: number, globalSett
   }
   
   const currentValue = investment.currentValue / 100;
-  const countrySettings = globalSettings.countrySettings[globalSettings.selectedCountry];
+  const countrySettings = effectiveSettings.countrySettings[effectiveSettings.selectedCountry];
   
   // Annual Depreciation - Cost Basis ÷ Depreciation Period (27.5 years residential, 39 years commercial)
   const depreciationPeriod = investment.propertyType === 'Single Family' ? 27.5 : 39;
@@ -162,7 +187,7 @@ function calculateTaxBenefitsBreakdown(investment: any, year: number, globalSett
   
   // Property Tax Deduction - Annual Property Tax Payments
   const propertyTaxRate = 0.015; // 1.5% typical property tax rate
-  const marketValue = calculateMarketValue(investment, year - 1, globalSettings, false);
+  const marketValue = calculateMarketValue(investment, year - 1, effectiveSettings, false);
   const propertyTaxDeduction = marketValue * propertyTaxRate;
   
   // Maintenance Deductions - Annual Maintenance and Repair Expenses
@@ -288,13 +313,13 @@ function calculate12HillcrestOutstandingBalance(investment: any, year: number): 
   return Math.max(0, remainingBalance);
 }
 
-// Capital Gains Tax Calculator - Uses global settings and market value
-function calculateCapitalGainsTax(investment: any, year: number, globalSettings: any): number {
-  const countrySettings = globalSettings.countrySettings[globalSettings.selectedCountry];
-  const capitalGainsTaxRate = countrySettings.capitalGainsTax / 100; // 25% for USA
+// Capital Gains Tax Calculator - Uses effective settings and market value
+function calculateCapitalGainsTax(investment: any, year: number, effectiveSettings: any): number {
+  const countrySettings = effectiveSettings.countrySettings[effectiveSettings.selectedCountry];
+  const capitalGainsTaxRate = countrySettings.capitalGainsTax / 100;
   
   // Calculate market value for the year
-  const marketValue = calculateMarketValue(investment, year, globalSettings, false); // Nominal value
+  const marketValue = calculateMarketValue(investment, year, effectiveSettings, false); // Nominal value
   const purchasePrice = investment.purchasePrice / 100;
   
   // Capital gains = (Market Value - Purchase Price) × Tax Rate
@@ -302,25 +327,25 @@ function calculateCapitalGainsTax(investment: any, year: number, globalSettings:
   return capitalGains * capitalGainsTaxRate;
 }
 
-// Selling Costs Calculator - Uses global settings and market value  
-function calculateSellingCosts(investment: any, year: number, globalSettings: any): number {
-  const countrySettings = globalSettings.countrySettings[globalSettings.selectedCountry];
-  const sellingCostsRate = countrySettings.sellingCosts / 100; // 6% for USA
+// Selling Costs Calculator - Uses effective settings and market value  
+function calculateSellingCosts(investment: any, year: number, effectiveSettings: any): number {
+  const countrySettings = effectiveSettings.countrySettings[effectiveSettings.selectedCountry];
+  const sellingCostsRate = countrySettings.sellingCosts / 100;
   
   // Calculate market value for the year
-  const marketValue = calculateMarketValue(investment, year, globalSettings, false); // Nominal value
+  const marketValue = calculateMarketValue(investment, year, effectiveSettings, false); // Nominal value
   
   // Selling costs = Market Value × Selling Costs Rate
   return marketValue * sellingCostsRate;
 }
 
 // Market Value Present Value Calculator
-function calculateMarketValuePV(investment: any, year: number, globalSettings: any): number {
-  const countrySettings = globalSettings.countrySettings[globalSettings.selectedCountry];
+function calculateMarketValuePV(investment: any, year: number, effectiveSettings: any): number {
+  const countrySettings = effectiveSettings.countrySettings[effectiveSettings.selectedCountry];
   const inflationRate = countrySettings.inflationRate / 100;
   
   // Get nominal market value for the year
-  const nominalMarketValue = calculateMarketValue(investment, year, globalSettings, false);
+  const nominalMarketValue = calculateMarketValue(investment, year, effectiveSettings, false);
   
   // Convert to present value using inflation discount rate
   const marketValuePV = nominalMarketValue * Math.pow(1 + inflationRate, -year);
@@ -329,12 +354,12 @@ function calculateMarketValuePV(investment: any, year: number, globalSettings: a
 }
 
 // Capital Gains Tax Present Value Calculator
-function calculateCapitalGainsTaxPV(investment: any, year: number, globalSettings: any): number {
-  const countrySettings = globalSettings.countrySettings[globalSettings.selectedCountry];
+function calculateCapitalGainsTaxPV(investment: any, year: number, effectiveSettings: any): number {
+  const countrySettings = effectiveSettings.countrySettings[effectiveSettings.selectedCountry];
   const inflationRate = countrySettings.inflationRate / 100;
   
   // Get nominal capital gains tax for the year
-  const nominalCapitalGainsTax = calculateCapitalGainsTax(investment, year, globalSettings);
+  const nominalCapitalGainsTax = calculateCapitalGainsTax(investment, year, effectiveSettings);
   
   // Convert to present value using inflation discount rate
   const capitalGainsTaxPV = nominalCapitalGainsTax * Math.pow(1 + inflationRate, -year);
@@ -342,10 +367,10 @@ function calculateCapitalGainsTaxPV(investment: any, year: number, globalSetting
   return capitalGainsTaxPV;
 }
 
-function calculateProjections(investment: RealEstateInvestmentWithCategory, inflationAdjusted: boolean): ProjectionRow[] {
+function calculateProjections(investment: RealEstateInvestmentWithCategory, inflationAdjusted: boolean, effectiveSettings?: any): ProjectionRow[] {
   const years = [0, 1, 2, 3, 4, 5, 10, 15, 25, 30];
-  const globalSettings = getGlobalSettings();
-  const countrySettings = globalSettings.countrySettings[globalSettings.selectedCountry];
+  const settings = effectiveSettings || getGlobalSettings();
+  const countrySettings = settings.countrySettings[settings.selectedCountry];
   
   // Always use global country settings for appreciation rate (no property-specific rates)
   const propertyAppreciationRate = countrySettings.realEstateAppreciationRate / 100;
@@ -356,8 +381,8 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
   // Debug logging for 12 Hillcrest detection
   if (investment.propertyName?.includes("Hillcrest")) {
     console.log(`🏠 12 Hillcrest detected: ${investment.propertyName}`);
-    console.log(`Using GLOBAL appreciation rate: ${(propertyAppreciationRate * 100).toFixed(2)}% (from ${globalSettings.selectedCountry} settings)`);
-    console.log(`Using GLOBAL inflation rate: ${(countrySettings.inflationRate).toFixed(2)}% (from ${globalSettings.selectedCountry} settings)`);
+    console.log(`Using appreciation rate: ${(propertyAppreciationRate * 100).toFixed(2)}% (from ${settings.selectedCountry} settings)`);
+    console.log(`Using inflation rate: ${(countrySettings.inflationRate).toFixed(2)}% (from ${settings.selectedCountry} settings)`);
     console.log(`Current value from DB: $${(investment.currentValue/100).toLocaleString()}`);
     console.log(`Y1 calculation: $${(investment.currentValue/100).toLocaleString()} × ${(1 + propertyAppreciationRate).toFixed(4)} = $${(investment.currentValue/100 * (1 + propertyAppreciationRate)).toLocaleString()}`);
   }
@@ -380,7 +405,7 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
     const inflationAdjustment = inflationAdjusted ? Math.pow(1 + inflationRate, -year) : 1;
     
     // Market value - use modular calculator
-    const marketValue = calculateMarketValue(investment, year, globalSettings, inflationAdjusted);
+    const marketValue = calculateMarketValue(investment, year, settings, inflationAdjusted);
     
     // Current term - use specific function for 12 Hillcrest  
     const currentTerm = investment.currentTerm || 0;
@@ -411,8 +436,8 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
       ? calculate12HillcrestMarketValue(year, propertyAppreciationRate, currentMarketValue)
       : currentMarketValue * Math.pow(1 + propertyAppreciationRate, year);
     
-    const capitalGainsTax = calculateCapitalGainsTax(investment, year, globalSettings);
-    const sellingCosts = calculateSellingCosts(investment, year, globalSettings);
+    const capitalGainsTax = calculateCapitalGainsTax(investment, year, settings);
+    const sellingCosts = calculateSellingCosts(investment, year, settings);
     
     // Net Equity = Market Value - Outstanding Balance - Capital Gains Tax - Selling Costs
     const nominalNetEquity = nominalMarketValue - outstandingBalance - capitalGainsTax - sellingCosts;
@@ -473,8 +498,8 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
     }
     
     // Calculate Present Value versions
-    const marketValuePV = calculateMarketValuePV(investment, year, globalSettings);
-    const capitalGainsTaxPV = calculateCapitalGainsTaxPV(investment, year, globalSettings);
+    const marketValuePV = calculateMarketValuePV(investment, year, settings);
+    const capitalGainsTaxPV = calculateCapitalGainsTaxPV(investment, year, settings);
 
     yearlyData[year] = {
       marketValue,
@@ -496,7 +521,7 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
       annualMortgagePV,
       cumulativeAnnualMortgagePV,
       netGain: netEquity + cumulativeNetYield - (investment.netEquity || 0) / 100,
-      totalTaxBenefits: calculateTotalTaxBenefits(investment, year, globalSettings)
+      totalTaxBenefits: calculateTotalTaxBenefits(investment, year, settings)
     };
   });
 
@@ -787,9 +812,8 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
 }
 
 // TaxBenefitsTooltip component for showing breakdown
-function TaxBenefitsTooltip({ investment, year, children }: { investment: any; year: number; children: React.ReactNode }) {
-  const globalSettings = getGlobalSettings();
-  const breakdown = calculateTaxBenefitsBreakdown(investment, year, globalSettings);
+function TaxBenefitsTooltip({ investment, year, effectiveSettings, children }: { investment: any; year: number; effectiveSettings: any; children: React.ReactNode }) {
+  const breakdown = calculateTaxBenefitsBreakdown(investment, year, effectiveSettings);
   
   if (breakdown.total === 0) {
     return <>{children}</>;
@@ -834,8 +858,9 @@ function TaxBenefitsTooltip({ investment, year, children }: { investment: any; y
   );
 }
 
-export function TimeSeriesProjectionsTable({ investment, inflationAdjusted = false }: TimeSeriesProjectionsTableProps) {
-  const projectionRows = calculateProjections(investment, inflationAdjusted);
+export function TimeSeriesProjectionsTable({ investment, inflationAdjusted = false, scenarioParams }: TimeSeriesProjectionsTableProps) {
+  const effectiveSettings = getEffectiveSettings(scenarioParams || undefined);
+  const projectionRows = calculateProjections(investment, inflationAdjusted, effectiveSettings);
   const [copied, setCopied] = useState(false);
   const { toast } = useToast();
 
@@ -953,70 +978,70 @@ export function TimeSeriesProjectionsTable({ investment, inflationAdjusted = fal
                       <>
                         <TableCell className="text-center py-2 px-3 font-mono">
                           {isTaxBenefitsRow ? (
-                            <TaxBenefitsTooltip investment={investment} year={0}>
+                            <TaxBenefitsTooltip investment={investment} year={0} effectiveSettings={effectiveSettings}>
                               {row.y0}
                             </TaxBenefitsTooltip>
                           ) : row.y0}
                         </TableCell>
                         <TableCell className="text-center py-2 px-3 font-mono">
                           {isTaxBenefitsRow ? (
-                            <TaxBenefitsTooltip investment={investment} year={1}>
+                            <TaxBenefitsTooltip investment={investment} year={1} effectiveSettings={effectiveSettings}>
                               {row.y1}
                             </TaxBenefitsTooltip>
                           ) : row.y1}
                         </TableCell>
                         <TableCell className="text-center py-2 px-3 font-mono">
                           {isTaxBenefitsRow ? (
-                            <TaxBenefitsTooltip investment={investment} year={2}>
+                            <TaxBenefitsTooltip investment={investment} year={2} effectiveSettings={effectiveSettings}>
                               {row.y2}
                             </TaxBenefitsTooltip>
                           ) : row.y2}
                         </TableCell>
                         <TableCell className="text-center py-2 px-3 font-mono">
                           {isTaxBenefitsRow ? (
-                            <TaxBenefitsTooltip investment={investment} year={3}>
+                            <TaxBenefitsTooltip investment={investment} year={3} effectiveSettings={effectiveSettings}>
                               {row.y3}
                             </TaxBenefitsTooltip>
                           ) : row.y3}
                         </TableCell>
                         <TableCell className="text-center py-2 px-3 font-mono">
                           {isTaxBenefitsRow ? (
-                            <TaxBenefitsTooltip investment={investment} year={4}>
+                            <TaxBenefitsTooltip investment={investment} year={4} effectiveSettings={effectiveSettings}>
                               {row.y4}
                             </TaxBenefitsTooltip>
                           ) : row.y4}
                         </TableCell>
                         <TableCell className="text-center py-2 px-3 font-mono">
                           {isTaxBenefitsRow ? (
-                            <TaxBenefitsTooltip investment={investment} year={5}>
+                            <TaxBenefitsTooltip investment={investment} year={5} effectiveSettings={effectiveSettings}>
                               {row.y5}
                             </TaxBenefitsTooltip>
                           ) : row.y5}
                         </TableCell>
                         <TableCell className="text-center py-2 px-3 font-mono">
                           {isTaxBenefitsRow ? (
-                            <TaxBenefitsTooltip investment={investment} year={10}>
+                            <TaxBenefitsTooltip investment={investment} year={10} effectiveSettings={effectiveSettings}>
                               {row.y10}
                             </TaxBenefitsTooltip>
                           ) : row.y10}
                         </TableCell>
                         <TableCell className="text-center py-2 px-3 font-mono">
                           {isTaxBenefitsRow ? (
-                            <TaxBenefitsTooltip investment={investment} year={15}>
+                            <TaxBenefitsTooltip investment={investment} year={15} effectiveSettings={effectiveSettings}>
                               {row.y15}
                             </TaxBenefitsTooltip>
                           ) : row.y15}
                         </TableCell>
                         <TableCell className="text-center py-2 px-3 font-mono">
                           {isTaxBenefitsRow ? (
-                            <TaxBenefitsTooltip investment={investment} year={25}>
+                            <TaxBenefitsTooltip investment={investment} year={25} effectiveSettings={effectiveSettings}>
                               {row.y25}
                             </TaxBenefitsTooltip>
                           ) : row.y25}
                         </TableCell>
                         <TableCell className="text-center py-2 px-3 font-mono">
                           {isTaxBenefitsRow ? (
-                            <TaxBenefitsTooltip investment={investment} year={30}>
+                            <TaxBenefitsTooltip investment={investment} year={30} effectiveSettings={effectiveSettings}>
                               {row.y30}
                             </TaxBenefitsTooltip>
                           ) : row.y30}

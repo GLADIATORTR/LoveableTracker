@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { EconomicScenarioSliders, type EconomicParameters } from "@/components/ui/economic-scenario-sliders";
 import { useToast } from "@/hooks/use-toast";
 import { TimeSeriesProjectionsTable } from "@/components/ui/timeseries-projections-table";
 import { 
@@ -18,6 +19,7 @@ export default function Reports() {
   const { toast } = useToast();
   const [inflationAdjusted, setInflationAdjusted] = useState(false);
   const [selectedPropertyId, setSelectedPropertyId] = useState<string>("");
+  const [scenarioParams, setScenarioParams] = useState<EconomicParameters | null>(null);
 
   const { data: investments, isLoading } = useQuery<RealEstateInvestmentWithCategory[]>({
     queryKey: ["/api/investments"],
@@ -31,6 +33,39 @@ export default function Reports() {
   }, [investments, selectedPropertyId]);
 
   const selectedProperty = investments?.find(inv => inv.id === selectedPropertyId);
+  
+  // Get global settings for initial values
+  const getGlobalSettings = () => {
+    try {
+      const saved = localStorage.getItem('global-settings');
+      if (saved) {
+        return JSON.parse(saved);
+      }
+    } catch (error) {
+      console.error('Failed to parse global settings:', error);
+    }
+    
+    return {
+      selectedCountry: 'USA',
+      countrySettings: {
+        USA: {
+          realEstateAppreciationRate: 3.5,
+          inflationRate: 3.5,
+          sellingCosts: 6.0,
+          capitalGainsTax: 25.0,
+          currentMortgageRate: 6.5,
+        }
+      }
+    };
+  };
+  
+  const globalSettings = getGlobalSettings();
+  const defaultParams: EconomicParameters = {
+    appreciationRate: globalSettings.countrySettings[globalSettings.selectedCountry].realEstateAppreciationRate,
+    capitalGainsTax: globalSettings.countrySettings[globalSettings.selectedCountry].capitalGainsTax,
+    inflationRate: globalSettings.countrySettings[globalSettings.selectedCountry].inflationRate,
+    sellingCosts: globalSettings.countrySettings[globalSettings.selectedCountry].sellingCosts,
+  };
 
   const handleExportReport = () => {
     toast({
@@ -38,6 +73,16 @@ export default function Reports() {
       description: "Investment projections report has been exported.",
     });
   };
+  
+  const handleParametersChange = (newParams: EconomicParameters) => {
+    setScenarioParams(newParams);
+  };
+  
+  const handleReset = () => {
+    setScenarioParams(null);
+  };
+  
+  const currentParams = scenarioParams || defaultParams;
 
   if (!investments || investments.length === 0) {
     return (
@@ -92,6 +137,13 @@ export default function Reports() {
         </div>
       </div>
 
+      {/* Economic Scenario Sliders */}
+      <EconomicScenarioSliders
+        parameters={currentParams}
+        onParametersChange={handleParametersChange}
+        onReset={handleReset}
+      />
+
       {/* Selected Property Projections */}
       {isLoading ? (
         <div className="text-center py-12">
@@ -106,6 +158,7 @@ export default function Reports() {
           <TimeSeriesProjectionsTable 
             investment={selectedProperty} 
             inflationAdjusted={inflationAdjusted}
+            scenarioParams={scenarioParams}
           />
         </div>
       ) : (
