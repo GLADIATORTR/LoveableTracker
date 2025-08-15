@@ -1,10 +1,11 @@
-import React from "react";
+// Removed explicit React import to fix hook issues
 import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { SimpleThemeProvider } from "@/components/ui/simple-theme-provider";
+// Temporarily remove theme provider to fix React hook error
+// import { SimpleThemeProvider } from "@/components/ui/simple-theme-provider";
 import { AppContextProvider } from "@/contexts/AppContext";
 import Sidebar from "@/components/layout/Sidebar";
 import TopBar from "@/components/layout/TopBar";
@@ -36,22 +37,20 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <SimpleThemeProvider>
-        <TooltipProvider>
-          <AppContextProvider>
-            <div className="h-screen flex bg-background">
-              <Sidebar />
-              <div className="flex-1 flex flex-col">
-                <TopBar />
-                <main className="flex-1 overflow-y-auto">
-                  <Router />
-                </main>
-              </div>
+      <TooltipProvider>
+        <AppContextProvider>
+          <div className="h-screen flex bg-white">
+            <Sidebar />
+            <div className="flex-1 flex flex-col">
+              <TopBar />
+              <main className="flex-1 overflow-y-auto">
+                <Router />
+              </main>
             </div>
-            <Toaster />
-          </AppContextProvider>
-        </TooltipProvider>
-      </SimpleThemeProvider>
+          </div>
+          <Toaster />
+        </AppContextProvider>
+      </TooltipProvider>
     </QueryClientProvider>
   );
 }

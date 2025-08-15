@@ -104,26 +104,50 @@ function calculateNetGainPV(investment: RealEstateInvestmentWithCategory, year: 
   // Calculate selling costs
   const sellingCosts = futureMarketValue * sellingCostsRate;
   
-  // Calculate cumulative rental income minus expenses
+  // Calculate cumulative net yield (rent - expenses, no mortgage payment in yield)
+  // This matches the TimeSeries table calculation exactly
   const rentGrowthRate = propertyAppreciationRate * 0.7; // 70% of appreciation
   const expenseGrowthRate = 0.02; // 2% annual growth
-  let cumulativeNetRental = 0;
+  let cumulativeNetYield = 0;
   
   for (let y = 1; y <= year; y++) {
     const yearlyRent = monthlyRent * 12 * Math.pow(1 + rentGrowthRate, y - 1);
     const yearlyExpenses = monthlyExpenses * 12 * Math.pow(1 + expenseGrowthRate, y - 1);
-    const yearlyMortgage = remainingBalance > 0 ? monthlyMortgage * 12 : 0;
-    const netYearlyIncome = yearlyRent - yearlyExpenses - yearlyMortgage;
+    // Annual Net Yield = Rent - Expenses (no mortgage payment subtracted here)
+    const annualNetYield = yearlyRent - yearlyExpenses;
     
-    // Convert to present value
-    const netYearlyIncomePV = netYearlyIncome * Math.pow(1 + inflationRate, -y);
-    cumulativeNetRental += netYearlyIncomePV;
+    // Convert to present value and accumulate
+    const annualNetYieldPV = annualNetYield * Math.pow(1 + inflationRate, -y);
+    cumulativeNetYield += annualNetYieldPV;
   }
   
-  // Net Gain = Future Net Equity - Current Net Equity + Cumulative Net Rental Income (all in PV)
+  // Calculate net equity at future year (in present value terms)
   const futureNetEquity = futureMarketValue - remainingBalance - capitalGainsTax - sellingCosts;
   const futureNetEquityPV = futureNetEquity * Math.pow(1 + inflationRate, -year);
-  const netGainPV = futureNetEquityPV - currentNetEquity + cumulativeNetRental;
+  
+  // Calculate cumulative mortgage payments in present value
+  let cumulativeMortgagePV = 0;
+  let runningBalance = currentOutstandingBalance;
+  
+  for (let y = 1; y <= year; y++) {
+    if (runningBalance > 0) {
+      // Annual mortgage payment in present value
+      const annualMortgagePV = (monthlyMortgage * 12) * Math.pow(1 + inflationRate, -y);
+      cumulativeMortgagePV += annualMortgagePV;
+      
+      // Update running balance for next year (simplified amortization)
+      for (let month = 1; month <= 12; month++) {
+        if (runningBalance <= 0) break;
+        const interestPayment = runningBalance * monthlyInterestRate;
+        const principalPayment = monthlyMortgage - interestPayment;
+        runningBalance = Math.max(0, runningBalance - principalPayment);
+      }
+    }
+  }
+  
+  // Net Gain = Future Net Equity (PV) + Cumulative Net Yield (PV) - Cumulative Mortgage Payments (PV)
+  // This exactly matches the TimeSeries table formula: netEquityToday + cumulativeNetYield - cumulativeAnnualMortgagePV
+  const netGainPV = futureNetEquityPV + cumulativeNetYield - cumulativeMortgagePV;
   
   return netGainPV;
 }
