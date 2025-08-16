@@ -3,7 +3,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { EconomicScenarioSliders, type EconomicParameters, type CountrySpecificParameters } from "@/components/ui/economic-scenario-sliders";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area } from "recharts";
 import type { RealEstateInvestmentWithCategory } from "@shared/schema";
 
 // Get global settings from localStorage (same as TimeSeries component)
@@ -496,7 +496,7 @@ export default function Charts() {
         <CardContent>
           <div className="h-96">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={netGainChartData}>
+              <AreaChart data={netGainChartData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis 
                   dataKey="year" 
@@ -513,17 +513,17 @@ export default function Charts() {
                 <Legend />
                 
                 {selectedInvestments.map((investment, index) => (
-                  <Line
+                  <Area
                     key={investment.id}
                     type="monotone"
                     dataKey={investment.propertyName || `Property ${investment.id.slice(0, 8)}`}
+                    stackId="1"
                     stroke={colors[index % colors.length]}
-                    strokeWidth={2}
-                    dot={{ r: 4 }}
-                    activeDot={{ r: 6 }}
+                    fill={colors[index % colors.length]}
+                    fillOpacity={0.6}
                   />
                 ))}
-              </LineChart>
+              </AreaChart>
             </ResponsiveContainer>
           </div>
         </CardContent>
@@ -540,7 +540,7 @@ export default function Charts() {
         <CardContent>
           <div className="h-96">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={cashAtHandChartData}>
+              <AreaChart data={cashAtHandChartData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis 
                   dataKey="year" 
@@ -557,17 +557,17 @@ export default function Charts() {
                 <Legend />
                 
                 {selectedInvestments.map((investment, index) => (
-                  <Line
+                  <Area
                     key={investment.id}
                     type="monotone"
                     dataKey={investment.propertyName || `Property ${investment.id.slice(0, 8)}`}
+                    stackId="1"
                     stroke={colors[index % colors.length]}
-                    strokeWidth={2}
-                    dot={{ r: 4 }}
-                    activeDot={{ r: 6 }}
+                    fill={colors[index % colors.length]}
+                    fillOpacity={0.6}
                   />
                 ))}
-              </LineChart>
+              </AreaChart>
             </ResponsiveContainer>
           </div>
         </CardContent>
@@ -584,7 +584,7 @@ export default function Charts() {
         <CardContent>
           <div className="h-96">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={cashAtHandRatioChartData}>
+              <AreaChart data={cashAtHandRatioChartData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis 
                   dataKey="year" 
@@ -601,17 +601,17 @@ export default function Charts() {
                 <Legend />
                 
                 {selectedInvestments.map((investment, index) => (
-                  <Line
+                  <Area
                     key={investment.id}
                     type="monotone"
                     dataKey={investment.propertyName || `Property ${investment.id.slice(0, 8)}`}
+                    stackId="1"
                     stroke={colors[index % colors.length]}
-                    strokeWidth={2}
-                    dot={{ r: 4 }}
-                    activeDot={{ r: 6 }}
+                    fill={colors[index % colors.length]}
+                    fillOpacity={0.6}
                   />
                 ))}
-              </LineChart>
+              </AreaChart>
             </ResponsiveContainer>
           </div>
         </CardContent>
@@ -628,7 +628,7 @@ export default function Charts() {
         <CardContent>
           <div className="h-96">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={netGainRatioChartData}>
+              <AreaChart data={netGainRatioChartData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis 
                   dataKey="year" 
@@ -645,17 +645,17 @@ export default function Charts() {
                 <Legend />
                 
                 {selectedInvestments.map((investment, index) => (
-                  <Line
+                  <Area
                     key={investment.id}
                     type="monotone"
                     dataKey={investment.propertyName || `Property ${investment.id.slice(0, 8)}`}
+                    stackId="1"
                     stroke={colors[index % colors.length]}
-                    strokeWidth={2}
-                    dot={{ r: 4 }}
-                    activeDot={{ r: 6 }}
+                    fill={colors[index % colors.length]}
+                    fillOpacity={0.6}
                   />
                 ))}
-              </LineChart>
+              </AreaChart>
             </ResponsiveContainer>
           </div>
         </CardContent>
