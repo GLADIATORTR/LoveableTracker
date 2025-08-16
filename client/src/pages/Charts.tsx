@@ -228,6 +228,24 @@ function calculateCashAtHandPresentValue(investment: any, year: number, effectiv
   return calculateCashAtHand(investment, year, effectiveSettings);
 }
 
+// Calculate Cash at Hand to Y0 Net Equity Ratio
+function calculateCashAtHandToY0NetEquityRatio(investment: any, year: number, effectiveSettings: any): number {
+  const cashAtHand = calculateCashAtHand(investment, year, effectiveSettings);
+  const y0NetEquity = calculateNetGainPresentValue(investment, 0, effectiveSettings);
+  
+  if (y0NetEquity === 0) return 0;
+  return (cashAtHand / y0NetEquity) * 100; // Return as percentage
+}
+
+// Calculate Net Gain to Y0 Net Equity Ratio
+function calculateNetGainToY0NetEquityRatio(investment: any, year: number, effectiveSettings: any): number {
+  const netGain = calculateNetGainPresentValue(investment, year, effectiveSettings);
+  const y0NetEquity = calculateNetGainPresentValue(investment, 0, effectiveSettings);
+  
+  if (y0NetEquity === 0) return 0;
+  return (netGain / y0NetEquity) * 100; // Return as percentage
+}
+
 // Calculate Net Gain Present Value for chart (EXACT same logic as TimeSeries)
 function calculateNetGainPresentValue(investment: any, year: number, effectiveSettings: any): number {
   const countrySettings = effectiveSettings.countrySettings[effectiveSettings.selectedCountry];
@@ -264,7 +282,6 @@ function calculateNetGainPresentValue(investment: any, year: number, effectiveSe
 
 export default function Charts() {
   const [selectedProperties, setSelectedProperties] = useState<string[]>([]);
-  const [chartType, setChartType] = useState<'netGain' | 'cashAtHand'>('netGain');
   const [scenarioParams, setScenarioParams] = useState<CountrySpecificParameters>({});
   
   // Get global settings for initial values
@@ -290,35 +307,79 @@ export default function Charts() {
   });
 
   // Generate chart data for selected properties
-  const generateChartData = () => {
+  const generateNetGainChartData = () => {
     const years = [0, 1, 2, 3, 4, 5, 10, 15, 25, 30];
-    
     const selectedInvestments = selectedProperties.length > 0 
       ? investments.filter(inv => selectedProperties.includes(inv.id))
       : investments;
 
     return years.map(year => {
       const dataPoint: any = { year };
-      
       selectedInvestments.forEach(investment => {
-        // Get effective settings for this specific investment
         const effectiveSettings = getEffectiveSettings(investment, scenarioParams);
-        
-        let value;
-        if (chartType === 'cashAtHand') {
-          value = calculateCashAtHandPresentValue(investment, year, effectiveSettings);
-        } else {
-          value = calculateNetGainPresentValue(investment, year, effectiveSettings);
-        }
-        
+        const value = calculateNetGainPresentValue(investment, year, effectiveSettings);
         dataPoint[investment.propertyName || `Property ${investment.id.slice(0, 8)}`] = Math.round(value);
       });
-      
       return dataPoint;
     });
   };
 
-  const chartData = generateChartData();
+  const generateCashAtHandChartData = () => {
+    const years = [0, 1, 2, 3, 4, 5, 10, 15, 25, 30];
+    const selectedInvestments = selectedProperties.length > 0 
+      ? investments.filter(inv => selectedProperties.includes(inv.id))
+      : investments;
+
+    return years.map(year => {
+      const dataPoint: any = { year };
+      selectedInvestments.forEach(investment => {
+        const effectiveSettings = getEffectiveSettings(investment, scenarioParams);
+        const value = calculateCashAtHandPresentValue(investment, year, effectiveSettings);
+        dataPoint[investment.propertyName || `Property ${investment.id.slice(0, 8)}`] = Math.round(value);
+      });
+      return dataPoint;
+    });
+  };
+
+  const generateCashAtHandRatioChartData = () => {
+    const years = [0, 1, 2, 3, 4, 5, 10, 15, 25, 30];
+    const selectedInvestments = selectedProperties.length > 0 
+      ? investments.filter(inv => selectedProperties.includes(inv.id))
+      : investments;
+
+    return years.map(year => {
+      const dataPoint: any = { year };
+      selectedInvestments.forEach(investment => {
+        const effectiveSettings = getEffectiveSettings(investment, scenarioParams);
+        const ratio = calculateCashAtHandToY0NetEquityRatio(investment, year, effectiveSettings);
+        dataPoint[investment.propertyName || `Property ${investment.id.slice(0, 8)}`] = Math.round(ratio * 100) / 100; // Round to 2 decimal places
+      });
+      return dataPoint;
+    });
+  };
+
+  const generateNetGainRatioChartData = () => {
+    const years = [0, 1, 2, 3, 4, 5, 10, 15, 25, 30];
+    const selectedInvestments = selectedProperties.length > 0 
+      ? investments.filter(inv => selectedProperties.includes(inv.id))
+      : investments;
+
+    return years.map(year => {
+      const dataPoint: any = { year };
+      selectedInvestments.forEach(investment => {
+        const effectiveSettings = getEffectiveSettings(investment, scenarioParams);
+        const ratio = calculateNetGainToY0NetEquityRatio(investment, year, effectiveSettings);
+        dataPoint[investment.propertyName || `Property ${investment.id.slice(0, 8)}`] = Math.round(ratio * 100) / 100; // Round to 2 decimal places
+      });
+      return dataPoint;
+    });
+  };
+
+  const netGainChartData = generateNetGainChartData();
+  const cashAtHandChartData = generateCashAtHandChartData();
+  const cashAtHandRatioChartData = generateCashAtHandRatioChartData();
+  const netGainRatioChartData = generateNetGainRatioChartData();
+  
   const selectedInvestments = selectedProperties.length > 0 
     ? investments.filter(inv => selectedProperties.includes(inv.id))
     : investments;
@@ -333,6 +394,10 @@ export default function Charts() {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(value);
+  };
+
+  const formatPercentage = (value: number) => {
+    return `${value.toFixed(1)}%`;
   };
 
   const handlePropertySelection = (propertyId: string) => {
@@ -371,15 +436,6 @@ export default function Charts() {
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Investment Charts</h1>
-        <Select value={chartType} onValueChange={(value: 'netGain' | 'cashAtHand') => setChartType(value)}>
-          <SelectTrigger className="w-48">
-            <SelectValue placeholder="Select chart type" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="netGain">Net Gain Present Value</SelectItem>
-            <SelectItem value="cashAtHand">Cash at Hand</SelectItem>
-          </SelectContent>
-        </Select>
       </div>
 
       {/* Economic Scenario Sliders */}
@@ -429,23 +485,18 @@ export default function Charts() {
         </CardContent>
       </Card>
 
-      {/* Chart */}
+      {/* Net Gain Present Value Chart */}
       <Card>
         <CardHeader>
-          <CardTitle>
-            {chartType === 'cashAtHand' ? 'Cash at Hand vs Years' : 'Net Gain Present Value vs Years'}
-          </CardTitle>
+          <CardTitle>Net Gain Present Value vs Years</CardTitle>
           <p className="text-sm text-muted-foreground">
-            {chartType === 'cashAtHand' 
-              ? 'This chart shows Cash at Hand (Cumulative Net Yield minus Cumulative Annual Mortgage PV) over time, calculated using the same methodology as TimeSeries Projections.'
-              : 'This chart shows the net gain present value over time, calculated using the same methodology as TimeSeries Projections.'
-            }
+            This chart shows the net gain present value over time, calculated using the same methodology as TimeSeries Projections.
           </p>
         </CardHeader>
         <CardContent>
           <div className="h-96">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartData}>
+              <LineChart data={netGainChartData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis 
                   dataKey="year" 
@@ -453,14 +504,142 @@ export default function Charts() {
                 />
                 <YAxis 
                   tickFormatter={formatCurrency}
-                  label={{ 
-                    value: chartType === 'cashAtHand' ? 'Cash at Hand ($)' : 'Net Gain Present Value ($)', 
-                    angle: -90, 
-                    position: 'insideLeft' 
-                  }}
+                  label={{ value: 'Net Gain Present Value ($)', angle: -90, position: 'insideLeft' }}
                 />
                 <Tooltip 
                   formatter={(value: number) => [formatCurrency(value), '']}
+                  labelFormatter={(label) => `Year ${label}`}
+                />
+                <Legend />
+                
+                {selectedInvestments.map((investment, index) => (
+                  <Line
+                    key={investment.id}
+                    type="monotone"
+                    dataKey={investment.propertyName || `Property ${investment.id.slice(0, 8)}`}
+                    stroke={colors[index % colors.length]}
+                    strokeWidth={2}
+                    dot={{ r: 4 }}
+                    activeDot={{ r: 6 }}
+                  />
+                ))}
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Cash at Hand Chart */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Cash at Hand vs Years</CardTitle>
+          <p className="text-sm text-muted-foreground">
+            This chart shows Cash at Hand (Cumulative Net Yield minus Cumulative Annual Mortgage PV) over time, calculated using the same methodology as TimeSeries Projections.
+          </p>
+        </CardHeader>
+        <CardContent>
+          <div className="h-96">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={cashAtHandChartData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis 
+                  dataKey="year" 
+                  label={{ value: 'Years', position: 'insideBottom', offset: -5 }}
+                />
+                <YAxis 
+                  tickFormatter={formatCurrency}
+                  label={{ value: 'Cash at Hand ($)', angle: -90, position: 'insideLeft' }}
+                />
+                <Tooltip 
+                  formatter={(value: number) => [formatCurrency(value), '']}
+                  labelFormatter={(label) => `Year ${label}`}
+                />
+                <Legend />
+                
+                {selectedInvestments.map((investment, index) => (
+                  <Line
+                    key={investment.id}
+                    type="monotone"
+                    dataKey={investment.propertyName || `Property ${investment.id.slice(0, 8)}`}
+                    stroke={colors[index % colors.length]}
+                    strokeWidth={2}
+                    dot={{ r: 4 }}
+                    activeDot={{ r: 6 }}
+                  />
+                ))}
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Cash at Hand to Y0 Net Equity Ratio Chart */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Cash at Hand to Y0 Net Equity Ratio vs Years</CardTitle>
+          <p className="text-sm text-muted-foreground">
+            This chart shows the ratio of Cash at Hand to initial Net Equity (Y0) as a percentage over time.
+          </p>
+        </CardHeader>
+        <CardContent>
+          <div className="h-96">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={cashAtHandRatioChartData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis 
+                  dataKey="year" 
+                  label={{ value: 'Years', position: 'insideBottom', offset: -5 }}
+                />
+                <YAxis 
+                  tickFormatter={formatPercentage}
+                  label={{ value: 'Cash at Hand / Y0 Net Equity (%)', angle: -90, position: 'insideLeft' }}
+                />
+                <Tooltip 
+                  formatter={(value: number) => [formatPercentage(value), '']}
+                  labelFormatter={(label) => `Year ${label}`}
+                />
+                <Legend />
+                
+                {selectedInvestments.map((investment, index) => (
+                  <Line
+                    key={investment.id}
+                    type="monotone"
+                    dataKey={investment.propertyName || `Property ${investment.id.slice(0, 8)}`}
+                    stroke={colors[index % colors.length]}
+                    strokeWidth={2}
+                    dot={{ r: 4 }}
+                    activeDot={{ r: 6 }}
+                  />
+                ))}
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Net Gain to Y0 Net Equity Ratio Chart */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Net Gain to Y0 Net Equity Ratio vs Years</CardTitle>
+          <p className="text-sm text-muted-foreground">
+            This chart shows the ratio of Net Gain (Today's Dollars) to initial Net Equity (Y0) as a percentage over time.
+          </p>
+        </CardHeader>
+        <CardContent>
+          <div className="h-96">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={netGainRatioChartData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis 
+                  dataKey="year" 
+                  label={{ value: 'Years', position: 'insideBottom', offset: -5 }}
+                />
+                <YAxis 
+                  tickFormatter={formatPercentage}
+                  label={{ value: 'Net Gain / Y0 Net Equity (%)', angle: -90, position: 'insideLeft' }}
+                />
+                <Tooltip 
+                  formatter={(value: number) => [formatPercentage(value), '']}
                   labelFormatter={(label) => `Year ${label}`}
                 />
                 <Legend />
