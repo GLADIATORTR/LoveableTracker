@@ -121,16 +121,18 @@ function calculateMarketValue(investment: any, year: number, effectiveSettings: 
   return nominalValue * inflationAdjustment;
 }
 
-// Annual Net Yield Calculator - FIXED VALUE
+// Annual Net Yield Calculator - Calculate from actual property data
 function calculateAnnualNetYield(investment: any, year: number): number {
-  // Fixed at $42,840 for all years (already in today's dollars, no adjustments needed)
-  return 42840;
+  const monthlyRent = (investment.monthlyRent || 0) / 100; // Convert from cents to dollars
+  const monthlyExpenses = (investment.monthlyExpenses || 0) / 100; // Convert from cents to dollars
+  const monthlyNetYield = monthlyRent - monthlyExpenses;
+  return monthlyNetYield * 12; // Annual net yield (already in today's dollars, no adjustments needed)
 }
 
-// Cumulative Net Yield Calculator
+// Cumulative Net Yield Calculator - Calculate from actual property data
 function calculateCumulativeNetYield(investment: any, year: number): number {
-  // Sum of fixed $42,840 per year
-  return 42840 * Math.max(0, year);
+  const annualNetYield = calculateAnnualNetYield(investment, year);
+  return annualNetYield * Math.max(0, year);
 }
 
 // Cash at Hand Calculator - Cumulative Net Yield minus Cumulative Annual Mortgage PV

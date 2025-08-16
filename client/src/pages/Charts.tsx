@@ -170,14 +170,18 @@ function calculateSellingCosts(investment: any, year: number, effectiveSettings:
   return marketValue * sellingCostsRate;
 }
 
-// Annual Net Yield Calculator (same as TimeSeries)
+// Annual Net Yield Calculator - Calculate from actual property data
 function calculateAnnualNetYield(investment: any, year: number): number {
-  return 42840; // Fixed value as in TimeSeries
+  const monthlyRent = (investment.monthlyRent || 0) / 100; // Convert from cents to dollars
+  const monthlyExpenses = (investment.monthlyExpenses || 0) / 100; // Convert from cents to dollars
+  const monthlyNetYield = monthlyRent - monthlyExpenses;
+  return monthlyNetYield * 12; // Annual net yield
 }
 
-// Cumulative Net Yield Calculator (same as TimeSeries)
+// Cumulative Net Yield Calculator - Calculate from actual property data
 function calculateCumulativeNetYield(investment: any, year: number): number {
-  return 42840 * Math.max(0, year);
+  const annualNetYield = calculateAnnualNetYield(investment, year);
+  return annualNetYield * Math.max(0, year);
 }
 
 // Cash at Hand Calculator (same as TimeSeries) - Cumulative Net Yield minus Cumulative Annual Mortgage PV
