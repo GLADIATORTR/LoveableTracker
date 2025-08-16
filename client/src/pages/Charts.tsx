@@ -1,5 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { EconomicScenarioSliders, type EconomicParameters, type CountrySpecificParameters } from "@/components/ui/economic-scenario-sliders";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
@@ -287,6 +289,7 @@ function calculateNetGainPresentValue(investment: any, year: number, effectiveSe
 export default function Charts() {
   const [selectedProperties, setSelectedProperties] = useState<string[]>([]);
   const [scenarioParams, setScenarioParams] = useState<CountrySpecificParameters>({});
+  const [isStackedView, setIsStackedView] = useState(true);
   
   // Get global settings for initial values
   const globalSettings = getGlobalSettings();
@@ -404,6 +407,73 @@ export default function Charts() {
     return `${value.toFixed(1)}%`;
   };
 
+  // Helper function to render chart based on toggle
+  const renderChart = (data: any[], formatter: (value: number) => string, yAxisLabel: string) => {
+    if (isStackedView) {
+      return (
+        <AreaChart data={data}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis 
+            dataKey="year" 
+            label={{ value: 'Years', position: 'insideBottom', offset: -5 }}
+          />
+          <YAxis 
+            tickFormatter={formatter}
+            label={{ value: yAxisLabel, angle: -90, position: 'insideLeft' }}
+          />
+          <Tooltip 
+            formatter={(value: number) => [formatter(value), '']}
+            labelFormatter={(label) => `Year ${label}`}
+          />
+          <Legend />
+          
+          {selectedInvestments.map((investment, index) => (
+            <Area
+              key={investment.id}
+              type="monotone"
+              dataKey={investment.propertyName || `Property ${investment.id.slice(0, 8)}`}
+              stackId="1"
+              stroke={colors[index % colors.length]}
+              fill={colors[index % colors.length]}
+              fillOpacity={0.6}
+            />
+          ))}
+        </AreaChart>
+      );
+    } else {
+      return (
+        <LineChart data={data}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis 
+            dataKey="year" 
+            label={{ value: 'Years', position: 'insideBottom', offset: -5 }}
+          />
+          <YAxis 
+            tickFormatter={formatter}
+            label={{ value: yAxisLabel, angle: -90, position: 'insideLeft' }}
+          />
+          <Tooltip 
+            formatter={(value: number) => [formatter(value), '']}
+            labelFormatter={(label) => `Year ${label}`}
+          />
+          <Legend />
+          
+          {selectedInvestments.map((investment, index) => (
+            <Line
+              key={investment.id}
+              type="monotone"
+              dataKey={investment.propertyName || `Property ${investment.id.slice(0, 8)}`}
+              stroke={colors[index % colors.length]}
+              strokeWidth={2}
+              dot={{ r: 4 }}
+              activeDot={{ r: 6 }}
+            />
+          ))}
+        </LineChart>
+      );
+    }
+  };
+
   const handlePropertySelection = (propertyId: string) => {
     setSelectedProperties(prev => {
       if (prev.includes(propertyId)) {
@@ -440,6 +510,26 @@ export default function Charts() {
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Investment Charts</h1>
+        
+        {/* Chart Type Toggle */}
+        <div className="flex items-center space-x-3">
+          <Label htmlFor="chart-toggle" className="text-sm font-medium">
+            Chart Type:
+          </Label>
+          <div className="flex items-center space-x-2">
+            <span className={`text-sm ${!isStackedView ? 'font-medium text-primary' : 'text-muted-foreground'}`}>
+              Individual Lines
+            </span>
+            <Switch
+              id="chart-toggle"
+              checked={isStackedView}
+              onCheckedChange={setIsStackedView}
+            />
+            <span className={`text-sm ${isStackedView ? 'font-medium text-primary' : 'text-muted-foreground'}`}>
+              Stacked Areas
+            </span>
+          </div>
+        </div>
       </div>
 
       {/* Economic Scenario Sliders */}
@@ -500,34 +590,7 @@ export default function Charts() {
         <CardContent>
           <div className="h-96">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={netGainChartData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis 
-                  dataKey="year" 
-                  label={{ value: 'Years', position: 'insideBottom', offset: -5 }}
-                />
-                <YAxis 
-                  tickFormatter={formatCurrency}
-                  label={{ value: 'Net Gain Present Value ($)', angle: -90, position: 'insideLeft' }}
-                />
-                <Tooltip 
-                  formatter={(value: number) => [formatCurrency(value), '']}
-                  labelFormatter={(label) => `Year ${label}`}
-                />
-                <Legend />
-                
-                {selectedInvestments.map((investment, index) => (
-                  <Area
-                    key={investment.id}
-                    type="monotone"
-                    dataKey={investment.propertyName || `Property ${investment.id.slice(0, 8)}`}
-                    stackId="1"
-                    stroke={colors[index % colors.length]}
-                    fill={colors[index % colors.length]}
-                    fillOpacity={0.6}
-                  />
-                ))}
-              </AreaChart>
+              {renderChart(netGainChartData, formatCurrency, 'Net Gain Present Value ($)')}
             </ResponsiveContainer>
           </div>
         </CardContent>
@@ -544,34 +607,7 @@ export default function Charts() {
         <CardContent>
           <div className="h-96">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={cashAtHandChartData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis 
-                  dataKey="year" 
-                  label={{ value: 'Years', position: 'insideBottom', offset: -5 }}
-                />
-                <YAxis 
-                  tickFormatter={formatCurrency}
-                  label={{ value: 'Cash at Hand ($)', angle: -90, position: 'insideLeft' }}
-                />
-                <Tooltip 
-                  formatter={(value: number) => [formatCurrency(value), '']}
-                  labelFormatter={(label) => `Year ${label}`}
-                />
-                <Legend />
-                
-                {selectedInvestments.map((investment, index) => (
-                  <Area
-                    key={investment.id}
-                    type="monotone"
-                    dataKey={investment.propertyName || `Property ${investment.id.slice(0, 8)}`}
-                    stackId="1"
-                    stroke={colors[index % colors.length]}
-                    fill={colors[index % colors.length]}
-                    fillOpacity={0.6}
-                  />
-                ))}
-              </AreaChart>
+              {renderChart(cashAtHandChartData, formatCurrency, 'Cash at Hand ($)')}
             </ResponsiveContainer>
           </div>
         </CardContent>
@@ -588,34 +624,7 @@ export default function Charts() {
         <CardContent>
           <div className="h-96">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={cashAtHandRatioChartData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis 
-                  dataKey="year" 
-                  label={{ value: 'Years', position: 'insideBottom', offset: -5 }}
-                />
-                <YAxis 
-                  tickFormatter={formatPercentage}
-                  label={{ value: 'Cash at Hand / Y0 Net Equity (%)', angle: -90, position: 'insideLeft' }}
-                />
-                <Tooltip 
-                  formatter={(value: number) => [formatPercentage(value), '']}
-                  labelFormatter={(label) => `Year ${label}`}
-                />
-                <Legend />
-                
-                {selectedInvestments.map((investment, index) => (
-                  <Area
-                    key={investment.id}
-                    type="monotone"
-                    dataKey={investment.propertyName || `Property ${investment.id.slice(0, 8)}`}
-                    stackId="1"
-                    stroke={colors[index % colors.length]}
-                    fill={colors[index % colors.length]}
-                    fillOpacity={0.6}
-                  />
-                ))}
-              </AreaChart>
+              {renderChart(cashAtHandRatioChartData, formatPercentage, 'Cash at Hand / Y0 Net Equity (%)')}
             </ResponsiveContainer>
           </div>
         </CardContent>
@@ -632,34 +641,7 @@ export default function Charts() {
         <CardContent>
           <div className="h-96">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={netGainRatioChartData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis 
-                  dataKey="year" 
-                  label={{ value: 'Years', position: 'insideBottom', offset: -5 }}
-                />
-                <YAxis 
-                  tickFormatter={formatPercentage}
-                  label={{ value: 'Net Gain / Y0 Net Equity (%)', angle: -90, position: 'insideLeft' }}
-                />
-                <Tooltip 
-                  formatter={(value: number) => [formatPercentage(value), '']}
-                  labelFormatter={(label) => `Year ${label}`}
-                />
-                <Legend />
-                
-                {selectedInvestments.map((investment, index) => (
-                  <Area
-                    key={investment.id}
-                    type="monotone"
-                    dataKey={investment.propertyName || `Property ${investment.id.slice(0, 8)}`}
-                    stackId="1"
-                    stroke={colors[index % colors.length]}
-                    fill={colors[index % colors.length]}
-                    fillOpacity={0.6}
-                  />
-                ))}
-              </AreaChart>
+              {renderChart(netGainRatioChartData, formatPercentage, 'Net Gain / Y0 Net Equity (%)')}
             </ResponsiveContainer>
           </div>
         </CardContent>
