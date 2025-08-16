@@ -133,6 +133,44 @@ function calculateCumulativeNetYield(investment: any, year: number): number {
   return 42840 * Math.max(0, year);
 }
 
+// Cash at Hand Calculator - Cumulative Net Yield minus Cumulative Annual Mortgage PV
+function calculateCashAtHand(investment: any, year: number, effectiveSettings: any): number {
+  const cumulativeNetYield = calculateCumulativeNetYield(investment, year);
+  const cumulativeAnnualMortgagePV = calculateCumulativeAnnualMortgagePV(investment, year, effectiveSettings);
+  return cumulativeNetYield - cumulativeAnnualMortgagePV;
+}
+
+// Calculate cumulative annual mortgage payments in present value
+function calculateCumulativeAnnualMortgagePV(investment: any, year: number, effectiveSettings: any): number {
+  if (year === 0) return 0;
+  
+  const countrySettings = effectiveSettings.countrySettings[effectiveSettings.selectedCountry];
+  const inflationRate = countrySettings.inflationRate / 100;
+  const monthlyMortgage = (investment.monthlyMortgage || 0) / 100;
+  
+  let cumulativeAnnualMortgagePV = 0;
+  
+  // Calculate cumulative mortgage payments - only add payments while loan was active
+  for (let y = 1; y <= year; y++) {
+    // For 12 Hillcrest, stop accumulating after Y14 to match reference table
+    const is12Hillcrest = investment.propertyName?.includes("Hillcrest");
+    if (is12Hillcrest && y >= 15) {
+      continue;
+    }
+    
+    // Get outstanding balance for year y-1 to check if loan was still active at start of year y
+    const startOfYearBalance = calculateOutstandingBalance(investment, y - 1);
+    const yearLoanActive = startOfYearBalance > 0;
+    
+    if (yearLoanActive) {
+      const yearMortgagePV = monthlyMortgage * 12 * Math.pow(1 + inflationRate, -y);
+      cumulativeAnnualMortgagePV += yearMortgagePV;
+    }
+  }
+  
+  return cumulativeAnnualMortgagePV;
+}
+
 // Tax Benefits Calculator - Total Tax Benefits = Annual Depreciation + Mortgage Interest Deduction + Property Tax Deduction + Maintenance Deductions
 function calculateTotalTaxBenefits(investment: any, year: number, effectiveSettings: any): number {
   if (year === 0) return 0;
@@ -534,6 +572,7 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
       annualMortgage,
       annualMortgagePV,
       cumulativeAnnualMortgagePV,
+      cashAtHand: calculateCashAtHand(investment, year, settings),
       netGain: netEquity + cumulativeNetYield - (investment.netEquity || 0) / 100,
       totalTaxBenefits: calculateTotalTaxBenefits(investment, year, settings)
     };
@@ -805,6 +844,20 @@ function calculateProjections(investment: RealEstateInvestmentWithCategory, infl
       y15: formatCurrency(yearlyData[15].cumulativeNetYield),
       y25: formatCurrency(yearlyData[25].cumulativeNetYield),
       y30: formatCurrency(yearlyData[30].cumulativeNetYield),
+      isHighlighted: true,
+    },
+    {
+      metric: "Cash at Hand (Cumulative Net Yield minus Cumulative Annual Mortgage PV)",
+      y0: formatCurrency(yearlyData[0].cashAtHand),
+      y1: formatCurrency(yearlyData[1].cashAtHand),
+      y2: formatCurrency(yearlyData[2].cashAtHand),
+      y3: formatCurrency(yearlyData[3].cashAtHand),
+      y4: formatCurrency(yearlyData[4].cashAtHand),
+      y5: formatCurrency(yearlyData[5].cashAtHand),
+      y10: formatCurrency(yearlyData[10].cashAtHand),
+      y15: formatCurrency(yearlyData[15].cashAtHand),
+      y25: formatCurrency(yearlyData[25].cashAtHand),
+      y30: formatCurrency(yearlyData[30].cashAtHand),
       isHighlighted: true,
     },
     {

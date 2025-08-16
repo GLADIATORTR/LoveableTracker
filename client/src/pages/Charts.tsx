@@ -180,6 +180,13 @@ function calculateCumulativeNetYield(investment: any, year: number): number {
   return 42840 * Math.max(0, year);
 }
 
+// Cash at Hand Calculator (same as TimeSeries) - Cumulative Net Yield minus Cumulative Annual Mortgage PV
+function calculateCashAtHand(investment: any, year: number, effectiveSettings: any): number {
+  const cumulativeNetYield = calculateCumulativeNetYield(investment, year);
+  const cumulativeAnnualMortgagePV = calculateCumulativeAnnualMortgagePV(investment, year, effectiveSettings);
+  return cumulativeNetYield - cumulativeAnnualMortgagePV;
+}
+
 // Calculate cumulative annual mortgage payments in present value (same as TimeSeries)
 function calculateCumulativeAnnualMortgagePV(investment: any, year: number, effectiveSettings: any): number {
   if (year === 0) return 0;
@@ -214,6 +221,11 @@ function calculateCumulativeAnnualMortgagePV(investment: any, year: number, effe
 // Legacy 12 Hillcrest market value function (exact copy from TimeSeries)
 function calculate12HillcrestMarketValue(year: number, propertyAppreciationRate: number, currentValue: number): number {
   return Math.round(currentValue * Math.pow(1 + propertyAppreciationRate, year));
+}
+
+// Calculate Cash at Hand Present Value for chart (EXACT same logic as TimeSeries)
+function calculateCashAtHandPresentValue(investment: any, year: number, effectiveSettings: any): number {
+  return calculateCashAtHand(investment, year, effectiveSettings);
 }
 
 // Calculate Net Gain Present Value for chart (EXACT same logic as TimeSeries)
@@ -252,6 +264,7 @@ function calculateNetGainPresentValue(investment: any, year: number, effectiveSe
 
 export default function Charts() {
   const [selectedProperties, setSelectedProperties] = useState<string[]>([]);
+  const [chartType, setChartType] = useState<'netGain' | 'cashAtHand'>('netGain');
   const [scenarioParams, setScenarioParams] = useState<CountrySpecificParameters>({});
   
   // Get global settings for initial values
@@ -290,8 +303,15 @@ export default function Charts() {
       selectedInvestments.forEach(investment => {
         // Get effective settings for this specific investment
         const effectiveSettings = getEffectiveSettings(investment, scenarioParams);
-        const netGainPV = calculateNetGainPresentValue(investment, year, effectiveSettings);
-        dataPoint[investment.propertyName || `Property ${investment.id.slice(0, 8)}`] = Math.round(netGainPV);
+        
+        let value;
+        if (chartType === 'cashAtHand') {
+          value = calculateCashAtHandPresentValue(investment, year, effectiveSettings);
+        } else {
+          value = calculateNetGainPresentValue(investment, year, effectiveSettings);
+        }
+        
+        dataPoint[investment.propertyName || `Property ${investment.id.slice(0, 8)}`] = Math.round(value);
       });
       
       return dataPoint;
@@ -351,6 +371,15 @@ export default function Charts() {
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Investment Charts</h1>
+        <Select value={chartType} onValueChange={(value: 'netGain' | 'cashAtHand') => setChartType(value)}>
+          <SelectTrigger className="w-48">
+            <SelectValue placeholder="Select chart type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="netGain">Net Gain Present Value</SelectItem>
+            <SelectItem value="cashAtHand">Cash at Hand</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Economic Scenario Sliders */}
@@ -403,9 +432,14 @@ export default function Charts() {
       {/* Chart */}
       <Card>
         <CardHeader>
-          <CardTitle>Net Gain Present Value vs Years</CardTitle>
+          <CardTitle>
+            {chartType === 'cashAtHand' ? 'Cash at Hand vs Years' : 'Net Gain Present Value vs Years'}
+          </CardTitle>
           <p className="text-sm text-muted-foreground">
-            This chart shows the net gain present value over time, calculated using the same methodology as TimeSeries Projections.
+            {chartType === 'cashAtHand' 
+              ? 'This chart shows Cash at Hand (Cumulative Net Yield minus Cumulative Annual Mortgage PV) over time, calculated using the same methodology as TimeSeries Projections.'
+              : 'This chart shows the net gain present value over time, calculated using the same methodology as TimeSeries Projections.'
+            }
           </p>
         </CardHeader>
         <CardContent>
@@ -419,7 +453,11 @@ export default function Charts() {
                 />
                 <YAxis 
                   tickFormatter={formatCurrency}
-                  label={{ value: 'Net Gain Present Value ($)', angle: -90, position: 'insideLeft' }}
+                  label={{ 
+                    value: chartType === 'cashAtHand' ? 'Cash at Hand ($)' : 'Net Gain Present Value ($)', 
+                    angle: -90, 
+                    position: 'insideLeft' 
+                  }}
                 />
                 <Tooltip 
                   formatter={(value: number) => [formatCurrency(value), '']}
