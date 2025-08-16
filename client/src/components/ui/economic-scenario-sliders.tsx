@@ -16,6 +16,40 @@ export interface CountrySpecificParameters {
   [country: string]: EconomicParameters;
 }
 
+// Default country settings - same as GlobalSettings component
+const DEFAULT_COUNTRY_SETTINGS = {
+  USA: {
+    realEstateAppreciationRate: 3.5,
+    inflationRate: 3.5,
+    sellingCosts: 6.0,
+    capitalGainsTax: 25.0,
+    currentMortgageRate: 6.5,
+  },
+  Turkey: {
+    realEstateAppreciationRate: 3.5,
+    inflationRate: 3.5,
+    sellingCosts: 2.0,
+    capitalGainsTax: 0.0,
+    currentMortgageRate: 6.5,
+  },
+  Canada: {
+    realEstateAppreciationRate: 4.2,
+    inflationRate: 3.1,
+    sellingCosts: 5.5,
+    capitalGainsTax: 50.0,
+    currentMortgageRate: 5.8,
+  },
+  UK: {
+    realEstateAppreciationRate: 2.8,
+    inflationRate: 2.5,
+    sellingCosts: 3.0,
+    capitalGainsTax: 28.0,
+    currentMortgageRate: 5.2,
+  },
+};
+
+const AVAILABLE_COUNTRIES = Object.keys(DEFAULT_COUNTRY_SETTINGS);
+
 interface EconomicScenarioSlidersProps {
   countryParameters: CountrySpecificParameters;
   onParametersChange: (country: string, parameters: EconomicParameters) => void;
@@ -31,24 +65,12 @@ export function EconomicScenarioSliders({
 }: EconomicScenarioSlidersProps) {
   const [currentCountry, setCurrentCountry] = useState(selectedCountry);
   
-  // Get available countries from global settings
-  const getAvailableCountries = () => {
-    try {
-      const saved = localStorage.getItem('global-settings');
-      if (saved) {
-        const settings = JSON.parse(saved);
-        return Object.keys(settings.countrySettings || { USA: {} });
-      }
-    } catch (error) {
-      console.error('Failed to parse global settings:', error);
-    }
-    return ['USA'];
-  };
-  
-  const availableCountries = getAvailableCountries();
+  // Always use all available countries, not just what's in localStorage
+  const availableCountries = AVAILABLE_COUNTRIES;
   
   // Get default parameters for a country
   const getDefaultParametersForCountry = (country: string): EconomicParameters => {
+    // First check localStorage for any overrides
     try {
       const saved = localStorage.getItem('global-settings');
       if (saved) {
@@ -67,12 +89,23 @@ export function EconomicScenarioSliders({
       console.error('Failed to get country settings:', error);
     }
     
-    // Fallback defaults
+    // Use local default settings as fallback
+    const defaultCountrySettings = DEFAULT_COUNTRY_SETTINGS[country as keyof typeof DEFAULT_COUNTRY_SETTINGS];
+    if (defaultCountrySettings) {
+      return {
+        appreciationRate: defaultCountrySettings.realEstateAppreciationRate,
+        capitalGainsTax: defaultCountrySettings.capitalGainsTax,
+        inflationRate: defaultCountrySettings.inflationRate,
+        sellingCosts: defaultCountrySettings.sellingCosts,
+      };
+    }
+    
+    // Final fallback to USA defaults
     return {
-      appreciationRate: 3.5,
-      capitalGainsTax: 25.0,
-      inflationRate: 3.5,
-      sellingCosts: 6.0,
+      appreciationRate: DEFAULT_COUNTRY_SETTINGS.USA.realEstateAppreciationRate,
+      capitalGainsTax: DEFAULT_COUNTRY_SETTINGS.USA.capitalGainsTax,
+      inflationRate: DEFAULT_COUNTRY_SETTINGS.USA.inflationRate,
+      sellingCosts: DEFAULT_COUNTRY_SETTINGS.USA.sellingCosts,
     };
   };
   
