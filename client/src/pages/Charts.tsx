@@ -290,6 +290,7 @@ export default function Charts() {
   const [selectedProperties, setSelectedProperties] = useState<string[]>([]);
   const [scenarioParams, setScenarioParams] = useState<CountrySpecificParameters>({});
   const [isStackedView, setIsStackedView] = useState(true);
+  const [isAnnualized, setIsAnnualized] = useState(false);
   
   // Get global settings for initial values
   const globalSettings = getGlobalSettings();
@@ -325,7 +326,8 @@ export default function Charts() {
       selectedInvestments.forEach(investment => {
         const effectiveSettings = getEffectiveSettings(investment, scenarioParams);
         const value = calculateNetGainPresentValue(investment, year, effectiveSettings);
-        dataPoint[investment.propertyName || `Property ${investment.id.slice(0, 8)}`] = Math.round(value);
+        const finalValue = isAnnualized ? convertToAnnualized(value, year, false) : value;
+        dataPoint[investment.propertyName || `Property ${investment.id.slice(0, 8)}`] = Math.round(finalValue);
       });
       return dataPoint;
     });
@@ -342,7 +344,8 @@ export default function Charts() {
       selectedInvestments.forEach(investment => {
         const effectiveSettings = getEffectiveSettings(investment, scenarioParams);
         const value = calculateCashAtHandPresentValue(investment, year, effectiveSettings);
-        dataPoint[investment.propertyName || `Property ${investment.id.slice(0, 8)}`] = Math.round(value);
+        const finalValue = isAnnualized ? convertToAnnualized(value, year, false) : value;
+        dataPoint[investment.propertyName || `Property ${investment.id.slice(0, 8)}`] = Math.round(finalValue);
       });
       return dataPoint;
     });
@@ -359,7 +362,8 @@ export default function Charts() {
       selectedInvestments.forEach(investment => {
         const effectiveSettings = getEffectiveSettings(investment, scenarioParams);
         const ratio = calculateCashAtHandToY0NetEquityRatio(investment, year, effectiveSettings);
-        dataPoint[investment.propertyName || `Property ${investment.id.slice(0, 8)}`] = Math.round(ratio * 100) / 100; // Round to 2 decimal places
+        const finalValue = isAnnualized ? convertToAnnualized(ratio, year, true) : ratio;
+        dataPoint[investment.propertyName || `Property ${investment.id.slice(0, 8)}`] = Math.round(finalValue * 100) / 100; // Round to 2 decimal places
       });
       return dataPoint;
     });
@@ -376,7 +380,8 @@ export default function Charts() {
       selectedInvestments.forEach(investment => {
         const effectiveSettings = getEffectiveSettings(investment, scenarioParams);
         const ratio = calculateNetGainToY0NetEquityRatio(investment, year, effectiveSettings);
-        dataPoint[investment.propertyName || `Property ${investment.id.slice(0, 8)}`] = Math.round(ratio * 100) / 100; // Round to 2 decimal places
+        const finalValue = isAnnualized ? convertToAnnualized(ratio, year, true) : ratio;
+        dataPoint[investment.propertyName || `Property ${investment.id.slice(0, 8)}`] = Math.round(finalValue * 100) / 100; // Round to 2 decimal places
       });
       return dataPoint;
     });
@@ -405,6 +410,21 @@ export default function Charts() {
 
   const formatPercentage = (value: number) => {
     return `${value.toFixed(1)}%`;
+  };
+
+  // Convert cumulative values to annualized rates
+  const convertToAnnualized = (value: number, year: number, isPercentage: boolean = false) => {
+    if (year <= 0) return value;
+    
+    if (isPercentage) {
+      // For percentage values, convert ratio to annualized rate
+      const ratio = value / 100; // Convert percentage to ratio
+      const annualizedRate = Math.pow(1 + ratio, 1/year) - 1;
+      return annualizedRate * 100; // Convert back to percentage
+    } else {
+      // For dollar values, calculate annualized return
+      return value / year;
+    }
   };
 
   // Custom tooltip content that sorts values and shows property names
@@ -549,23 +569,46 @@ export default function Charts() {
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Investment Charts</h1>
         
-        {/* Chart Type Toggle */}
-        <div className="flex items-center space-x-3 bg-card border border-border rounded-lg px-4 py-2 shadow-sm">
-          <Label htmlFor="chart-toggle" className="text-sm font-medium text-foreground">
-            Chart Type:
-          </Label>
-          <div className="flex items-center space-x-3">
-            <span className={`text-sm font-medium transition-colors ${!isStackedView ? 'text-primary' : 'text-muted-foreground'}`}>
-              Individual Lines
-            </span>
-            <Switch
-              id="chart-toggle"
-              checked={isStackedView}
-              onCheckedChange={setIsStackedView}
-            />
-            <span className={`text-sm font-medium transition-colors ${isStackedView ? 'text-primary' : 'text-muted-foreground'}`}>
-              Stacked Areas
-            </span>
+        {/* Chart Controls */}
+        <div className="flex items-center space-x-4">
+          {/* Chart Type Toggle */}
+          <div className="flex items-center space-x-3 bg-card border border-border rounded-lg px-4 py-2 shadow-sm">
+            <Label htmlFor="chart-toggle" className="text-sm font-medium text-foreground">
+              Chart Type:
+            </Label>
+            <div className="flex items-center space-x-3">
+              <span className={`text-sm font-medium transition-colors ${!isStackedView ? 'text-primary' : 'text-muted-foreground'}`}>
+                Individual Lines
+              </span>
+              <Switch
+                id="chart-toggle"
+                checked={isStackedView}
+                onCheckedChange={setIsStackedView}
+              />
+              <span className={`text-sm font-medium transition-colors ${isStackedView ? 'text-primary' : 'text-muted-foreground'}`}>
+                Stacked Areas
+              </span>
+            </div>
+          </div>
+
+          {/* Annualized Toggle */}
+          <div className="flex items-center space-x-3 bg-card border border-border rounded-lg px-4 py-2 shadow-sm">
+            <Label htmlFor="annualized-toggle" className="text-sm font-medium text-foreground">
+              Values:
+            </Label>
+            <div className="flex items-center space-x-3">
+              <span className={`text-sm font-medium transition-colors ${!isAnnualized ? 'text-primary' : 'text-muted-foreground'}`}>
+                Cumulative
+              </span>
+              <Switch
+                id="annualized-toggle"
+                checked={isAnnualized}
+                onCheckedChange={setIsAnnualized}
+              />
+              <span className={`text-sm font-medium transition-colors ${isAnnualized ? 'text-primary' : 'text-muted-foreground'}`}>
+                Annualized
+              </span>
+            </div>
           </div>
         </div>
       </div>
