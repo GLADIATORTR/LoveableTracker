@@ -1,7 +1,12 @@
 {
-  "version": "AA107",
-  "lastUpdated": "2025-08-17T19:44:38.906Z",
+  "version": "AA108",
+  "lastUpdated": "2025-08-17T19:46:52.486Z",
   "changes": [
+    {
+      "version": "AA108",
+      "date": "2025-08-17",
+      "description": "Fixed chart y-axis label cutoff by adding proper margins and width settings"
+    },
     {
       "version": "AA107",
       "date": "2025-08-17",

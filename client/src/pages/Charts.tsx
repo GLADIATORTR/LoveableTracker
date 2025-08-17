@@ -464,7 +464,7 @@ export default function Charts() {
   const renderChart = (data: any[], formatter: (value: number) => string, yAxisLabel: string) => {
     if (isStackedView) {
       return (
-        <AreaChart data={data}>
+        <AreaChart data={data} margin={{ top: 20, right: 30, left: 80, bottom: 20 }}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis 
             dataKey="year" 
@@ -473,6 +473,7 @@ export default function Charts() {
           <YAxis 
             tickFormatter={formatter}
             label={{ value: yAxisLabel, angle: -90, position: 'insideLeft' }}
+            width={70}
           />
           <Tooltip 
             content={<CustomTooltipContent formatter={formatter} />}
@@ -494,7 +495,7 @@ export default function Charts() {
       );
     } else {
       return (
-        <LineChart data={data}>
+        <LineChart data={data} margin={{ top: 20, right: 30, left: 80, bottom: 20 }}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis 
             dataKey="year" 
@@ -503,6 +504,7 @@ export default function Charts() {
           <YAxis 
             tickFormatter={formatter}
             label={{ value: yAxisLabel, angle: -90, position: 'insideLeft' }}
+            width={70}
           />
           <Tooltip 
             content={<CustomTooltipContent formatter={formatter} />}

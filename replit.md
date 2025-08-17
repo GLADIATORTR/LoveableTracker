@@ -1,11 +1,11 @@
-# Real Estate Financials - Version AA107
+# Real Estate Financials - Version AA108
 
 ## Overview
 
 Real Estate Financials is a comprehensive investment management platform providing intelligent property tracking, financial analysis, and portfolio optimization. It offers advanced TimeSeries projections with inflation adjustment, country-specific global settings, CSV import capabilities, detailed investment performance analysis, and real-time market trend mood indicators. The platform combines professional-grade financial modeling with market sentiment analysis to facilitate informed decisions and portfolio growth.
 
-## Recent Changes (Version AA107)
-- Changed chart annualized formula to simple division: value/years instead of CAGR
+## Recent Changes (Version AA108)
+- Fixed chart y-axis label cutoff by adding proper margins and width settings
 
 ## User Preferences
 
