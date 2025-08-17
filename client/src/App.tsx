@@ -8,7 +8,7 @@ import { SimpleThemeProvider } from "@/components/ui/simple-theme-provider";
 import { AppContextProvider, useAppContext } from "@/contexts/AppContext";
 import Sidebar from "@/components/layout/Sidebar";
 import TopBar from "@/components/layout/TopBar";
-import Dashboard from "@/pages/SimpleDashboard";
+import Dashboard from "@/pages/Dashboard";
 import Scenarios from "@/pages/Scenarios";
 import Investments from "@/pages/Investments";
 import Reports from "@/pages/Reports";
