@@ -50,13 +50,13 @@
   /* Sidebar - Professional Dark Blue */
   --sidebar-background: hsl(210 100% 12%);
   --sidebar-foreground: hsl(210 20% 95%);
-  --sidebar-primary: hsl(142 71% 45%);
+  --sidebar-primary: hsl(210 100% 50%);  /* Changed to blue for visibility */
   --sidebar-primary-foreground: hsl(0 0% 100%);
   --sidebar-accent: hsl(210 100% 15%);
   --sidebar-accent-foreground: hsl(210 20% 90%);
   --sidebar-border: hsl(210 100% 18%);
   --sidebar-input: hsl(210 100% 15%);
-  --sidebar-ring: hsl(142 71% 45%);
+  --sidebar-ring: hsl(210 100% 50%);
   
   /* Status Colors - Clear & Accessible */
   --success: hsl(142 71% 45%);

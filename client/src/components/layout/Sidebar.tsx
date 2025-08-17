@@ -106,7 +106,7 @@ export default function Sidebar() {
                   <div className={cn(
                     "flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-200 group cursor-pointer relative border",
                     isActive
-                      ? "bg-primary text-white shadow-lg border-primary/30"
+                      ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-lg border-sidebar-primary/30"
                       : "text-sidebar-foreground/90 hover:text-sidebar-foreground hover:bg-sidebar-accent hover:border-sidebar-border/50 border-transparent",
                     sidebarCollapsed && "justify-center px-2"
                   )}>
