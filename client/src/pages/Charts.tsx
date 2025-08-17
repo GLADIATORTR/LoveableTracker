@@ -314,33 +314,12 @@ export default function Charts() {
     queryKey: ['/api/investments']
   });
 
-  // Convert values to annualized rates using CAGR formula
+  // Convert values to annualized rates using simple division: value / years
   const convertToAnnualized = (currentValue: number, year: number, investment: any, effectiveSettings: any, isRatio: boolean = false) => {
     if (year <= 0) return currentValue;
     
-    // Get Year 0 value for comparison based on the chart type
-    let year0Value: number;
-    
-    if (isRatio) {
-      // For ratio charts, we need the Year 0 ratio value, not 100
-      if (currentValue >= 0) { // This is a Cash at Hand ratio
-        year0Value = calculateCashAtHandToY0NetEquityRatio(investment, 0, effectiveSettings);
-      } else { // This is a Net Gain ratio
-        year0Value = calculateNetGainToY0NetEquityRatio(investment, 0, effectiveSettings);
-      }
-      // If Year 0 ratio is 0 or close to 0, use 100 as baseline
-      if (Math.abs(year0Value) < 0.01) year0Value = 100;
-    } else {
-      // For dollar values, get the Year 0 net gain value
-      year0Value = calculateNetGainPresentValue(investment, 0, effectiveSettings);
-    }
-    
-    if (year0Value === 0 || currentValue === 0) return 0;
-    
-    // Calculate CAGR: [[Value Y]/[Value Y0]]^[1/Years]-1
-    const ratio = currentValue / year0Value;
-    const cagr = Math.pow(ratio, 1/year) - 1;
-    return cagr * 100; // Return as percentage
+    // Simple annualized formula: current value divided by number of years
+    return currentValue / year;
   };
 
   // Generate chart data for selected properties
