@@ -61,6 +61,7 @@ export interface IStorage {
   exportData(): Promise<{ investments: RealEstateInvestmentWithCategory[]; scenarios: InvestmentScenarioWithCategory[]; categories: Category[] }>;
   importInvestments(investments: InsertRealEstateInvestment[]): Promise<RealEstateInvestment[]>;
   clearAllData(): Promise<boolean>;
+  clearAllUserData(): Promise<boolean>;
 
   // Initialization
   initializeDefaultData(): Promise<void>;
@@ -312,6 +313,19 @@ export class DatabaseStorage implements IStorage {
   async clearAllData(): Promise<boolean> {
     await db.delete(realEstateInvestments);
     return true;
+  }
+
+  async clearAllUserData(): Promise<boolean> {
+    try {
+      // Delete all user data but keep categories (they're system data)
+      await db.delete(activities);
+      await db.delete(investmentScenarios);
+      await db.delete(realEstateInvestments);
+      return true;
+    } catch (error) {
+      console.error('Error clearing user data:', error);
+      return false;
+    }
   }
 }
 

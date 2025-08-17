@@ -4,7 +4,7 @@ import { storage } from "./storage";
 import { insertRealEstateInvestmentSchema, insertInvestmentScenarioSchema, insertCategorySchema, type InsertRealEstateInvestment } from "@shared/schema";
 import { z } from "zod";
 
-// CSV data from user's file
+// CSV data from user's file - Updated 2025-08-16
 const csvData = [
   ["Property Name", "Address", "Property Type", "Country", "Purchase Price", "Current Value", "Monthly Rent Income", "Monthly Expenses", "Purchase Date", "Down Payment", "Loan Amount", "Interest Rate", "Loan Term", "Outstanding Balance", "Current Term", "Monthly Mortgage"],
   ["Levent", "Besiktas, Levent, Menekseli S No8", "Condo", "Turkey", "930000", "2200000", "4500", "333.33", "10/1/2005", "0", "0", "0", "0", "0", "0", "0"],
@@ -16,8 +16,8 @@ const csvData = [
   ["KocaMustafa_Marmara", "KocaMustafaPasa, Marmara C, 116/6", "Condo", "Turkey", "3000", "120000", "313", "20", "1/1/1970", "0", "0", "0", "0", "0", "0", "0"],
   ["Sisli_Siracevizler", "Sisli, Merkez M, Siracevizler C, Marmara Ap, 132/7", "Condo", "Turkey", "11840", "300000", "600", "50", "1/1/1982", "0", "0", "0", "0", "0", "0", "0"],
   ["Atakoy", "Bakirkoy, Atakoy, Karanfil S No 1/KB A/7-Bl 13/143", "Condo", "Turkey", "32200", "300000", "875", "50", "1/1/1995", "0", "0", "0", "0", "0", "0", "0"],
-  ["12 Hillcrest", "12 Hillcrest Ct, South San Francisco, CA 94080", "Single Family", "USA", "675000", "1250000", "4450", "2910", "3/1/2014", "230000", "445000", "3.75%", "360", "338,073", "125", "2030"],
-  ["Boca 219", "500 SW Avenue, Boca Raton, Florida", "Single Family", "USA", "212500", "225000", "1950", "936.3333333", "5/1/2024", "0", "0", "0", "0", "0", "0", "0"],
+  ["12 Hillcrest", "12 Hillcrest Ct, South San Francisco, CA 94080", "Single Family", "USA", "675000", "1250000", "4450", "880", "3/1/2014", "230000", "445000", "3.75%", "360", "338,073", "125", "2030"],
+  ["Boca 219", "500 SW Avenue, Boca Raton, Florida", "Single Family", "USA", "212500", "225000", "1950", "936", "5/1/2024", "0", "0", "0", "0", "0", "0", "0"],
   ["Lupin way", "925 Lupin way San Carlos CA", "Single Family", "USA", "1375000", "2300000", "0", "1600", "3/1/2020", "704165", "670835", "2.50%", "360", "583712", "66", "3054"],
   ["ErsoySahil", "Kadikoy, Suadiye, Zihni Sakaryali S 7/2", "Condo", "Turkey", "300000", "450000", "0", "66.67", "12/1/2018", "0", "0", "0", "0", "0", "0", "0"]
 ];
@@ -323,6 +323,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ message: "All data cleared successfully" });
     } catch (error) {
       res.status(500).json({ message: "Failed to clear data" });
+    }
+  });
+
+  // Clear all user data (but keep categories)
+  app.delete("/api/user-data", async (_req, res) => {
+    try {
+      const success = await storage.clearAllUserData();
+      if (success) {
+        res.json({ message: "All user data cleared successfully" });
+      } else {
+        res.status(500).json({ message: "Failed to clear user data" });
+      }
+    } catch (error) {
+      res.status(500).json({ message: "Failed to clear user data" });
     }
   });
 

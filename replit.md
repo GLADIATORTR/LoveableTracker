@@ -10,6 +10,14 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### Property Data Update & Enhanced Features (August 2025)
+Updated preloaded properties with latest CSV data and enhanced application functionality:
+- **Updated Property Data**: Refreshed CSV data with corrected 12 Hillcrest expenses ($880 vs $2910) and standardized format
+- **Full Dictionary Implementation**: Complete asset dictionary with 10 comprehensive definitions covering financial metrics, mortgage terms, taxation, and property classification
+- **Advanced Dictionary Features**: Search functionality, category filtering, related terms linking, and professional card-based layout
+- **Delete All User Data**: Added secure delete functionality in Settings with confirmation modal - clears all properties, scenarios, and activities while preserving system categories
+- **Enhanced API**: New /api/user-data endpoint for comprehensive user data deletion with proper error handling
+
 ### App Rebranding & Version Tracking (August 2025)
 Updated application name from "Asset Tracker" to "Real Estate Financials":
 - **Frontend Display**: Updated TopBar component to show "Real Estate Financials" as fallback title

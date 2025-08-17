@@ -94,14 +94,17 @@ export default function Settings() {
   const handleClearAllData = async () => {
     setIsClearing(true);
     try {
-      const response = await fetch('/api/data', { method: 'DELETE' });
+      const response = await fetch('/api/user-data', { method: 'DELETE' });
       if (!response.ok) throw new Error('Failed to clear data');
       
       toast({
         title: "Data Cleared",
-        description: "All asset data has been permanently deleted.",
+        description: "All your property data has been permanently deleted.",
       });
       setShowClearModal(false);
+      
+      // Refresh the page to reflect the empty state
+      window.location.reload();
     } catch (error) {
       toast({
         title: "Clear Failed",
