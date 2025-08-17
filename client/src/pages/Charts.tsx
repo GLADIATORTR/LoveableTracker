@@ -314,19 +314,33 @@ export default function Charts() {
     queryKey: ['/api/investments']
   });
 
-  // Convert cumulative values to annualized rates
-  const convertToAnnualized = (value: number, year: number, isPercentage: boolean = false) => {
-    if (year <= 0) return value;
+  // Convert values to annualized rates using CAGR formula
+  const convertToAnnualized = (currentValue: number, year: number, investment: any, effectiveSettings: any, isRatio: boolean = false) => {
+    if (year <= 0) return currentValue;
     
-    if (isPercentage) {
-      // For percentage values, convert ratio to annualized rate
-      const ratio = value / 100; // Convert percentage to ratio
-      const annualizedRate = Math.pow(1 + ratio, 1/year) - 1;
-      return annualizedRate * 100; // Convert back to percentage
+    // Get Year 0 value for comparison based on the chart type
+    let year0Value: number;
+    
+    if (isRatio) {
+      // For ratio charts, we need the Year 0 ratio value, not 100
+      if (currentValue >= 0) { // This is a Cash at Hand ratio
+        year0Value = calculateCashAtHandToY0NetEquityRatio(investment, 0, effectiveSettings);
+      } else { // This is a Net Gain ratio
+        year0Value = calculateNetGainToY0NetEquityRatio(investment, 0, effectiveSettings);
+      }
+      // If Year 0 ratio is 0 or close to 0, use 100 as baseline
+      if (Math.abs(year0Value) < 0.01) year0Value = 100;
     } else {
-      // For dollar values, calculate annualized return
-      return value / year;
+      // For dollar values, get the Year 0 net gain value
+      year0Value = calculateNetGainPresentValue(investment, 0, effectiveSettings);
     }
+    
+    if (year0Value === 0 || currentValue === 0) return 0;
+    
+    // Calculate CAGR: [[Value Y]/[Value Y0]]^[1/Years]-1
+    const ratio = currentValue / year0Value;
+    const cagr = Math.pow(ratio, 1/year) - 1;
+    return cagr * 100; // Return as percentage
   };
 
   // Generate chart data for selected properties
@@ -341,7 +355,7 @@ export default function Charts() {
       selectedInvestments.forEach(investment => {
         const effectiveSettings = getEffectiveSettings(investment, scenarioParams);
         const value = calculateNetGainPresentValue(investment, year, effectiveSettings);
-        const finalValue = isAnnualized ? convertToAnnualized(value, year, false) : value;
+        const finalValue = isAnnualized ? convertToAnnualized(value, year, investment, effectiveSettings, false) : value;
         dataPoint[investment.propertyName || `Property ${investment.id.slice(0, 8)}`] = Math.round(finalValue);
       });
       return dataPoint;
@@ -359,7 +373,7 @@ export default function Charts() {
       selectedInvestments.forEach(investment => {
         const effectiveSettings = getEffectiveSettings(investment, scenarioParams);
         const value = calculateCashAtHandPresentValue(investment, year, effectiveSettings);
-        const finalValue = isAnnualized ? convertToAnnualized(value, year, false) : value;
+        const finalValue = isAnnualized ? convertToAnnualized(value, year, investment, effectiveSettings, false) : value;
         dataPoint[investment.propertyName || `Property ${investment.id.slice(0, 8)}`] = Math.round(finalValue);
       });
       return dataPoint;
@@ -377,7 +391,7 @@ export default function Charts() {
       selectedInvestments.forEach(investment => {
         const effectiveSettings = getEffectiveSettings(investment, scenarioParams);
         const ratio = calculateCashAtHandToY0NetEquityRatio(investment, year, effectiveSettings);
-        const finalValue = isAnnualized ? convertToAnnualized(ratio, year, true) : ratio;
+        const finalValue = isAnnualized ? convertToAnnualized(ratio, year, investment, effectiveSettings, true) : ratio;
         dataPoint[investment.propertyName || `Property ${investment.id.slice(0, 8)}`] = Math.round(finalValue * 100) / 100; // Round to 2 decimal places
       });
       return dataPoint;
@@ -395,7 +409,7 @@ export default function Charts() {
       selectedInvestments.forEach(investment => {
         const effectiveSettings = getEffectiveSettings(investment, scenarioParams);
         const ratio = calculateNetGainToY0NetEquityRatio(investment, year, effectiveSettings);
-        const finalValue = isAnnualized ? convertToAnnualized(ratio, year, true) : ratio;
+        const finalValue = isAnnualized ? convertToAnnualized(ratio, year, investment, effectiveSettings, true) : ratio;
         dataPoint[investment.propertyName || `Property ${investment.id.slice(0, 8)}`] = Math.round(finalValue * 100) / 100; // Round to 2 decimal places
       });
       return dataPoint;
