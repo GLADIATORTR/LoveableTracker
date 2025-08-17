@@ -8,6 +8,7 @@ import { SimpleThemeProvider } from "@/components/ui/simple-theme-provider";
 import { AppContextProvider, useAppContext } from "@/contexts/AppContext";
 import Sidebar from "@/components/layout/Sidebar";
 import TopBar from "@/components/layout/TopBar";
+import MobileBottomNav from "@/components/layout/MobileBottomNav";
 import Dashboard from "@/pages/Dashboard";
 import Scenarios from "@/pages/Scenarios";
 import Investments from "@/pages/Investments";
@@ -15,6 +16,7 @@ import Reports from "@/pages/Reports";
 import Charts from "@/pages/Charts";
 import Settings from "@/pages/Settings";
 import Dictionary from "@/pages/Dictionary";
+import PropertyComparison from "@/pages/PropertyComparison";
 import NotFound from "@/pages/not-found";
 
 // Mobile Sidebar Overlay Component
@@ -48,6 +50,7 @@ function Router() {
       <Route path="/investments" component={Investments} />
       <Route path="/reports" component={Reports} />
       <Route path="/charts" component={Charts} />
+      <Route path="/comparison" component={PropertyComparison} />
       <Route path="/settings" component={Settings} />
       <Route path="/dictionary" component={Dictionary} />
       <Route component={NotFound} />
@@ -75,13 +78,16 @@ function App() {
                 {/* Main Content Area */}
                 <div className="flex-1 flex flex-col min-w-0">
                   <TopBar />
-                  <main className="flex-1 overflow-y-auto p-4 sm:p-6">
+                  <main className="flex-1 overflow-y-auto p-4 sm:p-6 pb-20 lg:pb-6">
                     <div className="max-w-7xl mx-auto">
                       <Router />
                     </div>
                   </main>
                 </div>
               </div>
+              
+              {/* Mobile Bottom Navigation */}
+              <MobileBottomNav />
             </div>
             <Toaster />
           </AppContextProvider>

@@ -24,6 +24,7 @@ const navigation = [
   { name: "Investments", href: "/investments", icon: Home },
   { name: "TimeSeries Projections", href: "/reports", icon: BarChart3 },
   { name: "Charts", href: "/charts", icon: TrendingUp },
+  { name: "Compare Properties", href: "/comparison", icon: Calculator },
   { name: "Settings", href: "/settings", icon: Settings },
 ];
 
@@ -126,6 +127,12 @@ export default function Sidebar() {
                         {item.name}
                       </span>
                     )}
+                    
+                    {/* Mobile: Close menu after navigation */}
+                    {isMobile && (
+                      <div onClick={() => setMobileMenuOpen(false)} className="absolute inset-0" />
+                    )}
+                    
                     {isActive && !sidebarCollapsed && (
                       <div className="absolute right-2 w-1 h-8 bg-gradient-to-b from-primary to-primary-600 rounded-full" />
                     )}

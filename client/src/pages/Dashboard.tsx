@@ -7,6 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { InvestmentForm } from "@/components/ui/investment-form";
 import { CSVImport } from "@/components/ui/csv-import";
+import { PortfolioHealthScore } from "@/components/ui/portfolio-health-score";
 import MarketSentiment from "@/components/MarketSentiment";
 import { 
   Package, 
@@ -175,6 +176,9 @@ export default function Dashboard() {
 
         {/* Sidebar Content */}
         <div className="space-y-6">
+          
+          {/* Portfolio Health Score */}
+          <PortfolioHealthScore />
           
           {/* Market Sentiment */}
           <MarketSentiment />

@@ -1,7 +1,12 @@
 {
-  "version": "AA112",
-  "lastUpdated": "2025-08-17T21:49:45.679Z",
+  "version": "AA113",
+  "lastUpdated": "2025-08-17T21:57:09.084Z",
   "changes": [
+    {
+      "version": "AA113",
+      "date": "2025-08-17",
+      "description": "Implemented mobile-first navigation with bottom nav and property comparison features with portfolio health scoring"
+    },
     {
       "version": "AA112",
       "date": "2025-08-17",
@@ -46,11 +51,6 @@
       "version": "AA104",
       "date": "2025-08-17",
       "description": "Fixed sidebar button label visibility and created automatic version management system"
-    },
-    {
-      "version": "AA103",
-      "date": "2025-08-17",
-      "description": "Market sentiment feature implementation with economic indicators and dashboard integration"
     }
   ]
 }
