@@ -9,6 +9,8 @@ import {
   type InsertInvestmentScenario,
   type Activity,
   type InsertActivity,
+  type MarketSentiment,
+  type InsertMarketSentiment,
   type RealEstateInvestmentWithCategory,
   type InvestmentScenarioWithCategory,
   type DashboardStats,
@@ -16,7 +18,8 @@ import {
   categories,
   realEstateInvestments,
   investmentScenarios,
-  activities
+  activities,
+  marketSentiment
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, like, and } from "drizzle-orm";
@@ -53,6 +56,11 @@ export interface IStorage {
   // Activities
   getActivities(limit?: number): Promise<Activity[]>;
   createActivity(activity: InsertActivity): Promise<Activity>;
+
+  // Market Sentiment
+  getLatestMarketSentiment(): Promise<MarketSentiment | undefined>;
+  getMarketSentimentHistory(limit?: number): Promise<MarketSentiment[]>;
+  createMarketSentiment(sentiment: InsertMarketSentiment): Promise<MarketSentiment>;
 
   // Dashboard
   getDashboardStats(): Promise<DashboardStats>;
@@ -321,11 +329,35 @@ export class DatabaseStorage implements IStorage {
       await db.delete(activities);
       await db.delete(investmentScenarios);
       await db.delete(realEstateInvestments);
+      await db.delete(marketSentiment);
       return true;
     } catch (error) {
       console.error('Error clearing user data:', error);
       return false;
     }
+  }
+
+  // Market Sentiment methods
+  async getLatestMarketSentiment(): Promise<MarketSentiment | undefined> {
+    const results = await db.select()
+      .from(marketSentiment)
+      .orderBy(desc(marketSentiment.timestamp))
+      .limit(1);
+    return results[0];
+  }
+
+  async getMarketSentimentHistory(limit: number = 30): Promise<MarketSentiment[]> {
+    return db.select()
+      .from(marketSentiment)
+      .orderBy(desc(marketSentiment.timestamp))
+      .limit(limit);
+  }
+
+  async createMarketSentiment(sentiment: InsertMarketSentiment): Promise<MarketSentiment> {
+    const results = await db.insert(marketSentiment)
+      .values(sentiment)
+      .returning();
+    return results[0];
   }
 }
 

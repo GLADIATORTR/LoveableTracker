@@ -1,8 +1,91 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertRealEstateInvestmentSchema, insertInvestmentScenarioSchema, insertCategorySchema, type InsertRealEstateInvestment } from "@shared/schema";
+import { insertRealEstateInvestmentSchema, insertInvestmentScenarioSchema, insertCategorySchema, type InsertRealEstateInvestment, type InsertMarketSentiment } from "@shared/schema";
 import { z } from "zod";
+
+// Market Sentiment Fetching Service
+async function fetchMarketSentiment(): Promise<InsertMarketSentiment> {
+  try {
+    // Simulate fetching from multiple data sources (FRED API, market APIs, etc.)
+    // In production, you would call actual APIs here
+    
+    // Example market indicators (in real implementation, fetch from APIs)
+    const indicators = {
+      housePrice: 380000, // Median house price in USD
+      interestRate: 675, // 6.75% in basis points
+      inflationRate: 320, // 3.2% in basis points
+      unemploymentRate: 380, // 3.8% in basis points
+      mortgageRates: 725, // 7.25% in basis points
+      gdpGrowth: 250, // 2.5% in basis points
+    };
+
+    // Calculate mood score based on multiple factors
+    let moodScore = 50; // Start neutral
+    
+    // Interest rate impact (lower is better for real estate)
+    if (indicators.interestRate < 600) moodScore += 15;
+    else if (indicators.interestRate > 700) moodScore -= 15;
+    
+    // Inflation impact (moderate inflation is good)
+    if (indicators.inflationRate > 200 && indicators.inflationRate < 400) moodScore += 10;
+    else if (indicators.inflationRate > 500) moodScore -= 20;
+    
+    // Unemployment impact (lower is better)
+    if (indicators.unemploymentRate < 400) moodScore += 10;
+    else if (indicators.unemploymentRate > 600) moodScore -= 15;
+    
+    // GDP growth impact
+    if (indicators.gdpGrowth > 200) moodScore += 10;
+    else if (indicators.gdpGrowth < 100) moodScore -= 10;
+    
+    // Ensure score stays within bounds
+    moodScore = Math.max(0, Math.min(100, moodScore));
+    
+    // Determine overall mood
+    let overallMood: string;
+    let sentiment: string;
+    let confidence: number;
+    
+    if (moodScore >= 70) {
+      overallMood = 'bullish';
+      sentiment = 'positive';
+      confidence = Math.min(95, moodScore + 10);
+    } else if (moodScore >= 40) {
+      overallMood = 'neutral';
+      sentiment = 'neutral';
+      confidence = Math.max(60, moodScore);
+    } else {
+      overallMood = 'bearish';
+      sentiment = 'negative';
+      confidence = Math.max(70, 100 - moodScore);
+    }
+
+    return {
+      overallMood,
+      moodScore,
+      indicators,
+      housePrice: indicators.housePrice * 100, // Convert to cents
+      interestRate: indicators.interestRate,
+      inflationRate: indicators.inflationRate,
+      unemploymentRate: indicators.unemploymentRate,
+      sentiment,
+      confidence,
+      dataSource: 'FRED_SIMULATED'
+    };
+  } catch (error) {
+    console.error('Error fetching market sentiment:', error);
+    // Return neutral sentiment on error
+    return {
+      overallMood: 'neutral',
+      moodScore: 50,
+      indicators: {},
+      sentiment: 'neutral',
+      confidence: 50,
+      dataSource: 'ERROR_FALLBACK'
+    };
+  }
+}
 
 // CSV data from user's file - Updated 2025-08-16
 const csvData = [
@@ -110,6 +193,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(stats);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch dashboard stats" });
+    }
+  });
+
+  // Market Sentiment APIs
+  app.get("/api/market-sentiment/latest", async (_req, res) => {
+    try {
+      const sentiment = await storage.getLatestMarketSentiment();
+      res.json(sentiment);
+    } catch (error) {
+      console.error('Error fetching latest market sentiment:', error);
+      res.status(500).json({ error: 'Failed to fetch market sentiment' });
+    }
+  });
+
+  app.get("/api/market-sentiment/history", async (req, res) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 30;
+      const history = await storage.getMarketSentimentHistory(limit);
+      res.json(history);
+    } catch (error) {
+      console.error('Error fetching market sentiment history:', error);
+      res.status(500).json({ error: 'Failed to fetch market sentiment history' });
+    }
+  });
+
+  app.post("/api/market-sentiment/refresh", async (_req, res) => {
+    try {
+      // Fetch fresh market data and create sentiment analysis
+      const sentiment = await fetchMarketSentiment();
+      const saved = await storage.createMarketSentiment(sentiment);
+      res.json(saved);
+    } catch (error) {
+      console.error('Error refreshing market sentiment:', error);
+      res.status(500).json({ error: 'Failed to refresh market sentiment' });
     }
   });
 

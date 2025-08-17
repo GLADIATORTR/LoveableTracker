@@ -66,6 +66,22 @@ export const realEstateInvestments = pgTable("real_estate_investments", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+export const marketSentiment = pgTable("market_sentiment", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  timestamp: timestamp("timestamp").defaultNow(),
+  overallMood: text("overall_mood").notNull(), // bullish, bearish, neutral
+  moodScore: integer("mood_score").notNull(), // 0-100 scale
+  indicators: jsonb("indicators").default({}), // Store all indicator data
+  housePrice: integer("house_price"), // Store as cents
+  interestRate: integer("interest_rate"), // Store as basis points
+  inflationRate: integer("inflation_rate"), // Store as basis points
+  unemploymentRate: integer("unemployment_rate"), // Store as basis points
+  sentiment: text("sentiment"), // positive, negative, neutral
+  confidence: integer("confidence"), // 0-100 confidence level
+  dataSource: text("data_source").notNull().default("FRED"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const investmentScenarios = pgTable("investment_scenarios", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   name: text("name").notNull(),
@@ -124,6 +140,12 @@ export const insertActivitySchema = createInsertSchema(activities).omit({
   createdAt: true,
 });
 
+export const insertMarketSentimentSchema = createInsertSchema(marketSentiment).omit({
+  id: true,
+  timestamp: true,
+  createdAt: true,
+});
+
 // Dictionary entries table for asset definitions
 export const dictionaryEntries = pgTable("dictionary_entries", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -155,6 +177,9 @@ export type InsertCategory = z.infer<typeof insertCategorySchema>;
 
 export type RealEstateInvestment = typeof realEstateInvestments.$inferSelect;
 export type InsertRealEstateInvestment = z.infer<typeof insertRealEstateInvestmentSchema>;
+
+export type MarketSentiment = typeof marketSentiment.$inferSelect;
+export type InsertMarketSentiment = z.infer<typeof insertMarketSentimentSchema>;
 
 export type InvestmentScenario = typeof investmentScenarios.$inferSelect;
 export type InsertInvestmentScenario = z.infer<typeof insertInvestmentScenarioSchema>;

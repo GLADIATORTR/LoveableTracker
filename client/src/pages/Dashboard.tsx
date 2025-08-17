@@ -7,6 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { InvestmentForm } from "@/components/ui/investment-form";
 import { CSVImport } from "@/components/ui/csv-import";
+import MarketSentiment from "@/components/MarketSentiment";
 import { 
   Package, 
   CheckCircle, 
@@ -174,6 +175,9 @@ export default function Dashboard() {
 
         {/* Sidebar Content */}
         <div className="space-y-6">
+          
+          {/* Market Sentiment */}
+          <MarketSentiment />
           
           {/* Quick Actions */}
           <Card>
