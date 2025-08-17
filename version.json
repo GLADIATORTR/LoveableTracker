@@ -1,7 +1,12 @@
 {
-  "version": "AA110",
-  "lastUpdated": "2025-08-17T21:38:07.786Z",
+  "version": "AA111",
+  "lastUpdated": "2025-08-17T21:43:04.664Z",
   "changes": [
+    {
+      "version": "AA111",
+      "date": "2025-08-17",
+      "description": "Added Y20 (Year 20) to all chart data points"
+    },
     {
       "version": "AA110",
       "date": "2025-08-17",
