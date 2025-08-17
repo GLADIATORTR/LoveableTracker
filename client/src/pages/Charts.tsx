@@ -314,6 +314,21 @@ export default function Charts() {
     queryKey: ['/api/investments']
   });
 
+  // Convert cumulative values to annualized rates
+  const convertToAnnualized = (value: number, year: number, isPercentage: boolean = false) => {
+    if (year <= 0) return value;
+    
+    if (isPercentage) {
+      // For percentage values, convert ratio to annualized rate
+      const ratio = value / 100; // Convert percentage to ratio
+      const annualizedRate = Math.pow(1 + ratio, 1/year) - 1;
+      return annualizedRate * 100; // Convert back to percentage
+    } else {
+      // For dollar values, calculate annualized return
+      return value / year;
+    }
+  };
+
   // Generate chart data for selected properties
   const generateNetGainChartData = () => {
     const years = [0, 1, 2, 3, 4, 5, 10, 15, 25, 30];
@@ -410,21 +425,6 @@ export default function Charts() {
 
   const formatPercentage = (value: number) => {
     return `${value.toFixed(1)}%`;
-  };
-
-  // Convert cumulative values to annualized rates
-  const convertToAnnualized = (value: number, year: number, isPercentage: boolean = false) => {
-    if (year <= 0) return value;
-    
-    if (isPercentage) {
-      // For percentage values, convert ratio to annualized rate
-      const ratio = value / 100; // Convert percentage to ratio
-      const annualizedRate = Math.pow(1 + ratio, 1/year) - 1;
-      return annualizedRate * 100; // Convert back to percentage
-    } else {
-      // For dollar values, calculate annualized return
-      return value / year;
-    }
   };
 
   // Custom tooltip content that sorts values and shows property names
