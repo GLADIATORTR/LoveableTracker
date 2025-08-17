@@ -103,23 +103,25 @@ export default function Sidebar() {
             <Tooltip key={item.name}>
               <TooltipTrigger asChild>
                 <Link href={item.href}>
-                  <div className={cn(
-                    "flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-200 group cursor-pointer relative border",
-                    isActive
-                      ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-lg border-sidebar-primary/30"
-                      : "text-sidebar-foreground/90 hover:text-sidebar-foreground hover:bg-sidebar-accent hover:border-sidebar-border/50 border-transparent",
-                    sidebarCollapsed && "justify-center px-2"
-                  )}>
+                  <div 
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-200 group cursor-pointer relative border",
+                      isActive
+                        ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-lg border-sidebar-primary/30"
+                        : "text-sidebar-foreground/90 hover:text-sidebar-foreground hover:bg-sidebar-accent hover:border-sidebar-border/50 border-transparent",
+                      sidebarCollapsed && "justify-center px-2"
+                    )}
+                  >
                     <Icon className={cn(
-                      "w-5 h-5 transition-all duration-200 relative z-10",
+                      "w-5 h-5 transition-all duration-200 relative z-10 flex-shrink-0",
                       isActive 
-                        ? "text-white" 
+                        ? "text-sidebar-primary-foreground !text-white" 
                         : "text-sidebar-foreground/80 group-hover:text-sidebar-foreground group-hover:scale-105"
                     )} />
                     {!sidebarCollapsed && (
                       <span className={cn(
-                        "font-medium transition-all duration-200 relative z-10",
-                        isActive ? "text-white font-semibold" : "text-sidebar-foreground/90 group-hover:text-sidebar-foreground"
+                        "font-medium transition-all duration-200 relative z-10 whitespace-nowrap select-none",
+                        isActive ? "text-sidebar-primary-foreground !text-white font-semibold" : "text-sidebar-foreground/90 group-hover:text-sidebar-foreground"
                       )}>
                         {item.name}
                       </span>
