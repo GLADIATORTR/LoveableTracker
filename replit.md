@@ -2,215 +2,66 @@
 
 ## Overview
 
-Real Estate Financials is a comprehensive investment management platform featuring intelligent property tracking, financial analysis, and portfolio optimization tools. The application provides advanced TimeSeries projections with inflation adjustment, country-specific global settings, CSV import capabilities, and detailed investment performance analysis. Built with a modern full-stack architecture using React, Express, and PostgreSQL, it offers professional-grade financial modeling and projection tools for real estate investors.
+Real Estate Financials is a comprehensive investment management platform providing intelligent property tracking, financial analysis, and portfolio optimization. It offers advanced TimeSeries projections with inflation adjustment, country-specific global settings, CSV import capabilities, and detailed investment performance analysis. The platform aims to provide professional-grade financial modeling and projection tools for real estate investors, facilitating informed decisions and portfolio growth.
 
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
 
-## Recent Changes
-
-### UI Accessibility & Professional Design Overhaul (August 2025)
-Comprehensive UI/UX improvements for professional financial application appearance:
-- **Professional Color Scheme**: Implemented trustworthy navy blue and financial green color palette suitable for financial applications
-- **Fixed Visibility Issues**: Resolved sidebar button disappearing when active and chart toggle button visibility problems
-- **Enhanced Accessibility**: Added proper focus rings, high contrast support, and WCAG-compliant interactive states
-- **Improved Interactive Elements**: Enhanced buttons, switches, inputs, and selects with clear hover/active/focus states
-- **Professional Styling**: Added shadows, borders, and transitions for a polished financial application appearance
-- **Dark Mode Support**: Complete dark theme implementation with adjusted colors for optimal contrast and readability
-
-### Property Data Update & Enhanced Features (August 2025)
-Updated preloaded properties with latest CSV data and enhanced application functionality:
-- **Updated Property Data**: Refreshed CSV data with corrected 12 Hillcrest expenses ($880 vs $2910) and standardized format
-- **Full Dictionary Implementation**: Complete asset dictionary with 10 comprehensive definitions covering financial metrics, mortgage terms, taxation, and property classification
-- **Advanced Dictionary Features**: Search functionality, category filtering, related terms linking, and professional card-based layout
-- **Delete All User Data**: Added secure delete functionality in Settings with confirmation modal - clears all properties, scenarios, and activities while preserving system categories
-- **Enhanced API**: New /api/user-data endpoint for comprehensive user data deletion with proper error handling
-
-### App Rebranding & Version Tracking (August 2025)
-Updated application name from "Asset Tracker" to "Real Estate Financials":
-- **Frontend Display**: Updated TopBar component to show "Real Estate Financials" as fallback title
-- **HTML Title**: Changed browser title to "Real Estate Financials - Professional Portfolio Management"
-- **PWA Manifest**: Updated PWA app name to "Real Estate Financials" and short name to "RE Financials"
-- **Version Tracking**: Added visible version number v4851 in TopBar for easy identification across browser sessions
-- **Cache Management**: Set staleTime to 0 in React Query to prevent cache discrepancies between regular and incognito windows
-
-### Database Implementation & Dummy User Account (August 2025)
-Complete transition from memory storage to PostgreSQL database with dummy user system:
-- **Database Migration**: Replaced MemStorage with DatabaseStorage using PostgreSQL and Drizzle ORM
-- **Dummy User Account**: Created arinkeskin@gmail.com account with Real Estate Investor profile
-- **Preloaded Properties**: Automatically imports 13 properties from user's CSV on first startup:
-  * 10 Turkish properties (condos) with 12% appreciation rate
-  * 3 US properties (single family) with 3.75%-2.5% interest rates and proper mortgage calculations
-  * Maintains exact user CSV format: Property Name, Address, Purchase Price, Current Value, etc.
-- **Dictionary Integration**: Added Dictionary button to TopBar for easy access to asset definitions
-- **Data Persistence**: All property data now persists between sessions in PostgreSQL database
-- **Automatic Initialization**: System creates default categories and dummy user on first startup
-
-### Gradient-Powered Stats Cards & Modern UI (August 2025)
-Implemented advanced micro-interactions and gradient-powered design system:
-- **Stats Cards Enhancement**: Added gradient-powered cards with 6 color schemes (primary, success, warning, info, purple, cyan)
-- **Micro-Interactions**: Implemented hover effects, press animations, shimmer effects, and floating orb decorations
-- **Advanced CSS Animations**: Added 8 new animation keyframes for smooth transitions and engaging user feedback
-- **Interactive Elements**: Cards respond to hover/press states with scale, rotation, and glow effects
-- **Gradient System**: Dynamic border gradients, background overlays, and icon backgrounds with physics-based animations
-- **Performance Optimized**: Using transform-gpu and will-change-transform for smooth 60fps animations
-- **Future Projections Removal**: Cleaned up navigation by removing unused Future Projections page per user request
-
-### Application Debugging & Restoration (August 2025)
-Fixed critical application startup issues and restored full functionality:
-- **Component Architecture**: Fixed missing theme provider and restored proper layout with functional Sidebar and TopBar
-- **Type System**: Resolved TypeScript errors in dashboard stats interface and database storage layer
-- **Database Queries**: Fixed SQL query issues and type mismatches in storage implementation
-- **Navigation**: Restored proper routing with all pages accessible through sidebar navigation
-- **User Interface**: Full functionality confirmed working in production environment with all 13 properties displaying correctly
-
-### TimeSeries Projections & Calculation Fixes (August 2025)
-Major improvements to financial projection accuracy and data consistency:
-- **Global Settings Integration**: All calculations now use combination of property database values and global country settings (no hardcoded values)
-- **Calculation Accuracy**: Fixed basis points conversion error (now correctly divides by 10000)
-- **12 Hillcrest Exact Calculations**: Implemented 5 separate metric functions for perfect reference table matching:
-  * Market Value function: Uses global appreciation rates from country settings
-  * Current Term function: 125 + (year × 12) months progression with exact lookup values
-  * Outstanding Balance function: Exact mortgage amortization values from reference table
-  * Capital Gains Tax function: Complex calculation pattern matching reference table exactly
-  * Selling Costs function: Variable percentage structure matching reference table exactly
-- **Cumulative Mortgage PV Plateau Fix**: Fixed cumulative calculation to plateau at $269,034 when loan is effectively paid off (stops accumulating after Y14 for 12 Hillcrest)
-- **Blue Background Highlighting**: Added faint blue background tint for three key financial rows: Net Equity (PV), Cumulative Annual Mortgage PV, and Cumulative Net Yield
-- Fixed all calculation errors in TimeSeries Projections:
-  * Market Value: Uses global country appreciation rates (3.5% for USA)
-  * Interest Rate: Displays 3.75% correctly (not 375.00%)
-  * Outstanding Balance: Uses proper mortgage amortization formula
-  * Capital Gains Tax: Correctly calculates as (Market Value - Purchase Price) × Tax Rate
-  * Current Term: Shows months since loan start (not remaining term)
-  * Annual Net Yield: Remains constant at $42,840 (already in today's dollars, no inflation adjustment)
-- Present Value calculations now use country-specific inflation rates for proper discounting
-- Outstanding balance properly reduces year-over-year using financial amortization
-- CSV import fixed to match user's exact 16-column format without reordering
-- Fixed caching issue: Preview window and "open in new tab" now show identical live data
-- React Query cache optimized: staleTime set to 0, refetch on window focus for cache consistency
-
-### PWA Implementation (August 2025)  
-Added Progressive Web App capabilities with comprehensive offline support:
-- Service Worker for caching and offline functionality
-- Web App Manifest for installable app experience
-- Offline storage using IndexedDB for data persistence
-- Install prompt with user-friendly interface
-- Network status indicator with offline mode alerts
-- Enhanced query client with offline-first strategy
-
-### Global Settings & Financial Modeling (August 2025)
-Advanced country-specific financial parameter system:
-- Global Settings dialog accessible via gear icon in TimeSeries page
-- Country-based inheritance of rates (Real Estate Appreciation, Inflation, Capital Gains Tax, etc.)
-- Support for USA, Turkey, Canada, and UK with realistic default rates
-- Persistent settings storage with localStorage integration
-- Dynamic projection calculations using global country settings
-- Present value calculations using country-specific discount rates
-
 ## System Architecture
 
 ### Frontend Architecture
-The client uses a modern React-based single-page application (SPA) architecture:
-
-- **Framework**: React with TypeScript for type safety and better developer experience
-- **Routing**: Wouter for lightweight client-side routing
-- **State Management**: TanStack Query (React Query) for server state management and caching
-- **UI Framework**: Radix UI components with shadcn/ui for consistent, accessible design system
-- **Styling**: Tailwind CSS with custom CSS variables for theming and design tokens
-- **Build Tool**: Vite for fast development and optimized production builds
-
-The application follows a component-based architecture with shared UI components, custom hooks for data fetching, and context providers for global state management.
+The client is a modern React-based Single-Page Application (SPA) using TypeScript, Wouter for routing, and TanStack Query for server state management. It leverages Radix UI components with shadcn/ui for an accessible design system, and Tailwind CSS for styling. Vite is used for fast development and optimized builds, adhering to a component-based architecture with shared UI components, custom hooks, and context providers.
 
 ### Backend Architecture
-The server implements a RESTful API using Express.js:
-
-- **Framework**: Express.js with TypeScript for robust server-side development
-- **Architecture Pattern**: Layered architecture with separate route handlers and storage abstraction
-- **API Design**: RESTful endpoints organized by resource (assets, categories, dictionary, dashboard)
-- **Error Handling**: Centralized error handling middleware with proper HTTP status codes
-- **Request Processing**: JSON body parsing with URL-encoded form data support
-
-The backend uses an interface-based storage abstraction pattern, allowing for flexible data layer implementations while maintaining consistent business logic.
+The server implements a RESTful API using Express.js with TypeScript. It follows a layered architecture, abstracting routes and storage. API endpoints are organized by resource, and the system includes centralized error handling and JSON body parsing. An interface-based storage abstraction ensures flexible data layer implementations.
 
 ### Database Design
-The application uses PostgreSQL with Drizzle ORM for type-safe database operations:
-
-- **ORM**: Drizzle ORM for schema definition and query building
-- **Schema Design**: Relational model with categories, assets, dictionary entries, users, and activities
-- **Data Types**: Support for JSON fields for flexible metadata storage (specifications, preferences)
-- **Relationships**: Foreign key relationships between assets/dictionary entries and categories
-- **Migrations**: Drizzle Kit for database schema migrations and version control
-
-Key tables include users, categories, assets, dictionary entries, and activities with proper indexing and constraints.
+The application uses PostgreSQL with Drizzle ORM for type-safe database operations. The relational schema includes tables for users, categories, assets, dictionary entries, and activities, with proper indexing and foreign key relationships. Drizzle Kit is used for schema migrations.
 
 ### Authentication & Authorization
-Currently implements a basic user system:
-
-- **User Management**: User profiles with preferences and role information
-- **Session Handling**: Express session management with PostgreSQL session store
-- **Future-Ready**: Architecture supports extensible authentication mechanisms
+A basic user system is implemented with user profiles and session management via Express sessions, stored in PostgreSQL. The architecture is designed to be extensible for future authentication mechanisms.
 
 ### State Management Strategy
-The application uses a hybrid approach to state management:
-
-- **Server State**: TanStack Query for API data caching, synchronization, and background updates
-- **Client State**: React Context for user preferences, sidebar state, and global UI state
-- **Local Storage**: Persistent storage for user preferences and UI state
-- **Real-time Updates**: Query invalidation patterns for data consistency
-- **Offline Storage**: IndexedDB for offline data caching and pending action queuing
+A hybrid approach combines TanStack Query for server state caching and synchronization, React Context for client-side UI state (e.g., user preferences, sidebar), and Local Storage for persistent UI preferences. IndexedDB provides offline data caching and pending action queuing, supporting an offline-first strategy.
 
 ### Progressive Web App (PWA) Features
-Comprehensive PWA implementation with offline-first approach:
-
-- **Service Worker**: Advanced caching strategy with static asset caching and API response caching
-- **Offline Support**: Full application functionality when disconnected from internet
-- **Installation**: Native app-like installation on desktop and mobile devices
-- **Background Sync**: Queues offline actions for synchronization when connection returns
-- **Cache Management**: Intelligent cache invalidation and cleanup for optimal performance
-- **Network Detection**: Real-time network status monitoring with user notifications
+The application includes comprehensive PWA capabilities: an advanced Service Worker for static asset and API response caching, full offline functionality, native-like installation, and background sync for offline actions. Intelligent cache invalidation and real-time network status monitoring are also implemented.
 
 ### Data Import/Export System
-Comprehensive data management capabilities:
-
-- **Export Formats**: JSON and CSV export functionality for all data types
-- **Import Support**: File-based import system for bulk asset creation
-- **Data Validation**: Zod schema validation for imported data integrity
-- **Error Handling**: Detailed error reporting for import/export operations
+The platform offers robust data management with JSON and CSV export functionality. A file-based import system supports bulk asset creation, featuring Zod schema validation for data integrity and detailed error reporting.
 
 ## External Dependencies
 
 ### Core Framework Dependencies
-- **@tanstack/react-query**: Server state management and caching
-- **wouter**: Lightweight client-side routing
-- **react-hook-form**: Form state management and validation
-- **@hookform/resolvers**: Form validation resolvers
+- `@tanstack/react-query`: Server state management
+- `wouter`: Client-side routing
+- `react-hook-form`: Form management
+- `@hookform/resolvers`: Form validation resolvers
 
 ### Database & Backend
-- **@neondatabase/serverless**: PostgreSQL connection with Neon serverless support
-- **drizzle-orm**: Type-safe ORM for database operations
-- **drizzle-kit**: Database migration and schema management tools
-- **connect-pg-simple**: PostgreSQL session store for Express sessions
+- `@neondatabase/serverless`: PostgreSQL connection
+- `drizzle-orm`: ORM for database operations
+- `drizzle-kit`: Database migration tools
+- `connect-pg-simple`: PostgreSQL session store
 
 ### UI Component Library
-- **@radix-ui/react-***: Comprehensive set of accessible, unstyled UI primitives
-- **tailwindcss**: Utility-first CSS framework for styling
-- **class-variance-authority**: Component variant management
-- **cmdk**: Command palette implementation
-- **embla-carousel-react**: Carousel component functionality
+- `@radix-ui/react-*`: Accessible UI primitives
+- `tailwindcss`: CSS framework
+- `class-variance-authority`: Component variant management
+- `cmdk`: Command palette
+- `embla-carousel-react`: Carousel functionality
 
 ### Validation & Utilities
-- **zod**: Runtime type validation for API schemas and form validation
-- **drizzle-zod**: Integration between Drizzle ORM and Zod for schema validation
-- **date-fns**: Date manipulation and formatting utilities
-- **clsx**: Conditional className utility
-- **lucide-react**: Icon library for consistent iconography
+- `zod`: Runtime type validation
+- `drizzle-zod`: Drizzle ORM and Zod integration
+- `date-fns`: Date manipulation utilities
+- `clsx`: Conditional className utility
+- `lucide-react`: Icon library
 
 ### Development Tools
-- **@vitejs/plugin-react**: Vite plugin for React support
-- **@replit/vite-plugin-runtime-error-modal**: Development error overlay
-- **@replit/vite-plugin-cartographer**: Replit-specific development tooling
-- **tsx**: TypeScript execution environment for development
-- **esbuild**: Fast JavaScript bundler for production builds
-
-The application is designed to be easily deployable on Replit with development-specific plugins and configurations that enhance the coding experience while maintaining production readiness.
+- `@vitejs/plugin-react`: Vite plugin for React
+- `@replit/vite-plugin-runtime-error-modal`: Development error overlay
+- `@replit/vite-plugin-cartographer`: Replit-specific development tooling
+- `tsx`: TypeScript execution
+- `esbuild`: Fast JavaScript bundler
