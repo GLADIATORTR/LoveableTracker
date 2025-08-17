@@ -48,10 +48,14 @@ fs.writeFileSync(versionPath, JSON.stringify(versionData, null, 2));
 const topBarPath = path.join(__dirname, '../client/src/components/layout/TopBar.tsx');
 let topBarContent = fs.readFileSync(topBarPath, 'utf8');
 
-// Replace version in TopBar.tsx
+// Replace version in TopBar.tsx (both "Version AA###" and standalone "AA###")
 topBarContent = topBarContent.replace(
   /Version\s+[A-Z]+\d+/g,
   `Version ${newVersion}`
+);
+topBarContent = topBarContent.replace(
+  /([A-Z]+\d+)/g,
+  newVersion
 );
 
 fs.writeFileSync(topBarPath, topBarContent);
