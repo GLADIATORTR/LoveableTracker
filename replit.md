@@ -1,14 +1,11 @@
-# Real Estate Financials - Version AA103
+# Real Estate Financials - Version AA104
 
 ## Overview
 
 Real Estate Financials is a comprehensive investment management platform providing intelligent property tracking, financial analysis, and portfolio optimization. It offers advanced TimeSeries projections with inflation adjustment, country-specific global settings, CSV import capabilities, detailed investment performance analysis, and real-time market trend mood indicators. The platform combines professional-grade financial modeling with market sentiment analysis to facilitate informed decisions and portfolio growth.
 
-## Recent Changes (Version AA103)
-- **Market Trend Mood Indicator**: Added real-time market sentiment analysis with bullish/bearish/neutral indicators
-- **Economic Data Integration**: Implemented mood calculation based on interest rates, inflation, unemployment, and GDP growth
-- **Dashboard Integration**: Market sentiment card added to dashboard sidebar with automatic 5-minute refresh
-- **Confidence Scoring**: Professional confidence levels and data source tracking for financial decision-making
+## Recent Changes (Version AA104)
+- Fixed sidebar button label visibility and created automatic version management system
 
 ## User Preferences
 
