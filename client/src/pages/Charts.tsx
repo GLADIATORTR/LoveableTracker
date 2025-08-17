@@ -345,7 +345,7 @@ export default function Charts() {
 
   // Generate chart data for selected properties
   const generateNetGainChartData = () => {
-    const years = [0, 1, 2, 3, 4, 5, 10, 15, 25, 30];
+    const years = isAnnualized ? [1, 2, 3, 4, 5, 10, 15, 25, 30] : [0, 1, 2, 3, 4, 5, 10, 15, 25, 30];
     const selectedInvestments = selectedProperties.length > 0 
       ? investments.filter(inv => selectedProperties.includes(inv.id))
       : investments;
@@ -363,7 +363,7 @@ export default function Charts() {
   };
 
   const generateCashAtHandChartData = () => {
-    const years = [0, 1, 2, 3, 4, 5, 10, 15, 25, 30];
+    const years = isAnnualized ? [1, 2, 3, 4, 5, 10, 15, 25, 30] : [0, 1, 2, 3, 4, 5, 10, 15, 25, 30];
     const selectedInvestments = selectedProperties.length > 0 
       ? investments.filter(inv => selectedProperties.includes(inv.id))
       : investments;
@@ -381,7 +381,7 @@ export default function Charts() {
   };
 
   const generateCashAtHandRatioChartData = () => {
-    const years = [0, 1, 2, 3, 4, 5, 10, 15, 25, 30];
+    const years = isAnnualized ? [1, 2, 3, 4, 5, 10, 15, 25, 30] : [0, 1, 2, 3, 4, 5, 10, 15, 25, 30];
     const selectedInvestments = selectedProperties.length > 0 
       ? investments.filter(inv => selectedProperties.includes(inv.id))
       : investments;
@@ -399,7 +399,7 @@ export default function Charts() {
   };
 
   const generateNetGainRatioChartData = () => {
-    const years = [0, 1, 2, 3, 4, 5, 10, 15, 25, 30];
+    const years = isAnnualized ? [1, 2, 3, 4, 5, 10, 15, 25, 30] : [0, 1, 2, 3, 4, 5, 10, 15, 25, 30];
     const selectedInvestments = selectedProperties.length > 0 
       ? investments.filter(inv => selectedProperties.includes(inv.id))
       : investments;
