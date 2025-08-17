@@ -471,8 +471,7 @@ export default function Charts() {
             label={{ value: 'Years', position: 'insideBottom', offset: -5 }}
           />
           <YAxis 
-            tick={false}
-            label={{ value: yAxisLabel, angle: -90, position: 'insideLeft' }}
+            tickFormatter={formatter}
             width={70}
           />
           <Tooltip 
@@ -502,8 +501,7 @@ export default function Charts() {
             label={{ value: 'Years', position: 'insideBottom', offset: -5 }}
           />
           <YAxis 
-            tick={false}
-            label={{ value: yAxisLabel, angle: -90, position: 'insideLeft' }}
+            tickFormatter={formatter}
             width={70}
           />
           <Tooltip 

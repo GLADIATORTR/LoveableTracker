@@ -1,7 +1,12 @@
 {
-  "version": "AA109",
-  "lastUpdated": "2025-08-17T21:32:15.907Z",
+  "version": "AA110",
+  "lastUpdated": "2025-08-17T21:38:07.786Z",
   "changes": [
+    {
+      "version": "AA110",
+      "date": "2025-08-17",
+      "description": "Reverted to show y-axis numeric values and hidden y-axis labels instead"
+    },
     {
       "version": "AA109",
       "date": "2025-08-17",
