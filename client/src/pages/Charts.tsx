@@ -471,7 +471,7 @@ export default function Charts() {
             label={{ value: 'Years', position: 'insideBottom', offset: -5 }}
           />
           <YAxis 
-            tickFormatter={formatter}
+            tick={false}
             label={{ value: yAxisLabel, angle: -90, position: 'insideLeft' }}
             width={70}
           />
@@ -502,7 +502,7 @@ export default function Charts() {
             label={{ value: 'Years', position: 'insideBottom', offset: -5 }}
           />
           <YAxis 
-            tickFormatter={formatter}
+            tick={false}
             label={{ value: yAxisLabel, angle: -90, position: 'insideLeft' }}
             width={70}
           />

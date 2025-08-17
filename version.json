@@ -1,7 +1,12 @@
 {
-  "version": "AA108",
-  "lastUpdated": "2025-08-17T19:46:52.486Z",
+  "version": "AA109",
+  "lastUpdated": "2025-08-17T21:32:15.907Z",
   "changes": [
+    {
+      "version": "AA109",
+      "date": "2025-08-17",
+      "description": "Hidden y-axis labels on charts by setting tick={false}"
+    },
     {
       "version": "AA108",
       "date": "2025-08-17",
