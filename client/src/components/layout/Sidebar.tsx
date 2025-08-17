@@ -67,7 +67,7 @@ export default function Sidebar() {
                 variant="ghost"
                 size="sm"
                 onClick={toggleTheme}
-                className="text-sidebar-foreground hover:bg-accent"
+                className="text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-foreground border border-transparent hover:border-sidebar-border/30"
               >
                 {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
               </Button>
@@ -81,7 +81,7 @@ export default function Sidebar() {
                 variant="ghost"
                 size="sm"
                 onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-                className="text-sidebar-foreground hover:bg-accent"
+                className="text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-foreground border border-transparent hover:border-sidebar-border/30"
               >
                 {sidebarCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
               </Button>
@@ -104,25 +104,22 @@ export default function Sidebar() {
               <TooltipTrigger asChild>
                 <Link href={item.href}>
                   <div className={cn(
-                    "flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-300 group cursor-pointer relative overflow-hidden",
+                    "flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-200 group cursor-pointer relative border border-transparent",
                     isActive
-                      ? "bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/25"
-                      : "text-sidebar-foreground/80 hover:text-sidebar-foreground hover:bg-sidebar-accent/50",
+                      ? "bg-sidebar-primary text-white shadow-lg border-sidebar-primary/20"
+                      : "text-sidebar-foreground/90 hover:text-sidebar-foreground hover:bg-sidebar-accent hover:border-sidebar-border/50",
                     sidebarCollapsed && "justify-center px-2"
                   )}>
-                    {isActive && (
-                      <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-primary-600/5 rounded-xl" />
-                    )}
                     <Icon className={cn(
-                      "w-5 h-5 transition-all duration-300 relative z-10",
+                      "w-5 h-5 transition-all duration-200 relative z-10",
                       isActive 
-                        ? "text-primary scale-110 drop-shadow-sm" 
-                        : "group-hover:scale-105 group-hover:text-sidebar-foreground"
+                        ? "text-white" 
+                        : "text-sidebar-foreground/80 group-hover:text-sidebar-foreground group-hover:scale-105"
                     )} />
                     {!sidebarCollapsed && (
                       <span className={cn(
-                        "font-medium transition-all duration-300 relative z-10",
-                        isActive ? "text-primary font-semibold" : "group-hover:text-sidebar-foreground"
+                        "font-medium transition-all duration-200 relative z-10",
+                        isActive ? "text-white font-semibold" : "text-sidebar-foreground/90 group-hover:text-sidebar-foreground"
                       )}>
                         {item.name}
                       </span>
