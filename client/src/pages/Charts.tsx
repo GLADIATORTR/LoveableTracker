@@ -407,6 +407,46 @@ export default function Charts() {
     return `${value.toFixed(1)}%`;
   };
 
+  // Custom tooltip content that sorts values and shows property names
+  const CustomTooltipContent = ({ active, payload, label, formatter }: any) => {
+    if (!active || !payload || payload.length === 0) {
+      return null;
+    }
+
+    // Sort payload by value in descending order (highest to lowest)
+    const sortedPayload = [...payload].sort((a, b) => {
+      const aValue = typeof a.value === 'number' ? a.value : 0;
+      const bValue = typeof b.value === 'number' ? b.value : 0;
+      return bValue - aValue;
+    });
+
+    return (
+      <div className="bg-white dark:bg-gray-900 p-3 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 min-w-[250px]">
+        <p className="font-semibold text-gray-900 dark:text-gray-100 mb-2">
+          Year {label}
+        </p>
+        <div className="space-y-1">
+          {sortedPayload.map((entry, index) => (
+            <div key={index} className="flex items-center justify-between text-sm">
+              <div className="flex items-center gap-2">
+                <div 
+                  className="w-3 h-3 rounded-full" 
+                  style={{ backgroundColor: entry.color }}
+                />
+                <span className="text-gray-700 dark:text-gray-300 font-medium">
+                  {entry.name || entry.dataKey}
+                </span>
+              </div>
+              <span className="font-semibold text-gray-900 dark:text-gray-100">
+                {formatter ? formatter(entry.value) : entry.value}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   // Helper function to render chart based on toggle
   const renderChart = (data: any[], formatter: (value: number) => string, yAxisLabel: string) => {
     if (isStackedView) {
@@ -422,8 +462,7 @@ export default function Charts() {
             label={{ value: yAxisLabel, angle: -90, position: 'insideLeft' }}
           />
           <Tooltip 
-            formatter={(value: number) => [formatter(value), '']}
-            labelFormatter={(label) => `Year ${label}`}
+            content={<CustomTooltipContent formatter={formatter} />}
           />
           <Legend />
           
@@ -453,8 +492,7 @@ export default function Charts() {
             label={{ value: yAxisLabel, angle: -90, position: 'insideLeft' }}
           />
           <Tooltip 
-            formatter={(value: number) => [formatter(value), '']}
-            labelFormatter={(label) => `Year ${label}`}
+            content={<CustomTooltipContent formatter={formatter} />}
           />
           <Legend />
           
