@@ -512,12 +512,12 @@ export default function Charts() {
         <h1 className="text-3xl font-bold">Investment Charts</h1>
         
         {/* Chart Type Toggle */}
-        <div className="flex items-center space-x-3">
-          <Label htmlFor="chart-toggle" className="text-sm font-medium">
+        <div className="flex items-center space-x-3 bg-card border border-border rounded-lg px-4 py-2 shadow-sm">
+          <Label htmlFor="chart-toggle" className="text-sm font-medium text-foreground">
             Chart Type:
           </Label>
-          <div className="flex items-center space-x-2">
-            <span className={`text-sm ${!isStackedView ? 'font-medium text-primary' : 'text-muted-foreground'}`}>
+          <div className="flex items-center space-x-3">
+            <span className={`text-sm font-medium transition-colors ${!isStackedView ? 'text-primary' : 'text-muted-foreground'}`}>
               Individual Lines
             </span>
             <Switch
@@ -525,7 +525,7 @@ export default function Charts() {
               checked={isStackedView}
               onCheckedChange={setIsStackedView}
             />
-            <span className={`text-sm ${isStackedView ? 'font-medium text-primary' : 'text-muted-foreground'}`}>
+            <span className={`text-sm font-medium transition-colors ${isStackedView ? 'text-primary' : 'text-muted-foreground'}`}>
               Stacked Areas
             </span>
           </div>
