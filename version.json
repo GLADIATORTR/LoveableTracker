@@ -1,7 +1,12 @@
 {
-  "version": "AA105",
-  "lastUpdated": "2025-08-17T19:37:07.213Z",
+  "version": "AA106",
+  "lastUpdated": "2025-08-17T19:39:37.266Z",
   "changes": [
+    {
+      "version": "AA106",
+      "date": "2025-08-17",
+      "description": "Fixed sidebar navigation button labels disappearing - replaced CSS variables with absolute color values"
+    },
     {
       "version": "AA105",
       "date": "2025-08-17",
