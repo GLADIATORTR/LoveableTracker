@@ -365,14 +365,14 @@ export default function Investments() {
                         </div>
                       </div>
 
-                      {/* ROI and Real Appreciation */}
-                      <div className="grid grid-cols-2 gap-3 sm:gap-4 pt-2 border-t border-border/50">
+                      {/* ROI, Real Appreciation and Efficiency */}
+                      <div className="grid grid-cols-3 gap-2 sm:gap-3 pt-2 border-t border-border/50">
                         <div>
                           <div className="flex items-center text-xs text-muted-foreground mb-1">
                             <Percent className="w-3 h-3 mr-1" />
                             Nominal ROI
                           </div>
-                          <div className={`font-semibold ${realMetrics.nominalROI >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          <div className={`font-semibold text-sm ${realMetrics.nominalROI >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                             {realMetrics.nominalROI >= 0 ? '+' : ''}{realMetrics.nominalROI.toFixed(1)}%
                           </div>
                         </div>
@@ -381,11 +381,29 @@ export default function Investments() {
                             <Activity className="w-3 h-3 mr-1" />
                             Real ROI
                           </div>
-                          <div className={`font-semibold ${realMetrics.realROI >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          <div className={`font-semibold text-sm ${realMetrics.realROI >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                             {realMetrics.realROI >= 0 ? '+' : ''}{realMetrics.realROI.toFixed(1)}%
                           </div>
                           <div className="text-xs text-muted-foreground">
                             {realMetrics.realAppreciationRate.toFixed(1)}%/year
+                          </div>
+                        </div>
+                        <div>
+                          <div className="flex items-center text-xs text-muted-foreground mb-1">
+                            <Calculator className="w-3 h-3 mr-1" />
+                            Efficiency
+                          </div>
+                          <div className={`font-semibold text-sm ${(() => {
+                            const efficiency = investment.currentValue > 0 ? (((investment.monthlyRent - investment.monthlyExpenses) * 12) / investment.currentValue) * 100 : 0;
+                            return efficiency >= 0 ? 'text-green-600' : 'text-red-600';
+                          })()}`}>
+                            {(() => {
+                              const efficiency = investment.currentValue > 0 ? (((investment.monthlyRent - investment.monthlyExpenses) * 12) / investment.currentValue) * 100 : 0;
+                              return efficiency.toFixed(1);
+                            })()}%
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            Yield/Value
                           </div>
                         </div>
                       </div>
