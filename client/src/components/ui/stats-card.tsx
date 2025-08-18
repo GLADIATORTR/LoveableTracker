@@ -128,21 +128,19 @@ export function StatsCard({
       <CardContent className="p-6 relative z-10">
         <div className="flex items-center justify-between">
           <div className="flex-1">
-            {/* Title with micro-animation */}
+            {/* Title with micro-animation - Fixed visibility */}
             <p className={cn(
-              "text-sm font-medium text-muted-foreground mb-2 transition-all duration-300",
-              isHovered && "text-muted-foreground/80 transform translate-x-1"
+              "text-sm font-medium mb-2 transition-all duration-300",
+              "text-gray-600 dark:text-gray-300", // Force visible title colors
+              isHovered && "transform translate-x-1"
             )}>
               {title}
             </p>
             
-            {/* Value with enhanced typography */}
+            {/* Value with enhanced typography - Fixed visibility */}
             <p className={cn(
               "text-3xl font-bold mb-3 transition-all duration-500",
-              "bg-gradient-to-r bg-clip-text text-transparent",
-              isHovered 
-                ? `from-${gradient === 'primary' ? 'violet' : gradient === 'success' ? 'emerald' : gradient === 'warning' ? 'amber' : gradient === 'info' ? 'sky' : gradient === 'purple' ? 'purple' : 'cyan'}-600 to-${gradient === 'primary' ? 'purple' : gradient === 'success' ? 'teal' : gradient === 'warning' ? 'orange' : gradient === 'info' ? 'blue' : gradient === 'purple' ? 'indigo' : 'teal'}-700`
-                : "from-foreground to-foreground",
+              "text-gray-900 dark:text-white", // Force visible text colors
               isPressed && "scale-95"
             )}>
               {value}
@@ -159,7 +157,7 @@ export function StatsCard({
                   "backdrop-blur-sm transition-all duration-300 border",
                   change.trend === "up" && "bg-emerald-500/10 text-emerald-600 border-emerald-500/20 shadow-emerald-500/10 shadow-lg",
                   change.trend === "down" && "bg-red-500/10 text-red-600 border-red-500/20 shadow-red-500/10 shadow-lg", 
-                  change.trend === "neutral" && "bg-slate-500/10 text-slate-600 border-slate-500/20",
+                  change.trend === "neutral" && "bg-slate-500/10 text-gray-700 dark:text-gray-300 border-slate-500/20",
                   isHovered && "scale-105 shadow-xl"
                 )}>
                   <span className={cn(
@@ -173,7 +171,7 @@ export function StatsCard({
                   </span>
                   <span>{change.value}</span>
                 </span>
-                <span className="text-xs text-muted-foreground">{change.period}</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">{change.period}</span>
               </div>
             )}
           </div>
