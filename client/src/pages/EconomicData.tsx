@@ -38,6 +38,7 @@ interface EconomicDataPoint {
   inflationRate?: number;
   caseShillerIndex?: number;
   mortgageRate?: number;
+  sp500Index?: number;
   value?: number;
 }
 
@@ -72,12 +73,21 @@ const generateHistoricalData = (): EconomicDataPoint[] => {
     else if (year < 2020) mortgageRate = 7 - (year - 1990) * 0.15; // Declining trend
     else mortgageRate = 3 + Math.random() * 4; // Recent volatility
     
+    // S&P 500 Index (Base 100 in 1950)
+    let sp500Index: number;
+    if (year < 1970) sp500Index = 100 + (year - 1950) * 3; // Steady growth 1950s-1960s
+    else if (year < 1980) sp500Index = 160 + (year - 1970) * 2; // Slower 1970s
+    else if (year < 2000) sp500Index = 180 + (year - 1980) * 25; // Strong 1980s-1990s
+    else if (year < 2010) sp500Index = 680 + (year - 2000) * 40; // Volatile 2000s
+    else sp500Index = 1080 + (year - 2010) * 180; // Strong 2010s-2020s
+    
     data.push({
       date: `${year}-01-01`,
       year,
       inflationRate: Math.max(0, inflationRate),
       caseShillerIndex: Math.max(20, caseShillerIndex),
-      mortgageRate: Math.max(1, mortgageRate)
+      mortgageRate: Math.max(1, mortgageRate),
+      sp500Index: Math.max(50, sp500Index)
     });
   }
   
@@ -115,7 +125,13 @@ export default function EconomicDataPage() {
     staleTime: 1000 * 60 * 60,
   });
 
-  const isLoading = inflationLoading || caseShillerLoading || mortgageLoading;
+  const { data: sp500Data = [], isLoading: sp500Loading } = useQuery({
+    queryKey: ["economic-data", "sp500"],
+    queryFn: () => fetchFREDData("SP500"), // S&P 500 Index
+    staleTime: 1000 * 60 * 60,
+  });
+
+  const isLoading = inflationLoading || caseShillerLoading || mortgageLoading || sp500Loading;
 
   // Combine all data sources
   const combinedData = generateHistoricalData();
@@ -146,6 +162,9 @@ export default function EconomicDataPage() {
     currentMortgage: currentData?.mortgageRate || 0,
     mortgageChange: currentData && prevYearData ? 
       currentData.mortgageRate! - prevYearData.mortgageRate! : 0,
+    currentSP500: currentData?.sp500Index || 0,
+    sp500Change: currentData && prevYearData ? 
+      ((currentData.sp500Index! - prevYearData.sp500Index!) / prevYearData.sp500Index!) * 100 : 0,
   };
 
   const handleExportData = () => {
@@ -170,6 +189,7 @@ export default function EconomicDataPage() {
     if (name === "inflationRate") return [`${numValue?.toFixed(2)}%`, "Inflation Rate"];
     if (name === "caseShillerIndex") return [`${numValue?.toFixed(1)}`, "Case-Shiller Index"];
     if (name === "mortgageRate") return [`${numValue?.toFixed(2)}%`, "Mortgage Rate"];
+    if (name === "sp500Index") return [`${numValue?.toFixed(0)}`, "S&P 500 Index"];
     return [value, name];
   };
 
@@ -185,7 +205,7 @@ export default function EconomicDataPage() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
@@ -251,6 +271,28 @@ export default function EconomicDataPage() {
             </div>
           </CardContent>
         </Card>
+
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <BarChart3 className="w-4 h-4 text-indigo-500" />
+              S&P 500 Index
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{summaryStats.currentSP500.toFixed(0)}</div>
+            <div className="flex items-center gap-1 text-sm">
+              {summaryStats.sp500Change >= 0 ? (
+                <TrendingUp className="w-4 h-4 text-green-500" />
+              ) : (
+                <TrendingDown className="w-4 h-4 text-red-500" />
+              )}
+              <span className={summaryStats.sp500Change >= 0 ? "text-green-600" : "text-red-600"}>
+                {summaryStats.sp500Change >= 0 ? "+" : ""}{summaryStats.sp500Change.toFixed(1)}% vs last year
+              </span>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Chart Controls */}
@@ -294,11 +336,12 @@ export default function EconomicDataPage() {
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="combined" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="combined">All Metrics</TabsTrigger>
               <TabsTrigger value="inflation">Inflation</TabsTrigger>
               <TabsTrigger value="housing">Housing</TabsTrigger>
               <TabsTrigger value="mortgage">Mortgage</TabsTrigger>
+              <TabsTrigger value="sp500">S&P 500</TabsTrigger>
             </TabsList>
             
             <TabsContent value="combined" className="space-y-4">
@@ -346,6 +389,14 @@ export default function EconomicDataPage() {
                           stroke="#8b5cf6" 
                           strokeWidth={2}
                           name="Mortgage Rate (%)"
+                        />
+                        <Line 
+                          yAxisId="right"
+                          type="monotone" 
+                          dataKey="sp500Index" 
+                          stroke="#6366f1" 
+                          strokeWidth={2}
+                          name="S&P 500 Index"
                         />
                       </LineChart>
                     ) : chartType === "area" ? (
@@ -487,6 +538,31 @@ export default function EconomicDataPage() {
                       fillOpacity={0.6}
                     />
                   </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="sp500" className="space-y-4">
+              <div className="h-96">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={filteredData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis 
+                      dataKey="year" 
+                      type="number"
+                      scale="linear"
+                      domain={['dataMin', 'dataMax']}
+                    />
+                    <YAxis />
+                    <Tooltip formatter={(value) => [`${typeof value === 'number' ? value.toFixed(0) : value}`, "S&P 500 Index"]} />
+                    <Line 
+                      type="monotone" 
+                      dataKey="sp500Index" 
+                      stroke="#6366f1" 
+                      strokeWidth={3}
+                      dot={{ fill: '#6366f1', strokeWidth: 2, r: 4 }}
+                    />
+                  </LineChart>
                 </ResponsiveContainer>
               </div>
             </TabsContent>

@@ -17,7 +17,9 @@ import {
   DollarSign,
   Calendar,
   TrendingUp,
-  Download
+  Download,
+  Activity,
+  Percent
 } from "lucide-react";
 import {
   AlertDialog,
@@ -31,6 +33,10 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import type { RealEstateInvestmentWithCategory } from "@shared/schema";
+import { 
+  calculateRealAppreciationMetrics, 
+  formatCurrency as formatInflationCurrency 
+} from "@/utils/inflationCalculations";
 
 function formatCurrency(cents: number): string {
   return new Intl.NumberFormat('en-US', {
@@ -325,157 +331,92 @@ export default function Investments() {
               </CardHeader>
               
               <CardContent className="space-y-3 sm:space-y-4 pt-0">
-                {/* Financial Overview */}
-                <div className="grid grid-cols-2 gap-3 sm:gap-4">
-                  <div>
-                    <div className="flex items-center text-xs text-muted-foreground mb-1">
-                      <DollarSign className="w-3 h-3 mr-1" />
-                      Purchase Price
-                    </div>
-                    <div className="font-semibold text-foreground">
-                      {formatCurrency(investment.purchasePrice)}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="flex items-center text-xs text-muted-foreground mb-1">
-                      <TrendingUp className="w-3 h-3 mr-1" />
-                      Current Value
-                    </div>
-                    <div className="font-semibold text-foreground">
-                      {formatCurrency(investment.currentValue)}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Loan Details */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <div className="text-xs text-muted-foreground mb-1">Down Payment</div>
-                    <div className="font-medium text-foreground">
-                      {formatCurrency(investment.downPayment || 0)}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-xs text-muted-foreground mb-1">Loan Amount</div>
-                    <div className="font-medium text-foreground">
-                      {formatCurrency(investment.loanAmount || 0)}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Interest & Terms */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <div className="text-xs text-muted-foreground mb-1">Interest Rate</div>
-                    <div className="font-medium text-foreground">
-                      {((investment.interestRate || 0) / 10000).toFixed(2)}%
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-xs text-muted-foreground mb-1">Loan Term</div>
-                    <div className="font-medium text-foreground">
-                      {Math.round((investment.loanTerm || 0) / 12)} years
-                    </div>
-                  </div>
-                </div>
-
-                {/* Current Term - Always show if loan exists */}
-                {investment.loanAmount && investment.loanAmount > 0 && (
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <div className="text-xs text-muted-foreground mb-1">Current Term</div>
-                      <div className="font-medium text-foreground">
-                        {investment.currentTerm || 0} months
+                {/* Financial Overview with Inflation Adjustment */}
+                {(() => {
+                  const realMetrics = calculateRealAppreciationMetrics(
+                    investment.purchasePrice,
+                    investment.currentValue,
+                    investment.purchaseDate
+                  );
+                  
+                  return (
+                    <>
+                      <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                        <div>
+                          <div className="flex items-center text-xs text-muted-foreground mb-1">
+                            <DollarSign className="w-3 h-3 mr-1" />
+                            Purchase Price
+                          </div>
+                          <div className="font-semibold text-foreground">
+                            {formatCurrency(investment.purchasePrice)}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {formatInflationCurrency(realMetrics.inflationAdjustedPrice)} today
+                          </div>
+                        </div>
+                        <div>
+                          <div className="flex items-center text-xs text-muted-foreground mb-1">
+                            <TrendingUp className="w-3 h-3 mr-1" />
+                            Current Value
+                          </div>
+                          <div className="font-semibold text-foreground">
+                            {formatCurrency(investment.currentValue)}
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                    <div>
-                      <div className="text-xs text-muted-foreground mb-1">Remaining Term</div>
-                      <div className="font-medium text-foreground">
-                        {Math.max(0, (investment.loanTerm || 0) - (investment.currentTerm || 0))} months
-                      </div>
-                    </div>
-                  </div>
-                )}
 
-                {/* Outstanding Balance & Monthly Mortgage - Always show for loan properties */}
-                {investment.loanAmount && investment.loanAmount > 0 && (
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <div className="text-xs text-muted-foreground mb-1">Outstanding Balance</div>
-                      <div className="font-medium text-primary">
-                        {formatCurrency(investment.outstandingBalance || 0)}
+                      {/* ROI and Real Appreciation */}
+                      <div className="grid grid-cols-2 gap-3 sm:gap-4 pt-2 border-t border-border/50">
+                        <div>
+                          <div className="flex items-center text-xs text-muted-foreground mb-1">
+                            <Percent className="w-3 h-3 mr-1" />
+                            Nominal ROI
+                          </div>
+                          <div className={`font-semibold ${realMetrics.nominalROI >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                            {realMetrics.nominalROI >= 0 ? '+' : ''}{realMetrics.nominalROI.toFixed(1)}%
+                          </div>
+                        </div>
+                        <div>
+                          <div className="flex items-center text-xs text-muted-foreground mb-1">
+                            <Activity className="w-3 h-3 mr-1" />
+                            Real ROI
+                          </div>
+                          <div className={`font-semibold ${realMetrics.realROI >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                            {realMetrics.realROI >= 0 ? '+' : ''}{realMetrics.realROI.toFixed(1)}%
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {realMetrics.realAppreciationRate.toFixed(1)}%/year
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                    <div>
-                      <div className="text-xs text-muted-foreground mb-1">Monthly Mortgage</div>
-                      <div className="font-medium text-primary-600">
-                        {formatCurrency(investment.monthlyMortgage || 0)}
+
+                      {/* Cash Flow and Date */}
+                      <div className="grid grid-cols-2 gap-3 sm:gap-4 pt-2 border-t border-border/50">
+                        <div>
+                          <div className="flex items-center text-xs text-muted-foreground mb-1">
+                            <DollarSign className="w-3 h-3 mr-1" />
+                            Monthly Cash Flow
+                          </div>
+                          <div className={`font-semibold ${calculateCashFlow(investment.monthlyRent, investment.monthlyExpenses) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                            {formatCurrency(calculateCashFlow(investment.monthlyRent, investment.monthlyExpenses) * 100)}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="flex items-center text-xs text-muted-foreground mb-1">
+                            <Calendar className="w-3 h-3 mr-1" />
+                            Purchase Date
+                          </div>
+                          <div className="font-medium text-foreground text-xs">
+                            {formatDate(investment.purchaseDate)}
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Cash Flow */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <div className="text-xs text-muted-foreground mb-1">Monthly Rent</div>
-                    <div className="font-medium text-emerald-600">
-                      +{formatCurrency(investment.monthlyRent)}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-xs text-muted-foreground mb-1">Monthly Expenses</div>
-                    <div className="font-medium text-destructive">
-                      -{formatCurrency(investment.monthlyExpenses)}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Net Cash Flow */}
-                <div className="pt-2 border-t">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-muted-foreground">Net Cash Flow</span>
-                    <span className={`font-semibold ${
-                      calculateCashFlow(investment.monthlyRent, investment.monthlyExpenses) >= 0 
-                        ? 'text-emerald-600' 
-                        : 'text-destructive'
-                    }`}>
-                      {formatCurrency(calculateCashFlow(investment.monthlyRent, investment.monthlyExpenses))}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center mt-1">
-                    <span className="text-sm font-medium text-muted-foreground">Net Equity</span>
-                    <span className="font-semibold text-emerald-600">
-                      {formatCurrency(investment.netEquity || 0)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center mt-1">
-                    <span className="text-sm font-medium text-muted-foreground">ROI</span>
-                    <span className={`font-semibold ${
-                      calculateROI(investment.currentValue, investment.purchasePrice) >= 0 
-                        ? 'text-success' 
-                        : 'text-destructive'
-                    }`}>
-                      {calculateROI(investment.currentValue, investment.purchasePrice).toFixed(1)}%
-                    </span>
-                  </div>
-                </div>
-
-                {/* Purchase Date & Country */}
-                <div className="pt-2 border-t">
-                  <div className="flex items-center justify-between text-xs text-muted-foreground">
-                    <div className="flex items-center">
-                      <Calendar className="w-3 h-3 mr-1" />
-                      Purchased {formatDate(investment.purchaseDate)}
-                    </div>
-                    {investment.country && (
-                      <div className="text-xs text-muted-foreground">
-                        {investment.country}
-                      </div>
-                    )}
-                  </div>
-                </div>
+                    </>
+                  );
+                })()}
               </CardContent>
+
+
             </Card>
           ))}
         </div>

@@ -1,7 +1,12 @@
 {
-  "version": "AA115",
-  "lastUpdated": "2025-08-18T01:44:46.806Z",
+  "version": "AA116",
+  "lastUpdated": "2025-08-18T02:00:19.047Z",
   "changes": [
+    {
+      "version": "AA116",
+      "date": "2025-08-18",
+      "description": "Added S&P 500 to Economic Data and implemented inflation-adjusted purchase price calculations with real appreciation rates in property cards"
+    },
     {
       "version": "AA115",
       "date": "2025-08-18",
@@ -46,11 +51,6 @@
       "version": "AA107",
       "date": "2025-08-17",
       "description": "Changed chart annualized formula to simple division: value/years instead of CAGR"
-    },
-    {
-      "version": "AA106",
-      "date": "2025-08-17",
-      "description": "Fixed sidebar navigation button labels disappearing - replaced CSS variables with absolute color values"
     }
   ]
 }
