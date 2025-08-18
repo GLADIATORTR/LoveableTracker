@@ -219,12 +219,12 @@ export function PortfolioHealthScore({ className }: PortfolioHealthScoreProps) {
             </div>
           </div>
 
-          {/* Efficiency */}
+          {/* Cap Rate */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Percent className="w-4 h-4 text-purple-500" />
-                <span className="text-sm font-medium">Efficiency (Yield/Market Value)</span>
+                <span className="text-sm font-medium">Cap Rate (Annual Yield/Market Value)</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className={`font-semibold ${portfolioMetrics.efficiency >= 0 ? 'text-green-600' : 'text-red-600'}`}>

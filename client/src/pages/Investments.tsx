@@ -392,19 +392,19 @@ export default function Investments() {
                         <div>
                           <div className="flex items-center text-xs text-muted-foreground mb-1">
                             <Calculator className="w-3 h-3 mr-1" />
-                            Efficiency
+                            Cap Rate
                           </div>
                           <div className={`font-semibold text-sm ${(() => {
-                            const efficiency = investment.currentValue > 0 ? (((investment.monthlyRent - investment.monthlyExpenses) * 12) / investment.currentValue) * 100 : 0;
-                            return efficiency >= 0 ? 'text-green-600' : 'text-red-600';
+                            const capRate = investment.currentValue > 0 ? (((investment.monthlyRent - investment.monthlyExpenses) * 12) / investment.currentValue) * 100 : 0;
+                            return capRate >= 0 ? 'text-green-600' : 'text-red-600';
                           })()}`}>
                             {(() => {
-                              const efficiency = investment.currentValue > 0 ? (((investment.monthlyRent - investment.monthlyExpenses) * 12) / investment.currentValue) * 100 : 0;
-                              return efficiency.toFixed(1);
+                              const capRate = investment.currentValue > 0 ? (((investment.monthlyRent - investment.monthlyExpenses) * 12) / investment.currentValue) * 100 : 0;
+                              return capRate.toFixed(1);
                             })()}%
                           </div>
                           <div className="text-xs text-muted-foreground">
-                            Yield/Value
+                            Annual Yield
                           </div>
                         </div>
                       </div>

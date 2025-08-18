@@ -346,7 +346,6 @@ export function PropertyComparison({ className }: PropertyComparisonProps) {
                               { label: 'Current Value', key: 'currentValue', format: formatCurrency, market: 52000000 },
                               { label: 'Monthly Rent', key: 'monthlyRent', format: formatCurrency, market: 250000 },
                               { label: 'Real ROI (Annualized)', key: 'realAppreciationRate', format: formatPercent, market: 6.8 },
-                              { label: 'Efficiency (Yield/Value)', key: 'efficiency', format: formatPercent, market: 5.5 },
                               { label: 'Cap Rate', key: 'capRate', format: formatPercent, market: 6.2 },
                               { label: 'Cash Flow (Annual)', key: 'cashFlow', format: formatCurrency, market: 180000 },
                             ].map((row) => (
@@ -355,7 +354,6 @@ export function PropertyComparison({ className }: PropertyComparisonProps) {
                                 {sortedInvestments.map((inv) => {
                                   const metrics = calculateMetrics(inv);
                                   let value = row.key === 'realAppreciationRate' ? metrics.realAppreciationRate : 
-                                             row.key === 'efficiency' ? metrics.efficiency :
                                              row.key === 'capRate' ? metrics.capRate :
                                              row.key === 'cashFlow' ? metrics.cashFlow :
                                              inv[row.key as keyof typeof inv] as number;

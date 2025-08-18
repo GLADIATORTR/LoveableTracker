@@ -16,83 +16,147 @@ interface DictionaryEntry {
 const dictionaryEntries: DictionaryEntry[] = [
   {
     id: "1",
-    term: "Cash at Hand",
-    definition: "The net cash flow accumulated from a property over time, calculated as cumulative net yield minus cumulative mortgage payments (in present value). This represents the actual cash benefit received from the investment, adjusted for inflation.",
+    term: "Real ROI (Return on Investment)",
+    definition: "Inflation-adjusted return on investment that shows the true purchasing power gain. Calculated as ((Current Value - Purchase Price) / Inflation-Adjusted Purchase Price) × 100. Uses historical CPI data from 1950-2024 to provide accurate real returns.",
     category: "Financial Metrics",
-    icon: DollarSign,
-    relatedTerms: ["Net Yield", "Present Value", "Cumulative Mortgage PV"]
+    icon: TrendingUp,
+    relatedTerms: ["Nominal ROI", "Inflation", "CPI", "Real Appreciation Rate"]
   },
   {
     id: "2",
-    term: "Net Gain Present Value",
-    definition: "The total financial gain from a property investment expressed in today's purchasing power. Calculated as net equity plus cumulative net yield minus cumulative mortgage payments, all discounted to present value using inflation rates.",
-    category: "Financial Metrics",
-    icon: TrendingUp,
-    relatedTerms: ["Net Equity", "Present Value", "Cash at Hand"]
+    term: "Nominal ROI",
+    definition: "Traditional return on investment without inflation adjustment. Calculated as ((Current Value - Purchase Price) / Purchase Price) × 100. Shows raw percentage gain but doesn't account for purchasing power changes.",
+    category: "Financial Metrics", 
+    icon: Calculator,
+    relatedTerms: ["Real ROI", "Purchase Price", "Current Value"]
   },
   {
     id: "3",
-    term: "Annual Net Yield",
-    definition: "The yearly cash flow from a property calculated as (Monthly Rent - Monthly Expenses) × 12. This excludes mortgage payments and represents the property's operating cash flow in today's dollars.",
+    term: "Real Appreciation Rate (Annualized)",
+    definition: "The annual percentage increase in property value after adjusting for inflation. Shows true wealth creation rate by accounting for changes in purchasing power over time.",
     category: "Financial Metrics",
-    icon: Calculator,
-    relatedTerms: ["Monthly Rent", "Monthly Expenses", "Cash Flow"]
+    icon: TrendingUp,
+    relatedTerms: ["Real ROI", "Inflation", "Annual Growth"]
   },
   {
     id: "4",
+    term: "Cap Rate (Capitalization Rate)",
+    definition: "Annual net operating income as a percentage of property value. Calculated as (Annual Net Cash Flow / Current Property Value) × 100. Measures the return on investment from cash flow alone.",
+    category: "Financial Metrics",
+    icon: Calculator,
+    relatedTerms: ["Cash Flow", "NOI", "Property Value", "Yield"]
+  },
+  {
+    id: "5",
+    term: "Cash Flow",
+    definition: "Monthly net income from a property calculated as Monthly Rent - Monthly Expenses. Positive cash flow means the property generates income; negative means it costs money monthly.",
+    category: "Financial Metrics",
+    icon: DollarSign,
+    relatedTerms: ["Monthly Rent", "Monthly Expenses", "NOI"]
+  },
+  {
+    id: "6",
+    term: "Total Cash at Hand",
+    definition: "Portfolio-wide annual net cash flow from all rent-generating properties. Sum of (Monthly Rent - Monthly Expenses) × 12 for all properties with positive rental income.",
+    category: "Portfolio Metrics",
+    icon: DollarSign,
+    relatedTerms: ["Cash Flow", "Portfolio", "Rent-Generating Properties"]
+  },
+  {
+    id: "7",
+    term: "Portfolio Star Rating",
+    definition: "Performance benchmarking system using 1-5 stars based on Real ROI and Cap Rate: 1⭐=0-2%, 2⭐=2-4%, 3⭐=4-6%, 4⭐=6-8%, 5⭐=8%+ annual returns.",
+    category: "Portfolio Metrics",
+    icon: TrendingUp,
+    relatedTerms: ["Real ROI", "Cap Rate", "Benchmarking"]
+  },
+  {
+    id: "8",
+    term: "Inflation-Adjusted Purchase Price",
+    definition: "Original purchase price converted to today's purchasing power using historical Consumer Price Index (CPI) data. Shows what the original investment would cost in current dollars.",
+    category: "Inflation Analysis",
+    icon: Calculator,
+    relatedTerms: ["CPI", "Purchase Price", "Inflation", "Present Value"]
+  },
+  {
+    id: "9",
+    term: "Consumer Price Index (CPI)",
+    definition: "Government measure of inflation tracking the cost of goods and services. Application uses authentic historical CPI data from 1950-2024 to calculate real returns and inflation adjustments.",
+    category: "Economic Indicators",
+    icon: TrendingUp,
+    relatedTerms: ["Inflation", "Real ROI", "Historical Data"]
+  },
+  {
+    id: "10",
+    term: "S&P 500 Index",
+    definition: "Stock market index tracking 500 largest U.S. companies. Used as a benchmark for investment performance comparison. Application includes historical data from 1950s showing major market periods.",
+    category: "Economic Indicators",
+    icon: TrendingUp,
+    relatedTerms: ["Market Benchmark", "Investment Comparison", "Historical Performance"]
+  },
+  {
+    id: "11",
+    term: "Case-Shiller Home Price Index",
+    definition: "Measures changes in residential real estate prices. Tracks repeat sales of the same properties to show true market appreciation, providing real estate market benchmarks.",
+    category: "Economic Indicators",
+    icon: Home,
+    relatedTerms: ["Home Prices", "Real Estate Market", "Price Appreciation"]
+  },
+  {
+    id: "12",
+    term: "Monthly Mortgage Payment",
+    definition: "Fixed monthly payment toward loan principal and interest. Calculated using loan amount, interest rate, and loan term. Does not include taxes, insurance, or HOA fees.",
+    category: "Mortgage",
+    icon: FileText,
+    relatedTerms: ["Principal", "Interest", "Loan Amount", "Loan Term"]
+  },
+  {
+    id: "13",
     term: "Outstanding Balance",
-    definition: "The remaining principal amount owed on a mortgage loan. This decreases over time as mortgage payments are made, following an amortization schedule.",
+    definition: "Remaining principal amount owed on a mortgage loan. Decreases over time as mortgage payments are made, following an amortization schedule.",
     category: "Mortgage",
     icon: FileText,
     relatedTerms: ["Principal", "Amortization", "Loan Term"]
   },
   {
-    id: "5",
-    term: "Current Term",
-    definition: "The number of months that have passed since the loan originated. Used to calculate the current position in the amortization schedule and remaining loan balance.",
-    category: "Mortgage",
-    icon: Calendar,
-    relatedTerms: ["Loan Term", "Outstanding Balance", "Amortization"]
-  },
-  {
-    id: "6",
-    term: "Capital Gains Tax",
-    definition: "Tax paid on the profit from selling a property, calculated as (Sale Price - Purchase Price - Improvements) × Tax Rate. Varies by country and holding period.",
-    category: "Taxation",
-    icon: DollarSign,
-    relatedTerms: ["Sale Price", "Purchase Price", "Tax Rate"]
-  },
-  {
-    id: "7",
+    id: "14",
     term: "Net Equity",
-    definition: "The owner's actual stake in a property after accounting for all costs. Calculated as Market Value - Outstanding Balance - Capital Gains Tax - Selling Costs, expressed in present value.",
+    definition: "Owner's actual stake in a property after all costs. Calculated as Current Value - Outstanding Balance - Selling Costs - Capital Gains Tax. Represents true ownership value.",
     category: "Financial Metrics",
     icon: Home,
-    relatedTerms: ["Market Value", "Outstanding Balance", "Selling Costs"]
+    relatedTerms: ["Current Value", "Outstanding Balance", "Selling Costs"]
   },
   {
-    id: "8",
-    term: "Property Type",
-    definition: "Classification of real estate based on use and structure. Common types include Single Family homes, Condos, Multi-Family properties, and Commercial buildings.",
-    category: "Property Classification",
-    icon: Building,
-    relatedTerms: ["Single Family", "Condo", "Multi-Family"]
-  },
-  {
-    id: "9",
-    term: "Appreciation Rate",
-    definition: "The annual percentage increase in property value. Varies by country and region - typically 3.5% for USA properties and 12% for Turkey properties in this system.",
+    id: "15",
+    term: "Market Sentiment",
+    definition: "Real-time indicator of market conditions using AI analysis. Provides mood assessment (Optimistic, Cautious, Concerned) with confidence scores and market trend insights.",
     category: "Market Analysis",
     icon: TrendingUp,
-    relatedTerms: ["Market Value", "Current Value", "Country Settings"]
+    relatedTerms: ["Market Mood", "AI Analysis", "Trend Indicator"]
   },
   {
-    id: "10",
-    term: "Present Value",
-    definition: "The current worth of future cash flows, discounted back to today's dollars using inflation rates. Essential for comparing investments across different time periods.",
-    category: "Financial Theory",
-    icon: Calculator,
-    relatedTerms: ["Inflation Rate", "Discount Rate", "Time Value"]
+    id: "16",
+    term: "Monthly Expenses",
+    definition: "Regular monthly costs of property ownership including maintenance, property management, insurance, taxes, and utilities. Used to calculate net cash flow and cap rate.",
+    category: "Property Management",
+    icon: DollarSign,
+    relatedTerms: ["Cash Flow", "Operating Expenses", "NOI"]
+  },
+  {
+    id: "17",
+    term: "Purchase Date",
+    definition: "Date when property was acquired. Critical for inflation calculations, loan amortization, and determining holding period for tax implications and performance analysis.",
+    category: "Property Data",
+    icon: Calendar,
+    relatedTerms: ["Holding Period", "Inflation Calculation", "Amortization"]
+  },
+  {
+    id: "18",
+    term: "Property Categories",
+    definition: "Classification system for real estate types including Single Family, Condo, Multi-Family, Commercial, and Land. Used for portfolio diversification analysis and benchmarking.",
+    category: "Property Classification",
+    icon: Building,
+    relatedTerms: ["Diversification", "Property Type", "Portfolio Analysis"]
   }
 ];
 
@@ -112,11 +176,14 @@ export default function Dictionary() {
   const getCategoryColor = (category: string) => {
     const colors: Record<string, string> = {
       "Financial Metrics": "bg-blue-100 text-blue-800",
+      "Portfolio Metrics": "bg-emerald-100 text-emerald-800",
+      "Inflation Analysis": "bg-amber-100 text-amber-800",
+      "Economic Indicators": "bg-violet-100 text-violet-800",
       "Mortgage": "bg-green-100 text-green-800",
-      "Taxation": "bg-red-100 text-red-800",
-      "Property Classification": "bg-purple-100 text-purple-800",
       "Market Analysis": "bg-orange-100 text-orange-800",
-      "Financial Theory": "bg-cyan-100 text-cyan-800"
+      "Property Management": "bg-rose-100 text-rose-800",
+      "Property Data": "bg-slate-100 text-slate-800",
+      "Property Classification": "bg-purple-100 text-purple-800"
     };
     return colors[category] || "bg-gray-100 text-gray-800";
   };
