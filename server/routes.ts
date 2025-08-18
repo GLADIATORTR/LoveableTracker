@@ -4,6 +4,127 @@ import { storage } from "./storage";
 import { insertRealEstateInvestmentSchema, insertInvestmentScenarioSchema, insertCategorySchema, type InsertRealEstateInvestment, type InsertMarketSentiment } from "@shared/schema";
 import { z } from "zod";
 
+// FRED API Integration for Economic Data
+interface EconomicDataPoint {
+  date: string;
+  year: number;
+  inflationRate?: number;
+  caseShillerIndex?: number;
+  mortgageRate?: number;
+  sp500Index?: number;
+  value?: number;
+}
+
+async function fetchFREDSeries(seriesId: string, startDate: string = "1950-01-01"): Promise<EconomicDataPoint[]> {
+  const FRED_API_BASE = "https://api.stlouisfed.org/fred/series/observations";
+  const FRED_API_KEY = process.env.FRED_API_KEY;
+
+  if (!FRED_API_KEY) {
+    console.error('FRED_API_KEY not found in environment variables');
+    return [];
+  }
+
+  try {
+    const url = `${FRED_API_BASE}?series_id=${seriesId}&api_key=${FRED_API_KEY}&file_type=json&start_date=${startDate}&sort_order=asc`;
+    const response = await fetch(url);
+    
+    if (!response.ok) {
+      throw new Error(`FRED API error: ${response.status} ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    
+    return data.observations
+      .filter((obs: any) => obs.value !== '.' && !isNaN(parseFloat(obs.value)))
+      .map((obs: any) => ({
+        date: obs.date,
+        year: new Date(obs.date).getFullYear(),
+        value: parseFloat(obs.value),
+        [getDataKey(seriesId)]: parseFloat(obs.value)
+      }));
+  } catch (error) {
+    console.error(`Error fetching FRED data for ${seriesId}:`, error);
+    return [];
+  }
+}
+
+function getDataKey(seriesId: string): string {
+  switch (seriesId) {
+    case 'CPIAUCSL': return 'cpiIndex';
+    case 'CSUSHPINSA': return 'caseShillerIndex';
+    case 'MORTGAGE30US': return 'mortgageRate';
+    case 'SP500': return 'sp500Index';
+    default: return 'value';
+  }
+}
+
+// Calculate inflation rate from CPI data
+function calculateInflationRate(cpiData: EconomicDataPoint[]): EconomicDataPoint[] {
+  return cpiData.map((point, index) => {
+    if (index === 0) {
+      return { ...point, inflationRate: 0 };
+    }
+    
+    const previousCPI = cpiData[index - 1].value || 0;
+    const currentCPI = point.value || 0;
+    const inflationRate = previousCPI > 0 ? ((currentCPI - previousCPI) / previousCPI) * 100 : 0;
+    
+    return { ...point, inflationRate };
+  });
+}
+
+// Combine multiple FRED series into unified dataset
+function combineEconomicData(
+  cpiData: EconomicDataPoint[], 
+  caseShillerData: EconomicDataPoint[], 
+  mortgageData: EconomicDataPoint[], 
+  sp500Data: EconomicDataPoint[]
+): EconomicDataPoint[] {
+  const yearMap = new Map<number, EconomicDataPoint>();
+  
+  // Process CPI and calculate inflation rates
+  const cpiWithInflation = calculateInflationRate(cpiData);
+  
+  cpiWithInflation.forEach(point => {
+    yearMap.set(point.year, { 
+      ...point, 
+      date: `${point.year}-12-31`,
+      year: point.year 
+    });
+  });
+  
+  // Add Case-Shiller data
+  caseShillerData.forEach(point => {
+    const existing = yearMap.get(point.year) || { date: `${point.year}-12-31`, year: point.year };
+    yearMap.set(point.year, { 
+      ...existing, 
+      caseShillerIndex: point.value 
+    });
+  });
+  
+  // Add mortgage rate data
+  mortgageData.forEach(point => {
+    const existing = yearMap.get(point.year) || { date: `${point.year}-12-31`, year: point.year };
+    yearMap.set(point.year, { 
+      ...existing, 
+      mortgageRate: point.value 
+    });
+  });
+  
+  // Add S&P 500 data
+  sp500Data.forEach(point => {
+    const existing = yearMap.get(point.year) || { date: `${point.year}-12-31`, year: point.year };
+    yearMap.set(point.year, { 
+      ...existing, 
+      sp500Index: point.value 
+    });
+  });
+  
+  return Array.from(yearMap.values())
+    .sort((a, b) => a.year - b.year)
+    .filter(point => point.year >= 1950 && point.year <= 2024);
+}
+
 // Market Sentiment Fetching Service
 async function fetchMarketSentiment(): Promise<InsertMarketSentiment> {
   try {
@@ -454,6 +575,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     } catch (error) {
       res.status(500).json({ message: "Failed to clear user data" });
+    }
+  });
+
+  // Economic Data API - Fetch authentic FRED data
+  app.get("/api/economic-data/combined", async (_req, res) => {
+    try {
+      console.log('Fetching economic data from FRED API...');
+      
+      // Fetch all data series in parallel
+      const [cpiData, caseShillerData, mortgageData, sp500Data] = await Promise.all([
+        fetchFREDSeries("CPIAUCSL", "1950-01-01"), // Consumer Price Index
+        fetchFREDSeries("CSUSHPINSA", "1987-01-01"), // Case-Shiller starts in 1987
+        fetchFREDSeries("MORTGAGE30US", "1971-04-02"), // Mortgage data starts April 1971
+        fetchFREDSeries("SP500", "1971-02-05") // FRED S&P 500 starts Feb 1971
+      ]);
+      
+      console.log(`Fetched: CPI(${cpiData.length}), Case-Shiller(${caseShillerData.length}), Mortgage(${mortgageData.length}), S&P500(${sp500Data.length})`);
+      
+      // Combine all data
+      const combinedData = combineEconomicData(cpiData, caseShillerData, mortgageData, sp500Data);
+      
+      console.log(`Combined dataset: ${combinedData.length} records from 1950-2024`);
+      
+      res.json(combinedData);
+    } catch (error) {
+      console.error('Error fetching economic data:', error);
+      res.status(500).json({ 
+        error: 'Failed to fetch economic data',
+        message: error instanceof Error ? error.message : 'Unknown error'
+      });
     }
   });
 
