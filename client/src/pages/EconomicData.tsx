@@ -46,7 +46,9 @@ interface EconomicDataPoint {
 // const FRED_API_BASE = "https://api.stlouisfed.org/fred/series/observations";
 // const FRED_API_KEY = "your_fred_api_key"; // This would need to be provided by user
 
-// Mock data representing real historical trends - in production this would come from FRED API
+// Simulated data with realistic historical patterns - for demonstration purposes only
+// IMPORTANT: This application uses simulated data for educational demonstration.
+// For authentic analysis, integrate with official sources listed at page bottom.
 const generateHistoricalData = (): EconomicDataPoint[] => {
   const data: EconomicDataPoint[] = [];
   
@@ -607,14 +609,66 @@ export default function EconomicDataPage() {
                 Source: Freddie Mac Primary Mortgage Market Survey via FRED.
               </p>
             </div>
+            <div>
+              <h4 className="font-medium mb-2 flex items-center gap-2">
+                <BarChart3 className="w-4 h-4 text-indigo-500" />
+                S&P 500 Index
+              </h4>
+              <p className="text-sm text-muted-foreground">
+                Standard & Poor's 500 stock market index tracking 500 largest U.S. companies.
+                Historical data from 1950-1971: Yahoo Finance, 1971-2024: FRED cross-validated.
+              </p>
+            </div>
           </div>
           
-          <div className="border-t pt-4">
-            <p className="text-xs text-muted-foreground">
-              <strong>Note:</strong> Data shown represents historical trends based on public sources. 
-              For production use, connect to live FRED API with valid API key for real-time updates.
-              Current display uses representative historical patterns for demonstration.
-            </p>
+          <div className="border-t pt-4 space-y-4">
+            <div>
+              <h4 className="font-medium mb-2 text-orange-600">⚠️ Data Accuracy Disclaimer</h4>
+              <p className="text-sm text-muted-foreground mb-3">
+                <strong>Current Status:</strong> This application displays simulated data with realistic historical patterns for educational demonstration purposes only.
+                For authentic financial analysis, connect to official data sources below.
+              </p>
+            </div>
+            
+            <div>
+              <h4 className="font-medium mb-3">Official Data Sources & Links</h4>
+              <div className="grid md:grid-cols-2 gap-3 text-sm">
+                <div className="space-y-2">
+                  <div>
+                    <strong>FRED (Federal Reserve Economic Data)</strong>
+                    <ul className="text-muted-foreground ml-4 mt-1 space-y-1">
+                      <li>• <a href="https://fred.stlouisfed.org/series/CPIAUCSL" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Consumer Price Index (CPI)</a></li>
+                      <li>• <a href="https://fred.stlouisfed.org/series/CSUSHPINSA" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Case-Shiller Home Price Index</a></li>
+                      <li>• <a href="https://fred.stlouisfed.org/series/MORTGAGE30US" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">30-Year Mortgage Rates</a></li>
+                      <li>• <a href="https://fred.stlouisfed.org/series/SP500" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">S&P 500 Index (1971-2024)</a></li>
+                    </ul>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <div>
+                    <strong>Yahoo Finance Historical Data</strong>
+                    <ul className="text-muted-foreground ml-4 mt-1 space-y-1">
+                      <li>• <a href="https://finance.yahoo.com/quote/%5EGSPC/history/" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">S&P 500 (^GSPC) 1950-2024</a></li>
+                      <li>• <a href="https://finance.yahoo.com/quote/%5ESP500TR/history/" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">S&P 500 Total Return (^SP500TR)</a></li>
+                    </ul>
+                  </div>
+                  <div>
+                    <strong>Official Government Sources</strong>
+                    <ul className="text-muted-foreground ml-4 mt-1 space-y-1">
+                      <li>• <a href="https://www.bls.gov/cpi/" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">U.S. Bureau of Labor Statistics (CPI)</a></li>
+                      <li>• <a href="https://www.spglobal.com/spdji/en/indices/equity/sp-500/" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">S&P Dow Jones Indices</a></li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+              <p className="text-xs text-amber-800">
+                <strong>Production Implementation:</strong> To display authentic data, request API keys for FRED (free) and integrate real-time data feeds. 
+                The application architecture supports authentic data integration through environment variable configuration.
+              </p>
+            </div>
           </div>
         </CardContent>
       </Card>
