@@ -86,7 +86,7 @@ function calculatePortfolioMetrics(investments: RealEstateInvestmentWithCategory
   
   // Calculate Total Cash at Hand (annual net cash flow from rent-generating properties)
   const totalCashAtHand = rentGeneratingProperties.reduce((sum, inv) => 
-    sum + ((inv.monthlyRent - inv.monthlyExpenses) * 12), 0);
+    sum + ((inv.monthlyRent - inv.monthlyExpenses - (inv.monthlyMortgage || 0)) * 12), 0);
   
   // Calculate Efficiency (Annual Net Yield / Market Value)
   const totalMarketValue = rentGeneratingProperties.reduce((sum, inv) => sum + inv.currentValue, 0);

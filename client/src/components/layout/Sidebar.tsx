@@ -19,11 +19,13 @@ import {
   TrendingUp,
   Activity,
   Lightbulb,
+  Trophy,
 } from "lucide-react";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Investments", href: "/investments", icon: Home },
+  { name: "Property Rankings", href: "/rankings", icon: Trophy },
   { name: "TimeSeries Projections", href: "/reports", icon: BarChart3 },
   { name: "Charts", href: "/charts", icon: TrendingUp },
   { name: "Compare Properties", href: "/comparison", icon: Calculator },
