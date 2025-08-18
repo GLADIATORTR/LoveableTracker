@@ -40,7 +40,7 @@ function calculatePropertyRankings(investments: RealEstateInvestmentWithCategory
       const realMetrics = calculateRealAppreciationMetrics(
         property.purchasePrice,
         property.currentValue,
-        property.purchaseDate
+        property.purchaseDate.toString()
       );
       
       // Calculate TRUE ROI including cash flow
@@ -50,7 +50,7 @@ function calculatePropertyRankings(investments: RealEstateInvestmentWithCategory
         property.monthlyRent || 0,
         property.monthlyExpenses || 0,
         property.monthlyMortgage || 0,
-        property.purchaseDate
+        property.purchaseDate.toString()
       );
       
       // Cap Rate: (Annual Net Operating Income / Current Property Value) * 100

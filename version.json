@@ -1,7 +1,12 @@
 {
-  "version": "AA117",
-  "lastUpdated": "2025-08-18T02:27:02.698Z",
+  "version": "AA118",
+  "lastUpdated": "2025-08-18T03:58:00.000Z",
   "changes": [
+    {
+      "version": "AA118",
+      "date": "2025-08-18",
+      "description": "Fixed Real ROI Annualized to include cash flow - now shows true investment returns combining appreciation + rental income over time"
+    },
     {
       "version": "AA117",
       "date": "2025-08-18",
