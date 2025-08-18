@@ -65,9 +65,9 @@ function calculatePropertyRankings(investments: RealEstateInvestmentWithCategory
       // Combined score for overall ranking (weighted average)
       const score = (trueROI.annualizedROI * 0.3) + (capRate * 0.3) + (monthlyNetYield * 0.4);
       
-      // Debug specific properties to understand why Real ROI = Real Appreciation Rate
+      // Debug Levent calculations with cash flow details
       if (property.propertyName && property.propertyName.toLowerCase().includes('levent')) {
-        console.log(`=== LEVENT DEBUG ===`);
+        console.log(`=== LEVENT CALCULATION DEBUG ===`);
         console.log('Property:', property.propertyName);
         console.log('Monthly Rent:', property.monthlyRent / 100);
         console.log('Monthly Expenses:', property.monthlyExpenses / 100);
@@ -76,10 +76,21 @@ function calculatePropertyRankings(investments: RealEstateInvestmentWithCategory
         console.log('Purchase Price:', property.purchasePrice / 100);
         console.log('Current Value:', property.currentValue / 100);
         console.log('Purchase Date:', property.purchaseDate);
-        console.log('TRUE ROI Result:', trueROI);
-        console.log('Real Appreciation Metrics:', realMetrics);
-        console.log('Real ROI (includes cash flow):', trueROI.annualizedROI);
-        console.log('Real Appreciation Rate (property only):', realMetrics.realAppreciationRate);
+        console.log('Years Held:', new Date().getFullYear() - new Date(property.purchaseDate).getFullYear());
+        console.log('');
+        console.log('TRUE ROI (WITH CASH FLOW):');
+        console.log('  Total Cash Flow:', trueROI.totalCashFlow / 100);
+        console.log('  Cash Flow Return %:', trueROI.cashFlowReturn);
+        console.log('  Appreciation Return %:', trueROI.appreciationReturn);
+        console.log('  ANNUALIZED ROI:', trueROI.annualizedROI + '%');
+        console.log('');
+        console.log('REAL APPRECIATION (PROPERTY ONLY):');
+        console.log('  Real Appreciation Rate:', realMetrics.realAppreciationRate + '%');
+        console.log('');
+        console.log('EXPECTED: Real ROI should be MUCH HIGHER due to $4,166 monthly cash flow!');
+        console.log('ACTUAL RESULTS:');
+        console.log('  Real ROI Annualized:', trueROI.annualizedROI + '%');
+        console.log('  Real Appreciation Rate:', realMetrics.realAppreciationRate + '%');
       }
 
       return {
@@ -318,10 +329,10 @@ export default function PropertyRankings() {
 
   const rankings = calculatePropertyRankings(investments);
   
-  // Sort based on selected criteria
+  // Sort based on selected criteria - FIXED SORTING BUG
   const sortedRankings = [...rankings].sort((a, b) => {
     switch (sortBy) {
-      case 'realROI': return b.realAppreciationRate - a.realAppreciationRate;
+      case 'realROI': return b.realROI - a.realROI; // Fixed: was using realAppreciationRate instead of realROI
       case 'capRate': return b.capRate - a.capRate;
       case 'monthlyNetYield': return b.monthlyNetYield - a.monthlyNetYield;
       case 'realAppreciation': return b.realAppreciationRate - a.realAppreciationRate;
