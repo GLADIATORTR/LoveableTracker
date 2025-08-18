@@ -50,7 +50,8 @@ function calculatePropertyRankings(investments: RealEstateInvestmentWithCategory
         property.monthlyRent || 0,
         property.monthlyExpenses || 0,
         property.monthlyMortgage || 0,
-        property.purchaseDate.toString()
+        property.purchaseDate.toString(),
+        2025 // Use 2025 as current year
       );
       
       // Cap Rate: (Annual Net Operating Income / Current Property Value) * 100
