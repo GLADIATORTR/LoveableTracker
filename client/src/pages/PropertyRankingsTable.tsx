@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowUpDown, ArrowUp, ArrowDown, TrendingUp, DollarSign, Percent, Home } from "lucide-react";
 import { useState } from "react";
-import type { RealEstateInvestmentWithCategory } from "@/types";
+import type { RealEstateInvestmentWithCategory } from "@shared/schema";
 import {
   calculateTrueROI,
   calculateRealAppreciationMetrics,
