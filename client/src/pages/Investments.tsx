@@ -59,8 +59,8 @@ function formatDate(date: string | Date | null | undefined): string {
   });
 }
 
-function calculateCashFlow(monthlyRent: number, monthlyExpenses: number): number {
-  return monthlyRent - monthlyExpenses;
+function calculateCashFlow(monthlyRent: number, monthlyExpenses: number, monthlyMortgage: number = 0): number {
+  return monthlyRent - monthlyExpenses - monthlyMortgage;
 }
 
 function calculateROI(currentValue: number, purchasePrice: number): number {
@@ -163,7 +163,7 @@ export default function Investments() {
         Math.round((inv.loanTerm || 0) / 12).toString(),
         ((inv.outstandingBalance || 0) / 100).toFixed(2),
         ((inv.monthlyMortgage || 0) / 100).toFixed(2),
-        (calculateCashFlow(inv.monthlyRent, inv.monthlyExpenses) / 100).toFixed(2),
+        (calculateCashFlow(inv.monthlyRent, inv.monthlyExpenses, inv.monthlyMortgage || 0) / 100).toFixed(2),
         ((inv.netEquity || 0) / 100).toFixed(2),
         calculateROI(inv.currentValue, inv.purchasePrice).toFixed(2)
       ]);
@@ -395,11 +395,11 @@ export default function Investments() {
                             Cap Rate
                           </div>
                           <div className={`font-semibold text-sm ${(() => {
-                            const capRate = investment.currentValue > 0 ? (((investment.monthlyRent - investment.monthlyExpenses) * 12) / investment.currentValue) * 100 : 0;
+                            const capRate = investment.currentValue > 0 ? (((investment.monthlyRent - investment.monthlyExpenses - (investment.monthlyMortgage || 0)) * 12) / investment.currentValue) * 100 : 0;
                             return capRate >= 0 ? 'text-green-600' : 'text-red-600';
                           })()}`}>
                             {(() => {
-                              const capRate = investment.currentValue > 0 ? (((investment.monthlyRent - investment.monthlyExpenses) * 12) / investment.currentValue) * 100 : 0;
+                              const capRate = investment.currentValue > 0 ? (((investment.monthlyRent - investment.monthlyExpenses - (investment.monthlyMortgage || 0)) * 12) / investment.currentValue) * 100 : 0;
                               return capRate.toFixed(1);
                             })()}%
                           </div>
@@ -416,8 +416,8 @@ export default function Investments() {
                             <DollarSign className="w-3 h-3 mr-1" />
                             Monthly Cash Flow
                           </div>
-                          <div className={`font-semibold ${calculateCashFlow(investment.monthlyRent, investment.monthlyExpenses) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                            {formatCurrency(calculateCashFlow(investment.monthlyRent, investment.monthlyExpenses) * 100)}
+                          <div className={`font-semibold ${calculateCashFlow(investment.monthlyRent, investment.monthlyExpenses, investment.monthlyMortgage || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                            {formatCurrency(calculateCashFlow(investment.monthlyRent, investment.monthlyExpenses, investment.monthlyMortgage || 0) * 100)}
                           </div>
                         </div>
                         <div>
