@@ -65,18 +65,7 @@ function calculatePropertyRankings(investments: RealEstateInvestmentWithCategory
       // Combined score for overall ranking (weighted average)
       const score = (trueROI.annualizedROI * 0.3) + (capRate * 0.3) + (monthlyNetYield * 0.4);
       
-      // Add debugging for all properties to see what's happening
-      console.log(`=== Debug ${property.propertyName} ===`, {
-        propertyName: property.propertyName,
-        trueROI: trueROI.annualizedROI,
-        realAppreciation: realMetrics.realAppreciationRate,
-        purchasePrice: property.purchasePrice / 100,
-        currentValue: property.currentValue / 100,
-        monthlyRent: property.monthlyRent / 100,
-        monthlyExpenses: property.monthlyExpenses / 100,
-        monthlyMortgage: property.monthlyMortgage / 100,
-        monthlyNetCashFlow: (property.monthlyRent - property.monthlyExpenses - (property.monthlyMortgage || 0)) / 100
-      });
+
 
       return {
         property,
