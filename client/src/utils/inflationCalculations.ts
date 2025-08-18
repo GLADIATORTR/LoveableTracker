@@ -149,7 +149,7 @@ export function calculateRealAppreciationMetrics(
     };
   }
   
-  // Calculate nominal ROI
+  // Calculate nominal ROI (appreciation only)
   const nominalROI = ((currentValue - originalPrice) / originalPrice) * 100;
   
   // Calculate inflation adjustment
@@ -157,8 +157,8 @@ export function calculateRealAppreciationMetrics(
   const inflationAdjustedPrice = originalPrice * inflationFactor;
   const totalInflation = (inflationFactor - 1) * 100;
   
-  // Calculate real ROI (inflation-adjusted)
-  const realROI = ((currentValue - inflationAdjustedPrice) / inflationAdjustedPrice) * 100;
+  // Calculate real appreciation (inflation-adjusted appreciation only)
+  const realAppreciationTotal = ((currentValue - inflationAdjustedPrice) / inflationAdjustedPrice) * 100;
   
   // Calculate annualized real appreciation rate
   const realAppreciationRate = yearsHeld > 0 ? 
@@ -167,10 +167,69 @@ export function calculateRealAppreciationMetrics(
   return {
     nominalROI: Math.round(nominalROI * 100) / 100,
     inflationAdjustedPrice: Math.round(inflationAdjustedPrice),
-    realROI: Math.round(realROI * 100) / 100,
+    realROI: Math.round(realAppreciationTotal * 100) / 100, // This is actually just appreciation, will be replaced by true ROI
     realAppreciationRate: Math.round(realAppreciationRate * 100) / 100,
     inflationFactor: Math.round(inflationFactor * 1000) / 1000,
     totalInflation: Math.round(totalInflation * 100) / 100
+  };
+}
+
+/**
+ * Calculate true Real ROI including both appreciation and cash flow
+ * @param originalPrice - Original purchase price in cents
+ * @param currentValue - Current market value in cents
+ * @param monthlyRent - Monthly rental income in cents
+ * @param monthlyExpenses - Monthly expenses in cents
+ * @param monthlyMortgage - Monthly mortgage payment in cents
+ * @param purchaseDate - Purchase date string
+ * @param currentYear - Current year (default: 2024)
+ * @returns Object with comprehensive ROI metrics including cash flow
+ */
+export function calculateTrueROI(
+  originalPrice: number,
+  currentValue: number,
+  monthlyRent: number,
+  monthlyExpenses: number,
+  monthlyMortgage: number,
+  purchaseDate: string,
+  currentYear: number = 2024
+) {
+  const purchaseYear = new Date(purchaseDate).getFullYear();
+  const yearsHeld = currentYear - purchaseYear;
+  
+  if (yearsHeld <= 0 || originalPrice <= 0) {
+    return {
+      totalROI: 0,
+      annualizedROI: 0,
+      totalCashFlow: 0,
+      appreciationReturn: 0,
+      cashFlowReturn: 0
+    };
+  }
+  
+  // Calculate total cash flow received over holding period
+  const monthlyCashFlow = monthlyRent - monthlyExpenses - monthlyMortgage;
+  const totalCashFlow = monthlyCashFlow * yearsHeld * 12;
+  
+  // Calculate total return: appreciation + cash flow
+  const appreciationReturn = currentValue - originalPrice;
+  const totalReturn = appreciationReturn + totalCashFlow;
+  
+  // Calculate ROI percentages
+  const totalROI = (totalReturn / originalPrice) * 100;
+  const annualizedROI = yearsHeld > 0 ? 
+    (Math.pow((totalReturn + originalPrice) / originalPrice, 1 / yearsHeld) - 1) * 100 : 0;
+  
+  // Break down returns by source
+  const cashFlowReturn = (totalCashFlow / originalPrice) * 100;
+  const appreciationROI = (appreciationReturn / originalPrice) * 100;
+  
+  return {
+    totalROI: Math.round(totalROI * 100) / 100,
+    annualizedROI: Math.round(annualizedROI * 100) / 100,
+    totalCashFlow: Math.round(totalCashFlow),
+    appreciationReturn: Math.round(appreciationROI * 100) / 100,
+    cashFlowReturn: Math.round(cashFlowReturn * 100) / 100
   };
 }
 

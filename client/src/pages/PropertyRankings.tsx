@@ -20,6 +20,7 @@ import {
 import type { RealEstateInvestmentWithCategory } from "@shared/schema";
 import { 
   calculateRealAppreciationMetrics, 
+  calculateTrueROI,
   formatCurrency 
 } from "@/utils/inflationCalculations";
 
@@ -42,6 +43,16 @@ function calculatePropertyRankings(investments: RealEstateInvestmentWithCategory
         property.purchaseDate
       );
       
+      // Calculate TRUE ROI including cash flow
+      const trueROI = calculateTrueROI(
+        property.purchasePrice,
+        property.currentValue,
+        property.monthlyRent || 0,
+        property.monthlyExpenses || 0,
+        property.monthlyMortgage || 0,
+        property.purchaseDate
+      );
+      
       // Cap Rate: (Annual Net Operating Income / Current Property Value) * 100
       const capRate = property.currentValue > 0 ? 
         (((property.monthlyRent - property.monthlyExpenses - (property.monthlyMortgage || 0)) * 12) / property.currentValue) * 100 : 0;
@@ -52,11 +63,11 @@ function calculatePropertyRankings(investments: RealEstateInvestmentWithCategory
         (monthlyCashFlow / property.currentValue) * 100 : 0;
       
       // Combined score for overall ranking (weighted average)
-      const score = (realMetrics.realAppreciationRate * 0.3) + (capRate * 0.3) + (monthlyNetYield * 0.4);
+      const score = (trueROI.annualizedROI * 0.3) + (capRate * 0.3) + (monthlyNetYield * 0.4);
       
       return {
         property,
-        realROI: realMetrics.realROI,
+        realROI: trueROI.annualizedROI, // Now includes cash flow!
         realAppreciationRate: realMetrics.realAppreciationRate,
         capRate,
         monthlyNetYield,
