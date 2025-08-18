@@ -5,14 +5,14 @@ import {
   Calculator, 
   Home, 
   BarChart3, 
-  Activity,
+  Lightbulb,
 } from "lucide-react";
 
 const mobileNavigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Properties", href: "/investments", icon: Home },
   { name: "Compare", href: "/comparison", icon: Calculator },
-  { name: "Economic", href: "/economic-data", icon: Activity },
+  { name: "Strategy", href: "/strategy", icon: Lightbulb },
   { name: "Reports", href: "/reports", icon: BarChart3 },
 ];
 

@@ -1,7 +1,12 @@
 {
-  "version": "AA114",
-  "lastUpdated": "2025-08-18T01:39:11.014Z",
+  "version": "AA115",
+  "lastUpdated": "2025-08-18T01:44:46.806Z",
   "changes": [
+    {
+      "version": "AA115",
+      "date": "2025-08-18",
+      "description": "Implemented personalized investment strategy generator with goal assessment and tailored recommendations"
+    },
     {
       "version": "AA114",
       "date": "2025-08-18",
@@ -46,11 +51,6 @@
       "version": "AA106",
       "date": "2025-08-17",
       "description": "Fixed sidebar navigation button labels disappearing - replaced CSS variables with absolute color values"
-    },
-    {
-      "version": "AA105",
-      "date": "2025-08-17",
-      "description": "Fixed version display in preview and improved version update script"
     }
   ]
 }

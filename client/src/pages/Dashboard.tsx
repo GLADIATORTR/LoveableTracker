@@ -9,6 +9,7 @@ import { InvestmentForm } from "@/components/ui/investment-form";
 import { CSVImport } from "@/components/ui/csv-import";
 import { PortfolioHealthScore } from "@/components/ui/portfolio-health-score";
 import MarketSentiment from "@/components/MarketSentiment";
+import { Link } from "wouter";
 import { 
   Package, 
   CheckCircle, 
@@ -17,7 +18,8 @@ import {
   Plus,
   Upload,
   FileText,
-  TrendingUp
+  TrendingUp,
+  Lightbulb
 } from "lucide-react";
 import type { DashboardStats } from "@shared/schema";
 
@@ -196,6 +198,23 @@ export default function Dashboard() {
               <div className="w-full">
                 <CSVImport onSuccess={handleQuickActionSuccess} />
               </div>
+
+              <Link href="/strategy">
+                <Button
+                  variant="ghost"
+                  className="w-full justify-between p-3 h-auto text-left hover:bg-accent/50"
+                >
+                  <div className="flex items-center gap-3">
+                    <Lightbulb className="w-4 h-4 text-primary" />
+                    <div>
+                      <p className="font-medium">Investment Strategy</p>
+                      <p className="text-xs text-muted-foreground">
+                        Get personalized recommendations
+                      </p>
+                    </div>
+                  </div>
+                </Button>
+              </Link>
 
               <Button
                 variant="ghost"
