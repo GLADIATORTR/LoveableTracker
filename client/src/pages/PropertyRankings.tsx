@@ -65,33 +65,27 @@ function calculatePropertyRankings(investments: RealEstateInvestmentWithCategory
       // Combined score for overall ranking (weighted average)
       const score = (trueROI.annualizedROI * 0.3) + (capRate * 0.3) + (monthlyNetYield * 0.4);
       
-      // Debug Levent calculations with cash flow details
-      if (property.propertyName && property.propertyName.toLowerCase().includes('levent')) {
-        console.log(`=== LEVENT CALCULATION DEBUG ===`);
-        console.log('Property:', property.propertyName);
-        console.log('Monthly Rent:', property.monthlyRent / 100);
-        console.log('Monthly Expenses:', property.monthlyExpenses / 100);
-        console.log('Monthly Mortgage:', property.monthlyMortgage / 100);
-        console.log('Net Monthly Cash Flow:', monthlyCashFlow / 100);
-        console.log('Purchase Price:', property.purchasePrice / 100);
-        console.log('Current Value:', property.currentValue / 100);
-        console.log('Purchase Date:', property.purchaseDate);
-        console.log('Years Held:', new Date().getFullYear() - new Date(property.purchaseDate).getFullYear());
-        console.log('');
-        console.log('TRUE ROI (WITH CASH FLOW):');
-        console.log('  Total Cash Flow:', trueROI.totalCashFlow / 100);
-        console.log('  Cash Flow Return %:', trueROI.cashFlowReturn);
-        console.log('  Appreciation Return %:', trueROI.appreciationReturn);
-        console.log('  ANNUALIZED ROI:', trueROI.annualizedROI + '%');
-        console.log('');
-        console.log('REAL APPRECIATION (PROPERTY ONLY):');
-        console.log('  Real Appreciation Rate:', realMetrics.realAppreciationRate + '%');
-        console.log('');
-        console.log('EXPECTED: Real ROI should be MUCH HIGHER due to $4,166 monthly cash flow!');
-        console.log('ACTUAL RESULTS:');
-        console.log('  Real ROI Annualized:', trueROI.annualizedROI + '%');
-        console.log('  Real Appreciation Rate:', realMetrics.realAppreciationRate + '%');
-      }
+      // Debug ALL properties to see what's happening
+      console.log(`=== ${property.propertyName} DEBUG ===`);
+      console.log('Raw data from API:');
+      console.log('  monthlyRent (raw):', property.monthlyRent);
+      console.log('  monthlyExpenses (raw):', property.monthlyExpenses);
+      console.log('  monthlyMortgage (raw):', property.monthlyMortgage);
+      console.log('  purchasePrice (raw):', property.purchasePrice);
+      console.log('  currentValue (raw):', property.currentValue);
+      
+      console.log('Calculated values:');
+      console.log('  Net Monthly Cash Flow (cents):', monthlyCashFlow);
+      console.log('  Net Monthly Cash Flow ($):', monthlyCashFlow / 100);
+      
+      console.log('Function results:');
+      console.log('  trueROI:', trueROI);
+      console.log('  realMetrics:', realMetrics);
+      
+      console.log('FINAL VALUES BEING DISPLAYED:');
+      console.log('  Real ROI:', trueROI.annualizedROI);
+      console.log('  Real Appreciation:', realMetrics.realAppreciationRate);
+      console.log('---');
 
       return {
         property,
