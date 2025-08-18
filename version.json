@@ -1,7 +1,12 @@
 {
-  "version": "AA118",
-  "lastUpdated": "2025-08-18T03:58:00.000Z",
+  "version": "AB101",
+  "lastUpdated": "2025-08-18T08:54:00.000Z",
   "changes": [
+    {
+      "version": "AB101",
+      "date": "2025-08-18",
+      "description": "Fixed critical sorting bug in Property Rankings - Real ROI now correctly displays different values from Real Appreciation Rate, includes cash flow calculations"
+    },
     {
       "version": "AA118",
       "date": "2025-08-18",

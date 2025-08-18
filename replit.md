@@ -1,14 +1,15 @@
-# Real Estate Financials - Version AA118
+# Real Estate Financials - Version AB101
 
 ## Overview
 
 Real Estate Financials is a comprehensive investment management platform providing intelligent property tracking, financial analysis, and portfolio optimization. It offers advanced TimeSeries projections with inflation adjustment, country-specific global settings, CSV import capabilities, detailed investment performance analysis, and real-time market trend mood indicators. The platform combines professional-grade financial modeling with market sentiment analysis to facilitate informed decisions and portfolio growth.
 
-## Recent Changes (Version AA118)
-- Fixed Real ROI Annualized calculation to include cash flow from rental income
-- True ROI now combines property appreciation + total cash flow received over holding period
-- Properties with rental income now show higher ROI than appreciation-only metrics
-- Separated Real Appreciation Rate (property value growth) from Real ROI (total investment return)
+## Recent Changes (Version AB101)
+- Fixed critical Property Rankings sorting bug - Real ROI button was incorrectly sorting by Real Appreciation Rate
+- Real ROI Annualized now correctly includes cash flow calculations and displays different values from Real Appreciation Rate  
+- Properties with rental income (like Levent: $4,166/month) now show significantly higher Real ROI than appreciation-only metrics
+- Enhanced debug output for ROI calculations to verify cash flow inclusion
+- Cleaned TopBar UI - removed search and notification elements, fixed popup visibility with white backgrounds
 
 ## Strategic Product Recommendations (January 2025)
 Following comprehensive product review with cross-functional team analysis:
