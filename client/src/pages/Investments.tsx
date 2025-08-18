@@ -417,7 +417,7 @@ export default function Investments() {
                             Monthly Cash Flow
                           </div>
                           <div className={`font-semibold ${calculateCashFlow(investment.monthlyRent, investment.monthlyExpenses, investment.monthlyMortgage || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                            {formatCurrency(calculateCashFlow(investment.monthlyRent, investment.monthlyExpenses, investment.monthlyMortgage || 0) * 100)}
+                            {formatCurrency(calculateCashFlow(investment.monthlyRent, investment.monthlyExpenses, investment.monthlyMortgage || 0))}
                           </div>
                         </div>
                         <div>
