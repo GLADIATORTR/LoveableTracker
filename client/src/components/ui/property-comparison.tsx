@@ -21,6 +21,9 @@ import {
   AlertTriangle
 } from "lucide-react";
 import type { RealEstateInvestmentWithCategory } from "@shared/schema";
+import { 
+  calculateRealAppreciationMetrics 
+} from "@/utils/inflationCalculations";
 
 interface PropertyComparisonProps {
   className?: string;
@@ -29,6 +32,9 @@ interface PropertyComparisonProps {
 interface ComparisonMetrics {
   cashFlow: number;
   roi: number;
+  realROI: number;
+  realAppreciationRate: number;
+  efficiency: number;
   capRate: number;
   appreciation: number;
   marketPerformance: 'outperforming' | 'average' | 'underperforming';
@@ -53,17 +59,25 @@ function calculateMetrics(investment: RealEstateInvestmentWithCategory): Compari
   const cashFlow = (investment.monthlyRent - investment.monthlyExpenses) * 12;
   const roi = investment.purchasePrice > 0 ? ((investment.currentValue - investment.purchasePrice) / investment.purchasePrice) * 100 : 0;
   const capRate = investment.currentValue > 0 ? (cashFlow / investment.currentValue) * 100 : 0;
+  const efficiency = investment.currentValue > 0 ? (cashFlow / investment.currentValue) * 100 : 0;
+  
+  // Calculate real ROI using inflation calculations
+  const realMetrics = calculateRealAppreciationMetrics(
+    investment.purchasePrice,
+    investment.currentValue,
+    investment.purchaseDate
+  );
   
   // Simulated market data - in real app this would come from market APIs
   const marketAvgROI = 8.5;
   const marketAvgCapRate = 6.2;
   
-  const marketPerformance = roi > marketAvgROI * 1.1 ? 'outperforming' : roi < marketAvgROI * 0.9 ? 'underperforming' : 'average';
+  const marketPerformance = realMetrics.realAppreciationRate > marketAvgROI * 1.1 ? 'outperforming' : realMetrics.realAppreciationRate < marketAvgROI * 0.9 ? 'underperforming' : 'average';
   
   let investmentGrade: 'A' | 'B' | 'C' | 'D' = 'C';
-  if (roi >= 12 && capRate >= 8) investmentGrade = 'A';
-  else if (roi >= 8 && capRate >= 6) investmentGrade = 'B';
-  else if (roi >= 5 && capRate >= 4) investmentGrade = 'C';
+  if (realMetrics.realAppreciationRate >= 12 && capRate >= 8) investmentGrade = 'A';
+  else if (realMetrics.realAppreciationRate >= 8 && capRate >= 6) investmentGrade = 'B';
+  else if (realMetrics.realAppreciationRate >= 5 && capRate >= 4) investmentGrade = 'C';
   else investmentGrade = 'D';
 
   const riskLevel = capRate < 4 ? 'high' : capRate > 8 ? 'low' : 'medium';
@@ -71,6 +85,9 @@ function calculateMetrics(investment: RealEstateInvestmentWithCategory): Compari
   return {
     cashFlow,
     roi,
+    realROI: realMetrics.realROI,
+    realAppreciationRate: realMetrics.realAppreciationRate,
+    efficiency,
     capRate,
     appreciation: 3.5, // Placeholder - would be calculated from historical data
     marketPerformance,
@@ -122,7 +139,7 @@ export function PropertyComparison({ className }: PropertyComparisonProps) {
     const metricsB = calculateMetrics(b);
     
     switch (sortBy) {
-      case 'roi': return metricsB.roi - metricsA.roi;
+      case 'roi': return metricsB.realAppreciationRate - metricsA.realAppreciationRate;
       case 'cashFlow': return metricsB.cashFlow - metricsA.cashFlow;
       case 'capRate': return metricsB.capRate - metricsA.capRate;
       default: return 0;
@@ -159,7 +176,7 @@ export function PropertyComparison({ className }: PropertyComparisonProps) {
                   <SelectValue placeholder="Sort by..." />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="roi">ROI</SelectItem>
+                  <SelectItem value="roi">Real ROI</SelectItem>
                   <SelectItem value="cashFlow">Cash Flow</SelectItem>
                   <SelectItem value="capRate">Cap Rate</SelectItem>
                 </SelectContent>
@@ -273,11 +290,12 @@ export function PropertyComparison({ className }: PropertyComparisonProps) {
                                 <div className="font-medium">{formatCurrency(metrics.cashFlow)}</div>
                               </div>
                               <div>
-                                <div className="text-muted-foreground">ROI</div>
+                                <div className="text-muted-foreground">Real ROI</div>
                                 <div className="font-medium flex items-center gap-1">
-                                  {formatPercent(metrics.roi)}
-                                  {metrics.roi > 8 ? <TrendingUp className="w-3 h-3 text-green-500" /> : <TrendingDown className="w-3 h-3 text-red-500" />}
+                                  {formatPercent(metrics.realAppreciationRate)}
+                                  {metrics.realAppreciationRate > 8 ? <TrendingUp className="w-3 h-3 text-green-500" /> : <TrendingDown className="w-3 h-3 text-red-500" />}
                                 </div>
+                                <div className="text-xs text-muted-foreground">per year</div>
                               </div>
                               <div>
                                 <div className="text-muted-foreground">Cap Rate</div>
@@ -327,7 +345,8 @@ export function PropertyComparison({ className }: PropertyComparisonProps) {
                               { label: 'Purchase Price', key: 'purchasePrice', format: formatCurrency, market: 45000000 },
                               { label: 'Current Value', key: 'currentValue', format: formatCurrency, market: 52000000 },
                               { label: 'Monthly Rent', key: 'monthlyRent', format: formatCurrency, market: 250000 },
-                              { label: 'ROI', key: 'roi', format: formatPercent, market: 8.5 },
+                              { label: 'Real ROI (Annualized)', key: 'realAppreciationRate', format: formatPercent, market: 6.8 },
+                              { label: 'Efficiency (Yield/Value)', key: 'efficiency', format: formatPercent, market: 5.5 },
                               { label: 'Cap Rate', key: 'capRate', format: formatPercent, market: 6.2 },
                               { label: 'Cash Flow (Annual)', key: 'cashFlow', format: formatCurrency, market: 180000 },
                             ].map((row) => (
@@ -335,7 +354,8 @@ export function PropertyComparison({ className }: PropertyComparisonProps) {
                                 <td className="py-2 font-medium">{row.label}</td>
                                 {sortedInvestments.map((inv) => {
                                   const metrics = calculateMetrics(inv);
-                                  let value = row.key === 'roi' ? metrics.roi : 
+                                  let value = row.key === 'realAppreciationRate' ? metrics.realAppreciationRate : 
+                                             row.key === 'efficiency' ? metrics.efficiency :
                                              row.key === 'capRate' ? metrics.capRate :
                                              row.key === 'cashFlow' ? metrics.cashFlow :
                                              inv[row.key as keyof typeof inv] as number;
