@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { 
   Target, 
   TrendingUp, 
@@ -22,7 +23,9 @@ import {
   Percent,
   Activity,
   Building2,
-  Zap
+  Zap,
+  Info,
+  X
 } from "lucide-react";
 import type { RealEstateInvestmentWithCategory } from "@shared/schema";
 import { 
@@ -158,12 +161,181 @@ function analyzeInvestment(property: RealEstateInvestmentWithCategory): Investme
   };
 }
 
+// Detailed calculation example component
+function CalculationExample({ property }: { property: RealEstateInvestmentWithCategory }) {
+  const currentYear = 2025;
+  const purchaseYear = new Date(property.purchaseDate).getFullYear();
+  const yearsHeld = currentYear - purchaseYear;
+  
+  // Calculate detailed metrics
+  const monthlyRent = property.monthlyRent || 0;
+  const monthlyExpenses = property.monthlyExpenses || 0;
+  const monthlyMortgage = property.monthlyMortgage || 0;
+  const monthlyCashFlow = monthlyRent - monthlyExpenses - monthlyMortgage;
+  
+  // Generate detailed cash flow projections
+  const projectionYears = 10;
+  const cashFlows = [-property.purchasePrice];
+  const cashFlowDetails = [`Year 0 (Purchase): -${formatCurrency(property.purchasePrice)}`];
+  
+  // Historical cash flows
+  for (let i = 1; i <= yearsHeld; i++) {
+    const annualCashFlow = monthlyCashFlow * 12;
+    cashFlows.push(annualCashFlow);
+    cashFlowDetails.push(`Year ${i} (Historical): ${formatCurrency(annualCashFlow)} = ${formatCurrency(monthlyCashFlow)} × 12 months`);
+  }
+  
+  // Future projections with growth
+  const cashFlowGrowthRate = 0.03;
+  for (let i = yearsHeld + 1; i <= projectionYears + yearsHeld; i++) {
+    const growthFactor = Math.pow(1 + cashFlowGrowthRate, i - yearsHeld);
+    const adjustedCashFlow = monthlyCashFlow * 12 * growthFactor;
+    cashFlows.push(adjustedCashFlow);
+    cashFlowDetails.push(`Year ${i} (Projected): ${formatCurrency(adjustedCashFlow)} = ${formatCurrency(monthlyCashFlow * 12)} × ${growthFactor.toFixed(3)} growth`);
+  }
+  
+  // Final sale value
+  const appreciationRate = 0.035;
+  const appreciationFactor = Math.pow(1 + appreciationRate, projectionYears);
+  const futureValue = property.currentValue * appreciationFactor;
+  cashFlows[cashFlows.length - 1] += futureValue;
+  cashFlowDetails[cashFlowDetails.length - 1] += ` + Sale: ${formatCurrency(futureValue)} = ${formatCurrency(property.currentValue)} × ${appreciationFactor.toFixed(3)}`;
+  
+  // Calculate IRR and NPV
+  const irr = calculateIRR(cashFlows);
+  const discountRate = 0.08;
+  const npv = calculateNPV(cashFlows, discountRate);
+  const npvIndex = npv / Math.abs(cashFlows[0]);
+  
+  // NPV calculation breakdown
+  const npvDetails = cashFlows.map((cf, i) => {
+    const discountFactor = Math.pow(1 + discountRate, i);
+    const presentValue = cf / discountFactor;
+    return {
+      year: i,
+      cashFlow: cf,
+      discountFactor: discountFactor,
+      presentValue: presentValue
+    };
+  });
+
+  return (
+    <div className="space-y-6">
+      <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+        <h3 className="font-semibold text-blue-800 mb-2">Property Details: {property.propertyName}</h3>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+          <div>
+            <span className="text-blue-600">Purchase Price:</span>
+            <div className="font-semibold">{formatCurrency(property.purchasePrice)}</div>
+          </div>
+          <div>
+            <span className="text-blue-600">Current Value:</span>
+            <div className="font-semibold">{formatCurrency(property.currentValue)}</div>
+          </div>
+          <div>
+            <span className="text-blue-600">Monthly Rent:</span>
+            <div className="font-semibold">{formatCurrency(monthlyRent)}</div>
+          </div>
+          <div>
+            <span className="text-blue-600">Monthly Expenses:</span>
+            <div className="font-semibold">{formatCurrency(monthlyExpenses)}</div>
+          </div>
+        </div>
+        <div className="mt-2 text-sm">
+          <span className="text-blue-600">Net Monthly Cash Flow:</span>
+          <span className="font-semibold ml-2">
+            {formatCurrency(monthlyCashFlow)} = {formatCurrency(monthlyRent)} - {formatCurrency(monthlyExpenses)} - {formatCurrency(monthlyMortgage)}
+          </span>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Cash Flow Projections */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Cash Flow Projections</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2 text-sm max-h-96 overflow-y-auto">
+              {cashFlowDetails.map((detail, i) => (
+                <div key={i} className={`p-2 rounded ${i === 0 ? 'bg-red-50' : i <= yearsHeld ? 'bg-green-50' : 'bg-blue-50'}`}>
+                  <span className="font-mono text-xs">{detail}</span>
+                </div>
+              ))}
+              <div className="mt-3 p-2 bg-gray-100 rounded">
+                <div className="font-semibold">Total Cash Flows: {cashFlows.length} periods</div>
+                <div className="text-xs">Growth Rate: 3% annually | Appreciation: 3.5% annually</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* NPV Calculation */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">NPV Calculation (8% Discount Rate)</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2 text-sm max-h-96 overflow-y-auto">
+              {npvDetails.map((detail, i) => (
+                <div key={i} className="p-2 bg-gray-50 rounded">
+                  <div className="font-mono text-xs">
+                    Year {detail.year}: {formatCurrency(detail.presentValue)} = {formatCurrency(detail.cashFlow)} ÷ {detail.discountFactor.toFixed(3)}
+                  </div>
+                </div>
+              ))}
+              <div className="mt-3 p-3 bg-blue-100 rounded border-2 border-blue-300">
+                <div className="font-semibold text-blue-800">
+                  Total NPV: {formatCurrency(npv)} = Sum of all present values
+                </div>
+                <div className="text-sm text-blue-700 mt-1">
+                  NPV Index: {npvIndex.toFixed(3)} = NPV ÷ Initial Investment ({formatCurrency(Math.abs(cashFlows[0]))})
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* IRR Explanation */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">IRR Calculation</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            <div className="p-3 bg-emerald-100 rounded border border-emerald-300">
+              <div className="font-semibold text-emerald-800">
+                Calculated IRR: {irr.toFixed(2)}% annually
+              </div>
+              <div className="text-sm text-emerald-700 mt-1">
+                This is the discount rate that makes NPV = 0
+              </div>
+            </div>
+            <div className="text-sm space-y-2">
+              <div><strong>IRR Method:</strong> Newton-Raphson iterative calculation</div>
+              <div><strong>Formula:</strong> Find r where Σ(CF_t / (1+r)^t) = 0</div>
+              <div><strong>Interpretation:</strong> {irr > 10 ? 'Excellent' : irr > 8 ? 'Good' : irr > 6 ? 'Fair' : 'Poor'} return vs. 8% benchmark</div>
+              <div className="p-2 bg-yellow-50 rounded">
+                <strong>Cash Flow Pattern:</strong> Initial investment of {formatCurrency(Math.abs(cashFlows[0]))}, then {yearsHeld} years of historical cash flows, plus {projectionYears} years of projected returns including final sale.
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
 export default function InvestmentStrategyPage() {
   const { data: investments = [], isLoading } = useQuery<RealEstateInvestmentWithCategory[]>({
     queryKey: ['/api/investments'],
   });
 
   const investmentMetrics = investments.map(analyzeInvestment);
+  
+  // Find 12 Hillcrest for examples
+  const hillcrestProperty = investments.find(p => p.propertyName.includes("Hillcrest") || p.address?.includes("Hillcrest"));
   
   // Portfolio aggregation
   const portfolioStats = {
@@ -223,6 +395,26 @@ export default function InvestmentStrategyPage() {
             <Calculator className="w-3 h-3 mr-1" />
             {investmentMetrics.length} Properties Analyzed
           </Badge>
+          
+          {hillcrestProperty && (
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm" className="bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100">
+                  <Info className="w-4 h-4 mr-2" />
+                  View IRR/NPV Examples
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle className="flex items-center space-x-2">
+                    <Calculator className="w-5 h-5" />
+                    <span>Detailed IRR & NPV Calculations</span>
+                  </DialogTitle>
+                </DialogHeader>
+                <CalculationExample property={hillcrestProperty} />
+              </DialogContent>
+            </Dialog>
+          )}
         </div>
       </div>
 
