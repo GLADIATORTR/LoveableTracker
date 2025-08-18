@@ -19,7 +19,8 @@ import {
   TrendingUp,
   Download,
   Activity,
-  Percent
+  Percent,
+  Calculator
 } from "lucide-react";
 import {
   AlertDialog,
