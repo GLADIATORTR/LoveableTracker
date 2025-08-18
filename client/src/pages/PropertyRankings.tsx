@@ -65,7 +65,22 @@ function calculatePropertyRankings(investments: RealEstateInvestmentWithCategory
       // Combined score for overall ranking (weighted average)
       const score = (trueROI.annualizedROI * 0.3) + (capRate * 0.3) + (monthlyNetYield * 0.4);
       
-
+      // Debug specific properties to understand why Real ROI = Real Appreciation Rate
+      if (property.propertyName && property.propertyName.toLowerCase().includes('levent')) {
+        console.log(`=== LEVENT DEBUG ===`);
+        console.log('Property:', property.propertyName);
+        console.log('Monthly Rent:', property.monthlyRent / 100);
+        console.log('Monthly Expenses:', property.monthlyExpenses / 100);
+        console.log('Monthly Mortgage:', property.monthlyMortgage / 100);
+        console.log('Net Monthly Cash Flow:', monthlyCashFlow / 100);
+        console.log('Purchase Price:', property.purchasePrice / 100);
+        console.log('Current Value:', property.currentValue / 100);
+        console.log('Purchase Date:', property.purchaseDate);
+        console.log('TRUE ROI Result:', trueROI);
+        console.log('Real Appreciation Metrics:', realMetrics);
+        console.log('Real ROI (includes cash flow):', trueROI.annualizedROI);
+        console.log('Real Appreciation Rate (property only):', realMetrics.realAppreciationRate);
+      }
 
       return {
         property,
