@@ -5,165 +5,131 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { 
   TrendingUp, 
-  TrendingDown, 
-  Shield, 
-  Target, 
-  AlertTriangle, 
-  CheckCircle,
-  Award,
-  BarChart3
+  DollarSign, 
+  Activity, 
+  Star,
+  Percent,
+  Calculator,
+  Award
 } from "lucide-react";
 import type { RealEstateInvestmentWithCategory } from "@shared/schema";
+import { 
+  calculateRealAppreciationMetrics, 
+  formatCurrency 
+} from "@/utils/inflationCalculations";
 
 interface PortfolioHealthScoreProps {
   className?: string;
 }
 
-interface HealthMetrics {
-  overallScore: number;
-  grade: 'A+' | 'A' | 'B+' | 'B' | 'C+' | 'C' | 'D';
-  diversificationScore: number;
-  performanceScore: number;
-  riskScore: number;
-  liquidityScore: number;
-  recommendations: string[];
-  strengths: string[];
-  concerns: string[];
+interface PortfolioMetrics {
+  realROIAll: number; // Real ROI per year for entire portfolio
+  realROIRentGenerating: number; // Real ROI per year excluding non-rent generating
+  totalCashAtHand: number; // Total cash at hand for rent-generating properties
+  efficiency: number; // Annual Net Yield / Market Value
+  efficiencyRating: number; // 1-5 stars
+  rentGeneratingRating: number; // 1-5 stars  
+  averageRating: number; // Average of the two ratings
 }
 
-function calculatePortfolioHealth(investments: RealEstateInvestmentWithCategory[]): HealthMetrics {
+function calculatePortfolioMetrics(investments: RealEstateInvestmentWithCategory[]): PortfolioMetrics {
   if (investments.length === 0) {
     return {
-      overallScore: 0,
-      grade: 'D',
-      diversificationScore: 0,
-      performanceScore: 0,
-      riskScore: 0,
-      liquidityScore: 0,
-      recommendations: ['Add properties to your portfolio to get started'],
-      strengths: [],
-      concerns: ['No properties in portfolio']
+      realROIAll: 0,
+      realROIRentGenerating: 0,
+      totalCashAtHand: 0,
+      efficiency: 0,
+      efficiencyRating: 1,
+      rentGeneratingRating: 1,
+      averageRating: 1
     };
   }
 
-  // Calculate individual metrics
-  const totalValue = investments.reduce((sum, inv) => sum + inv.currentValue, 0);
-  const totalCashFlow = investments.reduce((sum, inv) => 
+  // Filter rent-generating properties (monthly rent > 0)
+  const rentGeneratingProperties = investments.filter(inv => inv.monthlyRent > 0);
+  
+  // Calculate Real ROI for all properties
+  let totalRealROI = 0;
+  let validPropertiesAll = 0;
+  
+  investments.forEach(inv => {
+    const realMetrics = calculateRealAppreciationMetrics(
+      inv.purchasePrice,
+      inv.currentValue,
+      inv.purchaseDate
+    );
+    if (realMetrics.realAppreciationRate !== 0) {
+      totalRealROI += realMetrics.realAppreciationRate;
+      validPropertiesAll++;
+    }
+  });
+  
+  const realROIAll = validPropertiesAll > 0 ? totalRealROI / validPropertiesAll : 0;
+  
+  // Calculate Real ROI for rent-generating properties only
+  let totalRealROIRent = 0;
+  let validPropertiesRent = 0;
+  
+  rentGeneratingProperties.forEach(inv => {
+    const realMetrics = calculateRealAppreciationMetrics(
+      inv.purchasePrice,
+      inv.currentValue,
+      inv.purchaseDate
+    );
+    if (realMetrics.realAppreciationRate !== 0) {
+      totalRealROIRent += realMetrics.realAppreciationRate;
+      validPropertiesRent++;
+    }
+  });
+  
+  const realROIRentGenerating = validPropertiesRent > 0 ? totalRealROIRent / validPropertiesRent : 0;
+  
+  // Calculate Total Cash at Hand (annual net cash flow from rent-generating properties)
+  const totalCashAtHand = rentGeneratingProperties.reduce((sum, inv) => 
     sum + ((inv.monthlyRent - inv.monthlyExpenses) * 12), 0);
   
-  // Performance Score (0-100)
-  const avgROI = investments.reduce((sum, inv) => {
-    const roi = inv.purchasePrice > 0 ? ((inv.currentValue - inv.purchasePrice) / inv.purchasePrice) * 100 : 0;
-    return sum + roi;
-  }, 0) / investments.length;
+  // Calculate Efficiency (Annual Net Yield / Market Value)
+  const totalMarketValue = rentGeneratingProperties.reduce((sum, inv) => sum + inv.currentValue, 0);
+  const efficiency = totalMarketValue > 0 ? (totalCashAtHand / totalMarketValue) * 100 : 0;
   
-  const performanceScore = Math.min(Math.max((avgROI / 12) * 100, 0), 100); // 12% ROI = 100 score
-
-  // Diversification Score (0-100)
-  const uniqueStates = new Set(investments.map(inv => inv.address?.split(',').pop()?.trim() || 'Unknown')).size;
-  const propertyTypes = new Set(investments.map(inv => inv.category?.name || 'Unknown')).size;
-  const diversificationScore = Math.min(
-    (uniqueStates * 20) + (propertyTypes * 15) + (investments.length * 5), 100
-  );
-
-  // Risk Score (0-100, higher is better/safer)
-  const avgCapRate = investments.reduce((sum, inv) => {
-    const capRate = inv.currentValue > 0 ? (((inv.monthlyRent - inv.monthlyExpenses) * 12) / inv.currentValue) * 100 : 0;
-    return sum + capRate;
-  }, 0) / investments.length;
+  // Star ratings (1-5 stars)
+  // Real ROI Rating: 0-2%=1⭐, 2-4%=2⭐, 4-6%=3⭐, 6-8%=4⭐, 8%+=5⭐
+  const rentGeneratingRating = Math.min(Math.max(Math.ceil(realROIRentGenerating / 2), 1), 5);
   
-  const riskScore = Math.min(Math.max((avgCapRate / 8) * 100, 0), 100); // 8% cap rate = 100 score
-
-  // Liquidity Score (simplified)
-  const avgPropertyValue = totalValue / investments.length;
-  const liquidityScore = avgPropertyValue < 50000000 ? 80 : avgPropertyValue < 100000000 ? 60 : 40; // Smaller properties are more liquid
-
-  // Overall Score
-  const overallScore = Math.round(
-    (performanceScore * 0.3) + 
-    (diversificationScore * 0.25) + 
-    (riskScore * 0.25) + 
-    (liquidityScore * 0.2)
-  );
-
-  // Grade Assignment
-  let grade: 'A+' | 'A' | 'B+' | 'B' | 'C+' | 'C' | 'D';
-  if (overallScore >= 95) grade = 'A+';
-  else if (overallScore >= 90) grade = 'A';
-  else if (overallScore >= 85) grade = 'B+';
-  else if (overallScore >= 80) grade = 'B';
-  else if (overallScore >= 70) grade = 'C+';
-  else if (overallScore >= 60) grade = 'C';
-  else grade = 'D';
-
-  // Generate recommendations
-  const recommendations: string[] = [];
-  const strengths: string[] = [];
-  const concerns: string[] = [];
-
-  if (performanceScore < 50) {
-    recommendations.push('Focus on properties with higher ROI potential');
-    concerns.push('Below-average portfolio performance');
-  } else if (performanceScore > 75) {
-    strengths.push('Strong portfolio performance');
-  }
-
-  if (diversificationScore < 40) {
-    recommendations.push('Consider diversifying across more locations and property types');
-    concerns.push('Limited geographic diversification');
-  } else if (diversificationScore > 70) {
-    strengths.push('Well-diversified portfolio');
-  }
-
-  if (riskScore < 50) {
-    recommendations.push('Improve cash flow stability by increasing rents or reducing expenses');
-    concerns.push('Low cash flow relative to property values');
-  } else if (riskScore > 75) {
-    strengths.push('Strong cash flow generation');
-  }
-
-  if (investments.length < 3) {
-    recommendations.push('Consider adding more properties to improve diversification');
-  }
-
-  if (investments.length > 10) {
-    strengths.push('Substantial portfolio size');
-  }
-
-  if (totalCashFlow > 100000) {
-    strengths.push('Positive cash flow generation');
-  }
+  // Efficiency Rating: 0-2%=1⭐, 2-4%=2⭐, 4-6%=3⭐, 6-8%=4⭐, 8%+=5⭐
+  const efficiencyRating = Math.min(Math.max(Math.ceil(efficiency / 2), 1), 5);
+  
+  // Average rating
+  const averageRating = (rentGeneratingRating + efficiencyRating) / 2;
 
   return {
-    overallScore,
-    grade,
-    diversificationScore,
-    performanceScore,
-    riskScore,
-    liquidityScore,
-    recommendations,
-    strengths,
-    concerns
+    realROIAll,
+    realROIRentGenerating,
+    totalCashAtHand,
+    efficiency,
+    efficiencyRating,
+    rentGeneratingRating,
+    averageRating
   };
 }
 
-function getGradeColor(grade: string) {
-  switch (grade) {
-    case 'A+':
-    case 'A': return 'text-green-600 bg-green-50 border-green-200';
-    case 'B+':
-    case 'B': return 'text-blue-600 bg-blue-50 border-blue-200';
-    case 'C+':
-    case 'C': return 'text-yellow-600 bg-yellow-50 border-yellow-200';
-    case 'D': return 'text-red-600 bg-red-50 border-red-200';
-    default: return 'text-gray-600 bg-gray-50 border-gray-200';
-  }
-}
+// Helper function to render star rating
+function StarRating({ rating }: { rating: number }) {
+  const stars = [];
+  const fullStars = Math.floor(rating);
+  const hasHalfStar = rating - fullStars >= 0.5;
 
-function getScoreColor(score: number) {
-  if (score >= 80) return 'text-green-600';
-  if (score >= 60) return 'text-yellow-600';
-  return 'text-red-600';
+  for (let i = 1; i <= 5; i++) {
+    if (i <= fullStars) {
+      stars.push(<Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />);
+    } else if (i === fullStars + 1 && hasHalfStar) {
+      stars.push(<Star key={i} className="w-4 h-4 fill-yellow-200 text-yellow-400" />);
+    } else {
+      stars.push(<Star key={i} className="w-4 h-4 text-gray-300" />);
+    }
+  }
+
+  return <div className="flex">{stars}</div>;
 }
 
 export function PortfolioHealthScore({ className }: PortfolioHealthScoreProps) {
@@ -175,145 +141,114 @@ export function PortfolioHealthScore({ className }: PortfolioHealthScoreProps) {
     return (
       <Card className={className}>
         <CardContent className="p-6">
-          <div className="text-center">Calculating portfolio health...</div>
+          <div className="text-center">Calculating portfolio metrics...</div>
         </CardContent>
       </Card>
     );
   }
 
-  const healthMetrics = calculatePortfolioHealth(investments);
+  const portfolioMetrics = calculatePortfolioMetrics(investments);
 
   return (
     <Card className={className}>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Shield className="w-5 h-5 text-primary" />
-          Portfolio Health Score
+          <Award className="w-5 h-5 text-primary" />
+          Portfolio Performance Metrics
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Overall Score */}
+        {/* Overall Rating */}
         <div className="text-center">
-          <div className="relative inline-flex items-center justify-center">
-            <div className="w-32 h-32 rounded-full border-8 border-gray-200 relative">
-              <div 
-                className={`absolute inset-0 rounded-full border-8 border-transparent ${getScoreColor(healthMetrics.overallScore)}`}
-                style={{
-                  borderTopColor: healthMetrics.overallScore >= 80 ? '#16a34a' : 
-                                   healthMetrics.overallScore >= 60 ? '#ca8a04' : '#dc2626',
-                  transform: `rotate(${(healthMetrics.overallScore / 100) * 360}deg)`,
-                  borderRightColor: healthMetrics.overallScore >= 25 ? 'currentColor' : 'transparent',
-                  borderBottomColor: healthMetrics.overallScore >= 50 ? 'currentColor' : 'transparent',
-                  borderLeftColor: healthMetrics.overallScore >= 75 ? 'currentColor' : 'transparent',
-                }}
-              />
-              <div className="absolute inset-4 rounded-full bg-white flex items-center justify-center flex-col">
-                <div className={`text-2xl font-bold ${getScoreColor(healthMetrics.overallScore)}`}>
-                  {healthMetrics.overallScore}
-                </div>
-                <div className="text-xs text-muted-foreground">/ 100</div>
-              </div>
-            </div>
+          <div className="mb-2">
+            <StarRating rating={portfolioMetrics.averageRating} />
           </div>
-          <div className="mt-4 flex items-center justify-center gap-2">
-            <Badge className={`${getGradeColor(healthMetrics.grade)} text-lg px-3 py-1`}>
-              Grade {healthMetrics.grade}
-            </Badge>
+          <div className="text-lg font-semibold text-foreground">
+            Overall Rating: {portfolioMetrics.averageRating.toFixed(1)}/5.0
+          </div>
+          <div className="text-sm text-muted-foreground">
+            Based on Real ROI and Efficiency metrics
           </div>
         </div>
 
         <Separator />
 
-        {/* Individual Metrics */}
+        {/* Portfolio Metrics */}
         <div className="space-y-4">
-          <h4 className="font-medium text-sm">Detailed Breakdown</h4>
+          <h4 className="font-medium text-sm">Portfolio Analysis</h4>
           
-          {[
-            { label: 'Performance', value: healthMetrics.performanceScore, icon: TrendingUp },
-            { label: 'Diversification', value: healthMetrics.diversificationScore, icon: BarChart3 },
-            { label: 'Risk Management', value: healthMetrics.riskScore, icon: Shield },
-            { label: 'Liquidity', value: healthMetrics.liquidityScore, icon: Target },
-          ].map((metric) => (
-            <div key={metric.label} className="space-y-2">
-              <div className="flex items-center justify-between text-sm">
-                <div className="flex items-center gap-2">
-                  <metric.icon className="w-4 h-4 text-muted-foreground" />
-                  <span>{metric.label}</span>
-                </div>
-                <span className={`font-medium ${getScoreColor(metric.value)}`}>
-                  {metric.value}/100
-                </span>
+          {/* Real ROI - All Properties */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Activity className="w-4 h-4 text-blue-500" />
+                <span className="text-sm font-medium">Real ROI (All Properties)</span>
               </div>
-              <Progress 
-                value={metric.value} 
-                className="h-2"
-                // @ts-ignore
-                indicatorClassName={
-                  metric.value >= 80 ? 'bg-green-500' : 
-                  metric.value >= 60 ? 'bg-yellow-500' : 'bg-red-500'
-                }
-              />
+              <span className={`font-semibold ${portfolioMetrics.realROIAll >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                {portfolioMetrics.realROIAll >= 0 ? '+' : ''}{portfolioMetrics.realROIAll.toFixed(1)}%/year
+              </span>
             </div>
-          ))}
+          </div>
+
+          {/* Real ROI - Rent Generating */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <TrendingUp className="w-4 h-4 text-green-500" />
+                <span className="text-sm font-medium">Real ROI (Rent Generating)</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className={`font-semibold ${portfolioMetrics.realROIRentGenerating >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {portfolioMetrics.realROIRentGenerating >= 0 ? '+' : ''}{portfolioMetrics.realROIRentGenerating.toFixed(1)}%/year
+                </span>
+                <StarRating rating={portfolioMetrics.rentGeneratingRating} />
+              </div>
+            </div>
+          </div>
+
+          {/* Total Cash at Hand */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <DollarSign className="w-4 h-4 text-emerald-500" />
+                <span className="text-sm font-medium">Total Cash at Hand (Annual)</span>
+              </div>
+              <span className={`font-semibold ${portfolioMetrics.totalCashAtHand >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                {formatCurrency(portfolioMetrics.totalCashAtHand * 100)}
+              </span>
+            </div>
+          </div>
+
+          {/* Efficiency */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Percent className="w-4 h-4 text-purple-500" />
+                <span className="text-sm font-medium">Efficiency (Yield/Market Value)</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className={`font-semibold ${portfolioMetrics.efficiency >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {portfolioMetrics.efficiency.toFixed(1)}%
+                </span>
+                <StarRating rating={portfolioMetrics.efficiencyRating} />
+              </div>
+            </div>
+          </div>
         </div>
 
         <Separator />
 
-        {/* Strengths */}
-        {healthMetrics.strengths.length > 0 && (
-          <div className="space-y-2">
-            <h4 className="font-medium text-sm flex items-center gap-2">
-              <CheckCircle className="w-4 h-4 text-green-500" />
-              Portfolio Strengths
-            </h4>
-            <div className="space-y-1">
-              {healthMetrics.strengths.map((strength, index) => (
-                <div key={index} className="text-sm text-muted-foreground flex items-start gap-2">
-                  <div className="w-1.5 h-1.5 bg-green-500 rounded-full mt-2 flex-shrink-0" />
-                  {strength}
-                </div>
-              ))}
-            </div>
+        {/* Rating Benchmarks */}
+        <div className="space-y-2">
+          <h4 className="font-medium text-sm">Star Rating Benchmarks</h4>
+          <div className="text-xs text-muted-foreground space-y-1">
+            <div>⭐ 1 Star: 0-2% annual return</div>
+            <div>⭐⭐ 2 Stars: 2-4% annual return</div>
+            <div>⭐⭐⭐ 3 Stars: 4-6% annual return</div>
+            <div>⭐⭐⭐⭐ 4 Stars: 6-8% annual return</div>
+            <div>⭐⭐⭐⭐⭐ 5 Stars: 8%+ annual return</div>
           </div>
-        )}
-
-        {/* Concerns */}
-        {healthMetrics.concerns.length > 0 && (
-          <div className="space-y-2">
-            <h4 className="font-medium text-sm flex items-center gap-2">
-              <AlertTriangle className="w-4 h-4 text-yellow-500" />
-              Areas of Concern
-            </h4>
-            <div className="space-y-1">
-              {healthMetrics.concerns.map((concern, index) => (
-                <div key={index} className="text-sm text-muted-foreground flex items-start gap-2">
-                  <div className="w-1.5 h-1.5 bg-yellow-500 rounded-full mt-2 flex-shrink-0" />
-                  {concern}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Recommendations */}
-        {healthMetrics.recommendations.length > 0 && (
-          <div className="space-y-2">
-            <h4 className="font-medium text-sm flex items-center gap-2">
-              <Target className="w-4 h-4 text-blue-500" />
-              Recommended Actions
-            </h4>
-            <div className="space-y-2">
-              {healthMetrics.recommendations.map((recommendation, index) => (
-                <div key={index} className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                  <div className="text-sm text-blue-800 flex items-start gap-2">
-                    <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-2 flex-shrink-0" />
-                    {recommendation}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        </div>
       </CardContent>
     </Card>
   );
