@@ -75,7 +75,7 @@ export default function TopBar() {
               {currentTitle}
             </span>
             <span className="hidden sm:inline text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full font-mono border border-emerald-200">
-              AA118
+              AB101
             </span>
             {location !== "/" && location !== "/dashboard" && (
               <>
