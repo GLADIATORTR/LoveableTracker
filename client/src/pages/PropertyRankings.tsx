@@ -65,6 +65,19 @@ function calculatePropertyRankings(investments: RealEstateInvestmentWithCategory
       // Combined score for overall ranking (weighted average)
       const score = (trueROI.annualizedROI * 0.3) + (capRate * 0.3) + (monthlyNetYield * 0.4);
       
+      // Add debugging for first property
+      if (property.propertyName === "Lupin way") {
+        console.log("Lupin Debug:", {
+          trueROI,
+          realMetrics,
+          purchasePrice: property.purchasePrice,
+          currentValue: property.currentValue,
+          monthlyRent: property.monthlyRent,
+          monthlyExpenses: property.monthlyExpenses,
+          monthlyMortgage: property.monthlyMortgage
+        });
+      }
+
       return {
         property,
         realROI: trueROI.annualizedROI, // Now includes cash flow!

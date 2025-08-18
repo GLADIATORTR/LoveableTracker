@@ -217,8 +217,18 @@ export function calculateTrueROI(
   
   // Calculate ROI percentages
   const totalROI = (totalReturn / originalPrice) * 100;
-  const annualizedROI = yearsHeld > 0 ? 
-    (Math.pow((totalReturn + originalPrice) / originalPrice, 1 / yearsHeld) - 1) * 100 : 0;
+  
+  // Handle negative total returns for annualized calculation
+  let annualizedROI = 0;
+  if (yearsHeld > 0) {
+    const finalValue = totalReturn + originalPrice;
+    if (finalValue > 0) {
+      annualizedROI = (Math.pow(finalValue / originalPrice, 1 / yearsHeld) - 1) * 100;
+    } else {
+      // For negative final values, calculate as negative annualized loss
+      annualizedROI = -Math.abs(totalROI / yearsHeld);
+    }
+  }
   
   // Break down returns by source
   const cashFlowReturn = (totalCashFlow / originalPrice) * 100;
