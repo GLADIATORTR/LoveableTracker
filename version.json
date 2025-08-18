@@ -1,7 +1,12 @@
 {
-  "version": "AA113",
-  "lastUpdated": "2025-08-17T21:57:09.084Z",
+  "version": "AA114",
+  "lastUpdated": "2025-08-18T01:39:11.014Z",
   "changes": [
+    {
+      "version": "AA114",
+      "date": "2025-08-18",
+      "description": "Added Economic Data tab with historical inflation, Case-Shiller index, and mortgage rates"
+    },
     {
       "version": "AA113",
       "date": "2025-08-17",
@@ -46,11 +51,6 @@
       "version": "AA105",
       "date": "2025-08-17",
       "description": "Fixed version display in preview and improved version update script"
-    },
-    {
-      "version": "AA104",
-      "date": "2025-08-17",
-      "description": "Fixed sidebar button label visibility and created automatic version management system"
     }
   ]
 }

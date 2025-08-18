@@ -17,6 +17,7 @@ import Charts from "@/pages/Charts";
 import Settings from "@/pages/Settings";
 import Dictionary from "@/pages/Dictionary";
 import PropertyComparison from "@/pages/PropertyComparison";
+import EconomicData from "@/pages/EconomicData";
 import NotFound from "@/pages/not-found";
 
 // Mobile Sidebar Overlay Component
@@ -51,6 +52,7 @@ function Router() {
       <Route path="/reports" component={Reports} />
       <Route path="/charts" component={Charts} />
       <Route path="/comparison" component={PropertyComparison} />
+      <Route path="/economic-data" component={EconomicData} />
       <Route path="/settings" component={Settings} />
       <Route path="/dictionary" component={Dictionary} />
       <Route component={NotFound} />

@@ -17,6 +17,7 @@ import {
   ChevronLeft,
   ChevronRight,
   TrendingUp,
+  Activity,
 } from "lucide-react";
 
 const navigation = [
@@ -25,6 +26,7 @@ const navigation = [
   { name: "TimeSeries Projections", href: "/reports", icon: BarChart3 },
   { name: "Charts", href: "/charts", icon: TrendingUp },
   { name: "Compare Properties", href: "/comparison", icon: Calculator },
+  { name: "Economic Data", href: "/economic-data", icon: Activity },
   { name: "Settings", href: "/settings", icon: Settings },
 ];
 
