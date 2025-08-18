@@ -17,12 +17,13 @@ interface PropertyRanking {
   realROI: number;
   realAppreciationRate: number;
   capRate: number;
-  annualNetYield: number;
   monthlyCashFlow: number;
+  monthlyRent: number;
+  marketValue: number;
   score: number;
 }
 
-type SortColumn = 'realROI' | 'capRate' | 'annualNetYield' | 'realAppreciationRate' | 'propertyName';
+type SortColumn = 'realROI' | 'capRate' | 'realAppreciationRate' | 'propertyName' | 'monthlyCashFlow' | 'monthlyRent' | 'marketValue';
 type SortOrder = 'asc' | 'desc';
 
 function calculatePropertyRankings(investments: RealEstateInvestmentWithCategory[]): PropertyRanking[] {
@@ -49,21 +50,20 @@ function calculatePropertyRankings(investments: RealEstateInvestmentWithCategory
       const capRate = property.currentValue > 0 ? 
         (((property.monthlyRent - property.monthlyExpenses - (property.monthlyMortgage || 0)) * 12) / property.currentValue) * 100 : 0;
       
-      // Annual Net Yield: Annual Cash Flow / Current Value * 100
+      // Monthly Cash Flow calculation
       const monthlyCashFlow = property.monthlyRent - property.monthlyExpenses - (property.monthlyMortgage || 0);
-      const annualNetYield = property.currentValue > 0 ? 
-        ((monthlyCashFlow * 12) / property.currentValue) * 100 : 0;
       
       // Combined score for overall ranking (weighted average)
-      const score = (trueROI.annualizedROI * 0.3) + (capRate * 0.3) + (annualNetYield * 0.4);
+      const score = (trueROI.annualizedROI * 0.4) + (capRate * 0.4) + (monthlyCashFlow / 100000 * 0.2);
 
       return {
         property,
         realROI: trueROI.annualizedROI, // Includes cash flow
         realAppreciationRate: realMetrics.realAppreciationRate,
         capRate,
-        annualNetYield,
         monthlyCashFlow,
+        monthlyRent: property.monthlyRent,
+        marketValue: property.currentValue,
         score
       };
     })
@@ -206,17 +206,6 @@ export default function PropertyRankingsTable() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => handleSort('annualNetYield')}
-                      className="h-auto p-0 font-semibold hover:bg-transparent text-purple-700"
-                    >
-                      Annual Net Yield
-                      {getSortIcon('annualNetYield')}
-                    </Button>
-                  </th>
-                  <th className="p-4 font-semibold text-right">
-                    <Button
-                      variant="ghost"
-                      size="sm"
                       onClick={() => handleSort('realAppreciationRate')}
                       className="h-auto p-0 font-semibold hover:bg-transparent text-orange-700"
                     >
@@ -224,7 +213,39 @@ export default function PropertyRankingsTable() {
                       {getSortIcon('realAppreciationRate')}
                     </Button>
                   </th>
-                  <th className="p-4 font-semibold text-right">Monthly Cash Flow</th>
+                  <th className="p-4 font-semibold text-right">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleSort('monthlyCashFlow')}
+                      className="h-auto p-0 font-semibold hover:bg-transparent text-green-700"
+                    >
+                      Monthly Cash Flow
+                      {getSortIcon('monthlyCashFlow')}
+                    </Button>
+                  </th>
+                  <th className="p-4 font-semibold text-right">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleSort('monthlyRent')}
+                      className="h-auto p-0 font-semibold hover:bg-transparent text-indigo-700"
+                    >
+                      Monthly Rent
+                      {getSortIcon('monthlyRent')}
+                    </Button>
+                  </th>
+                  <th className="p-4 font-semibold text-right">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleSort('marketValue')}
+                      className="h-auto p-0 font-semibold hover:bg-transparent text-slate-700"
+                    >
+                      Market Value
+                      {getSortIcon('marketValue')}
+                    </Button>
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -261,14 +282,6 @@ export default function PropertyRankingsTable() {
                     </td>
                     <td className="p-4 text-right">
                       <span className={`font-semibold ${
-                        ranking.annualNetYield >= 6 ? 'text-purple-600' : 
-                        ranking.annualNetYield >= 3.5 ? 'text-purple-500' : 'text-gray-600'
-                      }`}>
-                        {formatPercentage(ranking.annualNetYield)}
-                      </span>
-                    </td>
-                    <td className="p-4 text-right">
-                      <span className={`font-semibold ${
                         ranking.realAppreciationRate >= 4 ? 'text-orange-600' : 
                         ranking.realAppreciationRate >= 2 ? 'text-orange-500' : 'text-gray-600'
                       }`}>
@@ -284,7 +297,29 @@ export default function PropertyRankingsTable() {
                         }`}>
                           {formatCurrency(ranking.monthlyCashFlow)}
                         </span>
-                        <span className="text-xs text-muted-foreground">per month</span>
+                        <span className="text-xs text-muted-foreground">monthly</span>
+                      </div>
+                    </td>
+                    <td className="p-4 text-right">
+                      <div className="flex flex-col items-end">
+                        <span className={`font-semibold ${
+                          ranking.monthlyRent >= 500000 ? 'text-indigo-600' : 
+                          ranking.monthlyRent >= 200000 ? 'text-indigo-500' : 'text-gray-600'
+                        }`}>
+                          {formatCurrency(ranking.monthlyRent)}
+                        </span>
+                        <span className="text-xs text-muted-foreground">monthly</span>
+                      </div>
+                    </td>
+                    <td className="p-4 text-right">
+                      <div className="flex flex-col items-end">
+                        <span className={`font-semibold ${
+                          ranking.marketValue >= 200000000 ? 'text-slate-600' : 
+                          ranking.marketValue >= 100000000 ? 'text-slate-500' : 'text-gray-600'
+                        }`}>
+                          {formatCurrency(ranking.marketValue, true)}
+                        </span>
+                        <span className="text-xs text-muted-foreground">current</span>
                       </div>
                     </td>
                   </tr>
