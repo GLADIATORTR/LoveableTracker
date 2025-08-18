@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search, Home, Building, TrendingUp, Calculator, DollarSign, Users, MapPin, Calendar, FileText } from "lucide-react";
+import { Search, Home, Building, TrendingUp, Calculator, DollarSign, Users, MapPin, Calendar, FileText, Filter } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -157,6 +157,38 @@ const dictionaryEntries: DictionaryEntry[] = [
     category: "Property Classification",
     icon: Building,
     relatedTerms: ["Diversification", "Property Type", "Portfolio Analysis"]
+  },
+  {
+    id: "19",
+    term: "Portfolio IRR (Internal Rate of Return)",
+    definition: "The average annual return rate across all properties in the portfolio, calculated using advanced cash flow projections. Uses Newton-Raphson method to determine the discount rate that makes NPV equal to zero. Accounts for purchase price, rental income, expenses, and projected future sale value over 10-year periods.",
+    category: "Portfolio Metrics",
+    icon: TrendingUp,
+    relatedTerms: ["NPV", "Cash Flow", "Discount Rate", "Investment Return"]
+  },
+  {
+    id: "20",
+    term: "Total NPV (Net Present Value)",
+    definition: "Sum of all individual property NPVs using 8% discount rate. Represents the total dollar value created by the portfolio above the minimum required return. Positive NPV indicates wealth creation; negative suggests underperformance vs alternative investments.",
+    category: "Portfolio Metrics",
+    icon: DollarSign,
+    relatedTerms: ["IRR", "Discount Rate", "Portfolio Value", "Investment Analysis"]
+  },
+  {
+    id: "21",
+    term: "Average NPV Index",
+    definition: "Portfolio-wide profitability index calculated as Total NPV ÷ Total Initial Investment. Values above 1.0 indicate value creation, while below 1.0 suggests capital destruction. Measures efficiency of capital allocation across the portfolio.",
+    category: "Portfolio Metrics",
+    icon: Calculator,
+    relatedTerms: ["NPV", "Profitability Index", "Capital Efficiency", "Investment Returns"]
+  },
+  {
+    id: "22",
+    term: "Risk Score",
+    definition: "Composite risk assessment (0-100 scale) based on cap rate, property age, market stability, and cash flow consistency. Lower scores indicate less risky investments. Calculated using cap rate performance, holding period length, and market volatility factors.",
+    category: "Portfolio Metrics",
+    icon: TrendingUp,
+    relatedTerms: ["Cap Rate", "Portfolio Risk", "Investment Risk", "Market Volatility"]
   }
 ];
 
@@ -164,7 +196,18 @@ export default function Dictionary() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
-  const categories = Array.from(new Set(dictionaryEntries.map(entry => entry.category)));
+  // Predefined categories in the desired order
+  const categories = [
+    "Financial Metrics",
+    "Portfolio Metrics", 
+    "Inflation Analysis",
+    "Economic Indicators",
+    "Mortgage",
+    "Market Analysis",
+    "Property Management",
+    "Property Data",
+    "Property Classification"
+  ];
 
   const filteredEntries = dictionaryEntries.filter(entry => {
     const matchesSearch = entry.term.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -199,7 +242,7 @@ export default function Dictionary() {
       </div>
 
       {/* Search and Filters */}
-      <div className="flex flex-col sm:flex-row gap-4">
+      <div className="flex flex-col gap-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
@@ -211,24 +254,30 @@ export default function Dictionary() {
           />
         </div>
         
-        <div className="flex flex-wrap gap-2">
-          <Badge
-            variant={selectedCategory === null ? "default" : "secondary"}
-            className="cursor-pointer"
-            onClick={() => setSelectedCategory(null)}
-          >
-            All Categories
-          </Badge>
-          {categories.map(category => (
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center gap-2">
+            <Filter className="w-4 h-4 text-muted-foreground" />
+            <span className="text-sm font-medium text-muted-foreground">Investment Strategy Filters:</span>
+          </div>
+          <div className="flex flex-wrap gap-2">
             <Badge
-              key={category}
-              variant={selectedCategory === category ? "default" : "secondary"}
-              className="cursor-pointer"
-              onClick={() => setSelectedCategory(category)}
+              variant={selectedCategory === null ? "default" : "secondary"}
+              className="cursor-pointer hover:bg-primary/80"
+              onClick={() => setSelectedCategory(null)}
             >
-              {category}
+              All Categories
             </Badge>
-          ))}
+            {categories.map(category => (
+              <Badge
+                key={category}
+                variant={selectedCategory === category ? "default" : "secondary"}
+                className="cursor-pointer hover:bg-primary/80"
+                onClick={() => setSelectedCategory(category)}
+              >
+                {category}
+              </Badge>
+            ))}
+          </div>
         </div>
       </div>
 
