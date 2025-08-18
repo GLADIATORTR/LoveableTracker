@@ -17,12 +17,12 @@ interface PropertyRanking {
   realROI: number;
   realAppreciationRate: number;
   capRate: number;
-  monthlyNetYield: number;
+  annualNetYield: number;
   monthlyCashFlow: number;
   score: number;
 }
 
-type SortColumn = 'realROI' | 'capRate' | 'monthlyNetYield' | 'realAppreciationRate' | 'propertyName';
+type SortColumn = 'realROI' | 'capRate' | 'annualNetYield' | 'realAppreciationRate' | 'propertyName';
 type SortOrder = 'asc' | 'desc';
 
 function calculatePropertyRankings(investments: RealEstateInvestmentWithCategory[]): PropertyRanking[] {
@@ -49,20 +49,20 @@ function calculatePropertyRankings(investments: RealEstateInvestmentWithCategory
       const capRate = property.currentValue > 0 ? 
         (((property.monthlyRent - property.monthlyExpenses - (property.monthlyMortgage || 0)) * 12) / property.currentValue) * 100 : 0;
       
-      // Monthly Net Yield: Monthly Cash Flow / Current Value * 100
+      // Annual Net Yield: Annual Cash Flow / Current Value * 100
       const monthlyCashFlow = property.monthlyRent - property.monthlyExpenses - (property.monthlyMortgage || 0);
-      const monthlyNetYield = property.currentValue > 0 ? 
-        (monthlyCashFlow / property.currentValue) * 100 : 0;
+      const annualNetYield = property.currentValue > 0 ? 
+        ((monthlyCashFlow * 12) / property.currentValue) * 100 : 0;
       
       // Combined score for overall ranking (weighted average)
-      const score = (trueROI.annualizedROI * 0.3) + (capRate * 0.3) + (monthlyNetYield * 0.4);
+      const score = (trueROI.annualizedROI * 0.3) + (capRate * 0.3) + (annualNetYield * 0.4);
 
       return {
         property,
         realROI: trueROI.annualizedROI, // Includes cash flow
         realAppreciationRate: realMetrics.realAppreciationRate,
         capRate,
-        monthlyNetYield,
+        annualNetYield,
         monthlyCashFlow,
         score
       };
@@ -206,11 +206,11 @@ export default function PropertyRankingsTable() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => handleSort('monthlyNetYield')}
+                      onClick={() => handleSort('annualNetYield')}
                       className="h-auto p-0 font-semibold hover:bg-transparent text-purple-700"
                     >
-                      Monthly Net Yield
-                      {getSortIcon('monthlyNetYield')}
+                      Annual Net Yield
+                      {getSortIcon('annualNetYield')}
                     </Button>
                   </th>
                   <th className="p-4 font-semibold text-right">
@@ -261,10 +261,10 @@ export default function PropertyRankingsTable() {
                     </td>
                     <td className="p-4 text-right">
                       <span className={`font-semibold ${
-                        ranking.monthlyNetYield >= 0.5 ? 'text-purple-600' : 
-                        ranking.monthlyNetYield >= 0.3 ? 'text-purple-500' : 'text-gray-600'
+                        ranking.annualNetYield >= 6 ? 'text-purple-600' : 
+                        ranking.annualNetYield >= 3.5 ? 'text-purple-500' : 'text-gray-600'
                       }`}>
-                        {formatPercentage(ranking.monthlyNetYield)}
+                        {formatPercentage(ranking.annualNetYield)}
                       </span>
                     </td>
                     <td className="p-4 text-right">

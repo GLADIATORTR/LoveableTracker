@@ -17,7 +17,6 @@ import Charts from "@/pages/Charts";
 import Settings from "@/pages/Settings";
 import Dictionary from "@/pages/Dictionary";
 import PropertyComparison from "@/pages/PropertyComparison";
-import PropertyRankings from "@/pages/PropertyRankings";
 import PropertyRankingsTable from "@/pages/PropertyRankingsTable";
 import EconomicData from "@/pages/EconomicData";
 import InvestmentStrategy from "@/pages/InvestmentStrategy";
@@ -55,8 +54,7 @@ function Router() {
       <Route path="/reports" component={Reports} />
       <Route path="/charts" component={Charts} />
       <Route path="/comparison" component={PropertyComparison} />
-      <Route path="/rankings" component={PropertyRankings} />
-      <Route path="/rankings-table" component={PropertyRankingsTable} />
+      <Route path="/rankings" component={PropertyRankingsTable} />
       <Route path="/economic-data" component={EconomicData} />
       <Route path="/strategy" component={InvestmentStrategy} />
       <Route path="/settings" component={Settings} />
