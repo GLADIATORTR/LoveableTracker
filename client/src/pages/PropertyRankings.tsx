@@ -116,7 +116,7 @@ function RankingCard({ ranking, index, sortBy }: RankingCardProps) {
   const getHighlightedValue = () => {
     switch (sortBy) {
       case 'realROI':
-        return `${ranking.realROI >= 0 ? '+' : ''}${ranking.realROI.toFixed(1)}%`;
+        return `${ranking.realAppreciationRate >= 0 ? '+' : ''}${ranking.realAppreciationRate.toFixed(1)}%/yr`;
       case 'capRate':
         return `${ranking.capRate.toFixed(1)}%`;
       case 'monthlyNetYield':
@@ -176,8 +176,8 @@ function RankingCard({ ranking, index, sortBy }: RankingCardProps) {
               <Activity className="w-3 h-3 mr-1" />
               Real ROI Annualized
             </div>
-            <div className={`font-semibold text-sm ${ranking.realROI >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-              {ranking.realROI >= 0 ? '+' : ''}{ranking.realROI.toFixed(1)}%
+            <div className={`font-semibold text-sm ${ranking.realAppreciationRate >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              {ranking.realAppreciationRate >= 0 ? '+' : ''}{ranking.realAppreciationRate.toFixed(1)}%/yr
             </div>
           </div>
           
@@ -293,7 +293,7 @@ export default function PropertyRankings() {
   // Sort based on selected criteria
   const sortedRankings = [...rankings].sort((a, b) => {
     switch (sortBy) {
-      case 'realROI': return b.realROI - a.realROI;
+      case 'realROI': return b.realAppreciationRate - a.realAppreciationRate;
       case 'capRate': return b.capRate - a.capRate;
       case 'monthlyNetYield': return b.monthlyNetYield - a.monthlyNetYield;
       case 'realAppreciation': return b.realAppreciationRate - a.realAppreciationRate;
