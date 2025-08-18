@@ -280,6 +280,14 @@ export class DatabaseStorage implements IStorage {
     const totalEquity = investments.reduce((sum, inv) => sum + inv.netEquity, 0);
     const totalMonthlyRent = investments.reduce((sum, inv) => sum + (inv.monthlyRent || 0), 0);
     
+    // Calculate net cash flow: Monthly Rent - Monthly Expenses - Monthly Mortgage
+    const netCashFlow = investments.reduce((sum, inv) => {
+      const monthlyRent = inv.monthlyRent || 0;
+      const monthlyExpenses = inv.monthlyExpenses || 0;
+      const monthlyMortgage = inv.monthlyMortgage || 0;
+      return sum + (monthlyRent - monthlyExpenses - monthlyMortgage);
+    }, 0);
+    
     const totalInvestment = investments.reduce((sum, inv) => sum + inv.purchasePrice, 0);
     
     return {
@@ -289,6 +297,7 @@ export class DatabaseStorage implements IStorage {
       averageROI: totalInvestment > 0 ? Math.round(((totalPortfolioValue - totalInvestment) / totalInvestment) * 100) : 0,
       totalNetEquity: totalEquity,
       totalMonthlyRent,
+      netCashFlow,
       topPerformingProperties: investments
         .sort((a, b) => b.currentValue - b.purchasePrice - (a.currentValue - a.purchasePrice))
         .slice(0, 3)

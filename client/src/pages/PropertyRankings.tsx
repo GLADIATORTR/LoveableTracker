@@ -130,7 +130,7 @@ function RankingCard({ ranking, index, sortBy }: RankingCardProps) {
 
   const getHighlightedLabel = () => {
     switch (sortBy) {
-      case 'realROI': return 'Real ROI';
+      case 'realROI': return 'Real ROI Annualized';
       case 'capRate': return 'Cap Rate';
       case 'monthlyNetYield': return 'Monthly Net Yield';
       case 'realAppreciation': return 'Real Appreciation Rate';
@@ -174,7 +174,7 @@ function RankingCard({ ranking, index, sortBy }: RankingCardProps) {
           <div>
             <div className="flex items-center text-xs text-muted-foreground mb-1">
               <Activity className="w-3 h-3 mr-1" />
-              Real ROI
+              Real ROI Annualized
             </div>
             <div className={`font-semibold text-sm ${ranking.realROI >= 0 ? 'text-green-600' : 'text-red-600'}`}>
               {ranking.realROI >= 0 ? '+' : ''}{ranking.realROI.toFixed(1)}%
@@ -326,7 +326,7 @@ export default function PropertyRankings() {
             size="sm"
             onClick={() => setSortBy('realROI')}
           >
-            Real ROI
+            Real ROI Annualized
           </Button>
           <Button
             variant={sortBy === 'capRate' ? 'default' : 'outline'}
