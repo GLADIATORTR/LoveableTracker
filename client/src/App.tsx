@@ -20,6 +20,7 @@ import PropertyComparison from "@/pages/PropertyComparison";
 import PropertyRankingsTable from "@/pages/PropertyRankingsTable";
 import EconomicData from "@/pages/EconomicData";
 import InvestmentStrategy from "@/pages/InvestmentStrategy";
+import MIRR from "@/pages/MIRR";
 import NotFound from "@/pages/not-found";
 
 // Mobile Sidebar Overlay Component
@@ -57,6 +58,7 @@ function Router() {
       <Route path="/rankings" component={PropertyRankingsTable} />
       <Route path="/economic-data" component={EconomicData} />
       <Route path="/strategy" component={InvestmentStrategy} />
+      <Route path="/mirr" component={MIRR} />
       <Route path="/settings" component={Settings} />
       <Route path="/dictionary" component={Dictionary} />
       <Route component={NotFound} />
