@@ -139,8 +139,175 @@ function MIRRInfoModal() {
   );
 }
 
-// Cell component with color coding
-function MIRRCell({ mirr, showMonthly = false }: { mirr: MIRRResult; showMonthly?: boolean }) {
+// Detailed MIRR Calculation Modal
+function MIRRDetailModal({ mirr, title, property }: { 
+  mirr: MIRRResult; 
+  title: string; 
+  property: RealEstateInvestmentWithCategory;
+}) {
+  const value = mirr.mirrAnnual;
+  const formattedValue = formatMIRR(value);
+
+  if (!mirr.isValid || !isFinite(value)) {
+    return null;
+  }
+
+  const financeRate = 0.04 / 12; // 4% APR monthly
+  const reinvestRate = 0.05 / 12; // 5% APR monthly
+  const n = mirr.cashFlows.length - 1;
+
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button variant="ghost" className="h-auto p-1 text-xs hover:bg-muted">
+          {formattedValue}
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Calculator className="w-5 h-5" />
+            MIRR Calculation Details: {property.propertyName}
+          </DialogTitle>
+          <p className="text-sm text-muted-foreground">{title}</p>
+        </DialogHeader>
+        
+        <div className="space-y-6">
+          {/* Summary */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Calculation Summary</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div>
+                  <p className="text-sm font-medium">MIRR (Annual)</p>
+                  <p className="text-xl font-bold text-green-600">{formattedValue}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium">MIRR (Monthly)</p>
+                  <p className="text-lg">{formatMIRR(mirr.mirrMonthly)}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium">Time Period</p>
+                  <p className="text-lg">{n} months</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium">Cash Flows</p>
+                  <p className="text-lg">{mirr.cashFlows.length} periods</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Formula */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">MIRR Formula Applied</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="bg-muted p-4 rounded-lg font-mono text-sm space-y-2">
+                <div>1. PV_negative = Σ min(CF_t, 0) / (1 + finance_rate)^t</div>
+                <div>   = {formatCurrency(mirr.pvNegative)}</div>
+                <div className="mt-2">2. FV_positive = Σ max(CF_t, 0) × (1 + reinvest_rate)^(n-t)</div>
+                <div>   = {formatCurrency(mirr.fvPositive)}</div>
+                <div className="mt-2">3. MIRR_monthly = (|FV_pos / PV_neg|)^(1/n) - 1</div>
+                <div>   = (|{formatCurrency(mirr.fvPositive)} / {formatCurrency(mirr.pvNegative)}|)^(1/{n}) - 1</div>
+                <div>   = {formatMIRR(mirr.mirrMonthly)} monthly</div>
+                <div className="mt-2">4. MIRR_annual = (1 + MIRR_monthly)^12 - 1</div>
+                <div>   = (1 + {(mirr.mirrMonthly * 100).toFixed(4)}%)^12 - 1</div>
+                <div>   = <strong>{formattedValue} annual</strong></div>
+              </div>
+              
+              <div className="mt-4 text-sm text-muted-foreground">
+                <p><strong>Parameters used:</strong></p>
+                <ul className="ml-4 space-y-1">
+                  <li>• Finance rate: {(financeRate * 100).toFixed(4)}% monthly ({(financeRate * 12 * 100).toFixed(1)}% APR)</li>
+                  <li>• Reinvestment rate: {(reinvestRate * 100).toFixed(4)}% monthly ({(reinvestRate * 12 * 100).toFixed(1)}% APR)</li>
+                </ul>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Cash Flow Breakdown */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Cash Flow Analysis</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="max-h-60 overflow-y-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Period</TableHead>
+                      <TableHead className="text-right">Cash Flow</TableHead>
+                      <TableHead className="text-right">Type</TableHead>
+                      <TableHead className="text-right">PV Factor</TableHead>
+                      <TableHead className="text-right">FV Factor</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {mirr.cashFlows.map((cf, index) => {
+                      const isNegative = cf < 0;
+                      const pvFactor = Math.pow(1 + financeRate, index);
+                      const fvFactor = Math.pow(1 + reinvestRate, n - index);
+                      
+                      return (
+                        <TableRow key={index}>
+                          <TableCell>{index === 0 ? "Initial" : `Month ${index}`}</TableCell>
+                          <TableCell className={`text-right ${isNegative ? 'text-red-600' : 'text-green-600'}`}>
+                            {formatCurrency(cf)}
+                          </TableCell>
+                          <TableCell className="text-right text-xs">
+                            {isNegative ? 'Outflow' : 'Inflow'}
+                          </TableCell>
+                          <TableCell className="text-right text-xs">
+                            {isNegative ? pvFactor.toFixed(4) : '-'}
+                          </TableCell>
+                          <TableCell className="text-right text-xs">
+                            {!isNegative ? fvFactor.toFixed(4) : '-'}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+              
+              <div className="mt-4 p-3 bg-muted rounded-lg text-sm">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="font-medium text-red-600">Negative Cash Flows (Present Value)</p>
+                    <p className="text-xs text-muted-foreground">Discounted at {(financeRate * 12 * 100).toFixed(1)}% APR</p>
+                    <p className="font-bold">{formatCurrency(mirr.pvNegative)}</p>
+                  </div>
+                  <div>
+                    <p className="font-medium text-green-600">Positive Cash Flows (Future Value)</p>
+                    <p className="text-xs text-muted-foreground">Compounded at {(reinvestRate * 12 * 100).toFixed(1)}% APR</p>
+                    <p className="font-bold">{formatCurrency(mirr.fvPositive)}</p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// Cell component with color coding and detailed popup
+function MIRRCell({ 
+  mirr, 
+  title, 
+  property, 
+  showMonthly = false 
+}: { 
+  mirr: MIRRResult; 
+  title: string;
+  property: RealEstateInvestmentWithCategory;
+  showMonthly?: boolean;
+}) {
   const value = showMonthly ? mirr.mirrMonthly : mirr.mirrAnnual;
   const formattedValue = formatMIRR(value);
   
@@ -158,7 +325,7 @@ function MIRRCell({ mirr, showMonthly = false }: { mirr: MIRRResult; showMonthly
 
   return (
     <TableCell className={`text-center ${colorClass}`}>
-      {formattedValue}
+      <MIRRDetailModal mirr={mirr} title={title} property={property} />
     </TableCell>
   );
 }
@@ -317,7 +484,7 @@ export default function MIRRPage() {
             Property MIRR Comparison
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            All MIRR values are annualized. Colors: 
+            All MIRR values are annualized. <strong>Click any MIRR value to see detailed calculations.</strong> Colors: 
             <span className="text-green-600 font-semibold ml-1">Excellent (&gt;15%)</span>,
             <span className="text-green-500 font-medium ml-1">Good (10-15%)</span>,
             <span className="text-blue-600 ml-1">Fair (5-10%)</span>,
@@ -354,11 +521,11 @@ export default function MIRRPage() {
                         )}
                       </div>
                     </TableCell>
-                    <MIRRCell mirr={data.purchaseToToday} />
-                    <MIRRCell mirr={data.todayPlus10Years} />
-                    <MIRRCell mirr={data.todayPlus20Years} />
-                    <MIRRCell mirr={data.todayPlus30Years} />
-                    <MIRRCell mirr={data.todayPlus40Years} />
+                    <MIRRCell mirr={data.purchaseToToday} title="Purchase → Today" property={data.property} />
+                    <MIRRCell mirr={data.todayPlus10Years} title="Today → +10 Years" property={data.property} />
+                    <MIRRCell mirr={data.todayPlus20Years} title="Today → +20 Years" property={data.property} />
+                    <MIRRCell mirr={data.todayPlus30Years} title="Today → +30 Years" property={data.property} />
+                    <MIRRCell mirr={data.todayPlus40Years} title="Today → +40 Years" property={data.property} />
                   </TableRow>
                 ))}
               </TableBody>
