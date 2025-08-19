@@ -259,7 +259,7 @@ function CalculationExample({ property }: { property: RealEstateInvestmentWithCa
           <CardContent>
             <div className="space-y-2 text-sm max-h-96 overflow-y-auto">
               {cashFlowDetails.map((detail, i) => (
-                <div key={i} className={`p-2 rounded ${i === 0 ? 'bg-red-50' : i <= yearsHeld ? 'bg-green-50' : 'bg-blue-50'}`}>
+                <div key={i} className={`p-2 rounded ${i === 0 ? 'bg-red-50' : 'bg-blue-50'}`}>
                   <span className="font-mono text-xs">{detail}</span>
                 </div>
               ))}
