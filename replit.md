@@ -9,7 +9,10 @@ Real Estate Financials is a comprehensive investment management platform providi
 - Real ROI Annualized now correctly includes cash flow calculations and displays different values from Real Appreciation Rate  
 - Properties with rental income (like Levent: $4,166/month) now show significantly higher Real ROI than appreciation-only metrics
 - Enhanced debug output for ROI calculations to verify cash flow inclusion
-- Cleaned TopBar UI - removed search and notification elements, fixed popup visibility with white backgrounds
+- **RESOLVED: Mobile UI white background issue** - Fixed TopBar and MobileBottomNav using `bg-background/95` and `bg-card/95` instead of hardcoded white
+- Added interactive IRR/NPV calculation examples with detailed step-by-step breakdowns for 12 Hillcrest property
+- Enhanced Dictionary with Portfolio IRR, Total NPV, Avg NPV Index, and Risk Score definitions
+- Implemented Investment Strategy filter categories with proper organization and theming
 
 ## Strategic Product Recommendations (January 2025)
 Following comprehensive product review with cross-functional team analysis:
