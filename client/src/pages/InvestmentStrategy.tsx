@@ -164,58 +164,53 @@ function analyzeInvestment(property: RealEstateInvestmentWithCategory): Investme
 // Detailed calculation example component
 function CalculationExample({ property }: { property: RealEstateInvestmentWithCategory }) {
   const currentYear = 2025;
-  const purchaseYear = new Date(property.purchaseDate).getFullYear();
-  const yearsHeld = currentYear - purchaseYear;
   
-  // Calculate detailed metrics
+  // Calculate detailed metrics (current situation)
   const monthlyRent = property.monthlyRent || 0;
   const monthlyExpenses = property.monthlyExpenses || 0;
   const monthlyMortgage = property.monthlyMortgage || 0;
   const monthlyCashFlow = monthlyRent - monthlyExpenses - monthlyMortgage;
+  const currentAnnualCashFlow = monthlyCashFlow * 12;
   
-  // Generate detailed cash flow projections
+  // Forward-looking projections only (no historical data)
   const projectionYears = 10;
-  const cashFlows = [-property.purchasePrice];
-  const cashFlowDetails = [`Year 0 (Purchase): -${formatCurrency(property.purchasePrice)}`];
+  const cashFlows = [-property.currentValue]; // Start with current value as investment
+  const cashFlowDetails = [`Year 0 (Today): -${formatCurrency(property.currentValue)} (Current Investment)`];
   
-  // Historical cash flows
-  for (let i = 1; i <= yearsHeld; i++) {
-    const annualCashFlow = monthlyCashFlow * 12;
-    cashFlows.push(annualCashFlow);
-    cashFlowDetails.push(`Year ${i} (Historical): ${formatCurrency(annualCashFlow)} = ${formatCurrency(monthlyCashFlow)} × 12 months`);
+  // Future projections with inflation-adjusted growth
+  const inflationRate = 0.03; // 3% inflation assumption
+  for (let i = 1; i <= projectionYears; i++) {
+    // Real cash flow stays constant in purchasing power terms
+    // Nominal cash flow grows with inflation
+    const nominalCashFlow = currentAnnualCashFlow * Math.pow(1 + inflationRate, i);
+    cashFlows.push(nominalCashFlow);
+    cashFlowDetails.push(`Year ${i}: ${formatCurrency(nominalCashFlow)} = ${formatCurrency(currentAnnualCashFlow)} × ${Math.pow(1 + inflationRate, i).toFixed(3)} inflation`);
   }
   
-  // Future projections with growth
-  const cashFlowGrowthRate = 0.03;
-  for (let i = yearsHeld + 1; i <= projectionYears + yearsHeld; i++) {
-    const growthFactor = Math.pow(1 + cashFlowGrowthRate, i - yearsHeld);
-    const adjustedCashFlow = monthlyCashFlow * 12 * growthFactor;
-    cashFlows.push(adjustedCashFlow);
-    cashFlowDetails.push(`Year ${i} (Projected): ${formatCurrency(adjustedCashFlow)} = ${formatCurrency(monthlyCashFlow * 12)} × ${growthFactor.toFixed(3)} growth`);
-  }
-  
-  // Final sale value
-  const appreciationRate = 0.035;
-  const appreciationFactor = Math.pow(1 + appreciationRate, projectionYears);
+  // Final sale value with real appreciation
+  const realAppreciationRate = 0.035; // 3.5% real appreciation
+  const nominalAppreciationRate = (1 + realAppreciationRate) * (1 + inflationRate) - 1; // Fisher equation
+  const appreciationFactor = Math.pow(1 + nominalAppreciationRate, projectionYears);
   const futureValue = property.currentValue * appreciationFactor;
   cashFlows[cashFlows.length - 1] += futureValue;
-  cashFlowDetails[cashFlowDetails.length - 1] += ` + Sale: ${formatCurrency(futureValue)} = ${formatCurrency(property.currentValue)} × ${appreciationFactor.toFixed(3)}`;
+  cashFlowDetails[cashFlowDetails.length - 1] += ` + Sale: ${formatCurrency(futureValue)} = ${formatCurrency(property.currentValue)} × ${appreciationFactor.toFixed(3)} (${(nominalAppreciationRate * 100).toFixed(1)}% nominal)`;
   
   // Calculate IRR and NPV
   const irr = calculateIRR(cashFlows);
-  const discountRate = 0.08;
-  const npv = calculateNPV(cashFlows, discountRate);
+  const realDiscountRate = 0.08; // 8% real discount rate
+  const npv = calculateNPV(cashFlows, realDiscountRate);
   const npvIndex = npv / Math.abs(cashFlows[0]);
   
-  // NPV calculation breakdown
+  // NPV calculation breakdown with proper real discounting
   const npvDetails = cashFlows.map((cf, i) => {
-    const discountFactor = Math.pow(1 + discountRate, i);
+    const discountFactor = Math.pow(1 + realDiscountRate, i);
     const presentValue = cf / discountFactor;
     return {
       year: i,
       cashFlow: cf,
       discountFactor: discountFactor,
-      presentValue: presentValue
+      presentValue: presentValue,
+      realCashFlow: i === 0 ? cf : cf / Math.pow(1 + inflationRate, i) // Convert back to real terms for display
     };
   });
 
@@ -241,11 +236,17 @@ function CalculationExample({ property }: { property: RealEstateInvestmentWithCa
             <div className="font-semibold">{formatCurrency(monthlyExpenses)}</div>
           </div>
         </div>
-        <div className="mt-2 text-sm">
-          <span className="text-blue-600">Net Monthly Cash Flow:</span>
-          <span className="font-semibold ml-2">
-            {formatCurrency(monthlyCashFlow)} = {formatCurrency(monthlyRent)} - {formatCurrency(monthlyExpenses)} - {formatCurrency(monthlyMortgage)}
-          </span>
+        <div className="mt-2 text-sm space-y-1">
+          <div>
+            <span className="text-blue-600">Net Monthly Cash Flow:</span>
+            <span className="font-semibold ml-2">
+              {formatCurrency(monthlyCashFlow)} = {formatCurrency(monthlyRent)} - {formatCurrency(monthlyExpenses)} - {formatCurrency(monthlyMortgage)}
+            </span>
+          </div>
+          <div>
+            <span className="text-blue-600">Annual Cash Flow (Current):</span>
+            <span className="font-semibold ml-2">{formatCurrency(currentAnnualCashFlow)}</span>
+          </div>
         </div>
       </div>
 
@@ -263,8 +264,9 @@ function CalculationExample({ property }: { property: RealEstateInvestmentWithCa
                 </div>
               ))}
               <div className="mt-3 p-2 bg-gray-100 rounded">
-                <div className="font-semibold">Total Cash Flows: {cashFlows.length} periods</div>
-                <div className="text-xs">Growth Rate: 3% annually | Appreciation: 3.5% annually</div>
+                <div className="font-semibold">Forward-Looking Analysis: {cashFlows.length - 1} projection years</div>
+                <div className="text-xs">Inflation: 3% annually | Real Appreciation: 3.5% annually</div>
+                <div className="text-xs">Nominal Appreciation: {((1.035 * 1.03 - 1) * 100).toFixed(1)}% annually</div>
               </div>
             </div>
           </CardContent>
@@ -282,6 +284,11 @@ function CalculationExample({ property }: { property: RealEstateInvestmentWithCa
                   <div className="font-mono text-xs">
                     Year {detail.year}: {formatCurrency(detail.presentValue)} = {formatCurrency(detail.cashFlow)} ÷ {detail.discountFactor.toFixed(3)}
                   </div>
+                  {i > 0 && (
+                    <div className="font-mono text-xs text-gray-600 mt-1">
+                      Real value: {formatCurrency(detail.realCashFlow)} (inflation-adjusted)
+                    </div>
+                  )}
                 </div>
               ))}
               <div className="mt-3 p-3 bg-blue-100 rounded border-2 border-blue-300">
@@ -317,7 +324,16 @@ function CalculationExample({ property }: { property: RealEstateInvestmentWithCa
               <div><strong>Formula:</strong> Find r where Σ(CF_t / (1+r)^t) = 0</div>
               <div><strong>Interpretation:</strong> {irr > 10 ? 'Excellent' : irr > 8 ? 'Good' : irr > 6 ? 'Fair' : 'Poor'} return vs. 8% benchmark</div>
               <div className="p-2 bg-yellow-50 rounded">
-                <strong>Cash Flow Pattern:</strong> Initial investment of {formatCurrency(Math.abs(cashFlows[0]))}, then {yearsHeld} years of historical cash flows, plus {projectionYears} years of projected returns including final sale.
+                <strong>Forward-Looking Analysis:</strong> Current investment of {formatCurrency(Math.abs(cashFlows[0]))}, then {projectionYears} years of inflation-adjusted cash flows including final sale.
+              </div>
+              <div className="p-2 bg-blue-50 rounded mt-2">
+                <strong>Key Assumptions:</strong>
+                <div className="text-xs mt-1 space-y-1">
+                  <div>• Real cash flows remain constant (purchasing power preserved)</div>
+                  <div>• Nominal cash flows grow at 3% inflation rate</div>
+                  <div>• Real discount rate: 8% (reflects real opportunity cost)</div>
+                  <div>• Property appreciates at 3.5% real + 3% inflation = 6.6% nominal</div>
+                </div>
               </div>
             </div>
           </div>
