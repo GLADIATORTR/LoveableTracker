@@ -20,7 +20,7 @@ export default function MobileBottomNav() {
   const [location] = useLocation();
 
   return (
-    <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-t border-border/50 shadow-lg">
+    <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-sm border-t border-border shadow-lg">
       <nav className="flex justify-around items-center py-2 px-4">
         {mobileNavigation.map((item) => {
           const isActive = location === item.href || (item.href === "/dashboard" && location === "/");
@@ -29,10 +29,10 @@ export default function MobileBottomNav() {
           return (
             <Link key={item.name} href={item.href}>
               <div className={cn(
-                "flex flex-col items-center justify-center p-2 rounded-lg transition-all duration-200 min-w-[60px]",
+                "flex flex-col items-center justify-center p-2 rounded-lg transition-all duration-200 min-w-[60px] relative",
                 isActive 
-                  ? "text-primary bg-primary/10" 
-                  : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                  ? "text-primary bg-primary/15 border border-primary/20" 
+                  : "text-foreground/70 hover:text-foreground hover:bg-accent/50"
               )}>
                 <Icon className={cn(
                   "w-5 h-5 mb-1 transition-all duration-200",
@@ -40,7 +40,7 @@ export default function MobileBottomNav() {
                 )} />
                 <span className={cn(
                   "text-xs font-medium transition-all duration-200",
-                  isActive ? "text-primary" : "text-muted-foreground"
+                  isActive ? "text-primary font-semibold" : "text-foreground/70"
                 )}>
                   {item.name}
                 </span>

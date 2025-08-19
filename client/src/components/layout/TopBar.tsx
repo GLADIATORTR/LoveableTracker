@@ -53,7 +53,7 @@ export default function TopBar() {
   };
 
   return (
-    <header className="bg-white/95 border-b border-border/50 px-4 sm:px-6 py-3 sm:py-4 backdrop-blur-sm shadow-sm">
+    <header className="bg-background/95 border-b border-border/50 px-4 sm:px-6 py-3 sm:py-4 backdrop-blur-sm shadow-sm">
       <div className="flex items-center justify-between w-full">
         {/* Mobile Menu Button & Title */}
         <div className="flex items-center space-x-3">
@@ -63,7 +63,7 @@ export default function TopBar() {
               variant="ghost"
               size="sm"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 hover:bg-accent"
+              className="p-2 hover:bg-accent text-foreground border border-border/50"
             >
               {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
@@ -121,7 +121,7 @@ export default function TopBar() {
           <Button
             size="sm"
             onClick={handleAddAsset}
-            className="bg-primary hover:bg-primary/90 flex-shrink-0"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground flex-shrink-0 border border-primary/20"
           >
             <Plus className="w-4 h-4 sm:mr-2" />
             <span className="hidden sm:inline">Add Asset</span>
