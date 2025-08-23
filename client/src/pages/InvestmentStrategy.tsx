@@ -75,20 +75,73 @@ function calculateIRR(cashFlows: number[], initialGuess = 0.1): number {
   return rate * 100; // Return as percentage if max iterations reached
 }
 
-// Calculate NPV
-function calculateNPV(cashFlows: number[], discountRate: number): number {
-  let npv = 0;
-  for (let i = 0; i < cashFlows.length; i++) {
-    npv += cashFlows[i] / Math.pow(1 + discountRate, i);
+// Calculate NPV using corrected formula: A+B-C discounted at Real Hurdle Rate
+// A) Net Equity (Present Value - Today's Dollars)
+// B) Annual Net Yield excluding Mortgage Payment (already in Today's Dollars)
+// C) Annual Mortgage (PV)
+function calculateNPV(
+  netEquity: number,
+  annualNetYield: number,
+  annualMortgage: number,
+  realHurdleRate: number,
+  projectionYears: number = 10
+): number {
+  // A) Net Equity is already in present value terms
+  const netEquityPV = netEquity;
+  
+  // B) Annual Net Yield (rent - expenses, excluding mortgage) discounted over projection years
+  let annualNetYieldPV = 0;
+  for (let i = 1; i <= projectionYears; i++) {
+    annualNetYieldPV += annualNetYield / Math.pow(1 + realHurdleRate, i);
   }
+  
+  // C) Annual Mortgage payments discounted over projection years
+  let annualMortgagePV = 0;
+  for (let i = 1; i <= projectionYears; i++) {
+    annualMortgagePV += annualMortgage / Math.pow(1 + realHurdleRate, i);
+  }
+  
+  // NPV = A + B - C
+  const npv = netEquityPV + annualNetYieldPV - annualMortgagePV;
+  
   return npv;
 }
 
-// Generate investment recommendations
+// Generate investment recommendations with country-specific parameters
 function analyzeInvestment(property: RealEstateInvestmentWithCategory): InvestmentMetrics {
   const currentYear = 2025;
   const purchaseYear = new Date(property.purchaseDate).getFullYear();
   const yearsHeld = currentYear - purchaseYear;
+  
+  // Get country-specific economic parameters
+  const getCountryParameters = () => {
+    try {
+      const saved = localStorage.getItem('global-settings');
+      if (saved) {
+        const settings = JSON.parse(saved);
+        const countrySettings = property.country ? settings.countrySettings?.[property.country] : null;
+        if (countrySettings) {
+          return {
+            inflationRate: countrySettings.inflationRate / 100,
+            nominalHurdleRate: (countrySettings.nominalHurdleRate || 8.0) / 100,
+            appreciationRate: countrySettings.realEstateAppreciationRate / 100,
+          };
+        }
+      }
+    } catch (error) {
+      console.error('Failed to get country settings:', error);
+    }
+    
+    // Default parameters
+    return {
+      inflationRate: 0.035, // 3.5%
+      nominalHurdleRate: 0.08, // 8%
+      appreciationRate: 0.035, // 3.5%
+    };
+  };
+  
+  const params = getCountryParameters();
+  const realHurdleRate = Math.max(0, params.nominalHurdleRate - params.inflationRate);
   
   // Calculate monthly cash flows
   const monthlyRent = property.monthlyRent || 0;
@@ -96,8 +149,24 @@ function analyzeInvestment(property: RealEstateInvestmentWithCategory): Investme
   const monthlyMortgage = property.monthlyMortgage || 0;
   const monthlyCashFlow = monthlyRent - monthlyExpenses - monthlyMortgage;
   
-  // Generate cash flow projections (assuming current cash flow continues)
+  // Components for corrected NPV calculation:
+  // A) Net Equity (Present Value - Today's Dollars)
+  const netEquity = property.netEquity || (property.currentValue - (property.outstandingBalance || 0));
+  
+  // B) Annual Net Yield excluding Mortgage Payment (already in Today's Dollars)
+  const annualNetYield = (monthlyRent - monthlyExpenses) * 12;
+  
+  // C) Annual Mortgage (PV)
+  const annualMortgage = monthlyMortgage * 12;
+  
+  // Calculate NPV using corrected formula
   const projectionYears = 10;
+  const npv = calculateNPV(netEquity, annualNetYield, annualMortgage, realHurdleRate, projectionYears);
+  
+  // Calculate NPV Index relative to current equity (not original purchase price)
+  const npvIndex = netEquity > 0 ? npv / netEquity : 0;
+  
+  // Generate traditional cash flow projections for IRR calculation
   const cashFlows = [-property.purchasePrice]; // Initial investment
   
   // Add annual cash flows for held years
@@ -106,22 +175,18 @@ function analyzeInvestment(property: RealEstateInvestmentWithCategory): Investme
   }
   
   // Add future projections with growth
-  const cashFlowGrowthRate = 0.03; // 3% annual growth
+  const cashFlowGrowthRate = params.inflationRate; // Nominal growth with inflation
   for (let i = yearsHeld + 1; i <= projectionYears + yearsHeld; i++) {
     const adjustedCashFlow = monthlyCashFlow * 12 * Math.pow(1 + cashFlowGrowthRate, i - yearsHeld);
     cashFlows.push(adjustedCashFlow);
   }
   
   // Add final sale value
-  const appreciationRate = 0.035; // 3.5% annual appreciation
-  const futureValue = property.currentValue * Math.pow(1 + appreciationRate, projectionYears);
+  const futureValue = property.currentValue * Math.pow(1 + params.appreciationRate, projectionYears);
   cashFlows[cashFlows.length - 1] += futureValue;
   
-  // Calculate metrics
+  // Calculate IRR
   const irr = calculateIRR(cashFlows);
-  const discountRate = 0.08; // 8% discount rate
-  const npv = calculateNPV(cashFlows, discountRate);
-  const npvIndex = npv / Math.abs(cashFlows[0]); // NPV / Initial Investment
   
   const totalReturn = property.currentValue - property.purchasePrice + (monthlyCashFlow * 12 * yearsHeld);
   const annualizedReturn = yearsHeld > 0 ? Math.pow((property.currentValue + (monthlyCashFlow * 12 * yearsHeld)) / property.purchasePrice, 1 / yearsHeld) - 1 : 0;
@@ -195,24 +260,71 @@ function CalculationExample({ property }: { property: RealEstateInvestmentWithCa
   cashFlows[cashFlows.length - 1] += futureValue;
   cashFlowDetails[cashFlowDetails.length - 1] += ` + Sale: ${formatCurrency(futureValue)} = ${formatCurrency(property.currentValue)} × ${appreciationFactor.toFixed(3)} (${(nominalAppreciationRate * 100).toFixed(1)}% nominal)`;
   
-  // Calculate IRR and NPV
-  const irr = calculateIRR(cashFlows);
-  const realDiscountRate = 0.08; // 8% real discount rate
-  const npv = calculateNPV(cashFlows, realDiscountRate);
-  const npvIndex = npv / Math.abs(cashFlows[0]);
-  
-  // NPV calculation breakdown with proper real discounting
-  const npvDetails = cashFlows.map((cf, i) => {
-    const discountFactor = Math.pow(1 + realDiscountRate, i);
-    const presentValue = cf / discountFactor;
+  // Get country-specific economic parameters for calculation display
+  const getCountryParams = () => {
+    try {
+      const saved = localStorage.getItem('global-settings');
+      if (saved) {
+        const settings = JSON.parse(saved);
+        const countrySettings = property.country ? settings.countrySettings?.[property.country] : null;
+        if (countrySettings) {
+          return {
+            inflationRate: countrySettings.inflationRate / 100,
+            nominalHurdleRate: (countrySettings.nominalHurdleRate || 8.0) / 100,
+          };
+        }
+      }
+    } catch (error) {
+      console.error('Failed to get country settings:', error);
+    }
     return {
-      year: i,
-      cashFlow: cf,
-      discountFactor: discountFactor,
-      presentValue: presentValue,
-      realCashFlow: i === 0 ? cf : cf / Math.pow(1 + inflationRate, i) // Convert back to real terms for display
+      inflationRate: 0.035,
+      nominalHurdleRate: 0.08,
     };
-  });
+  };
+  
+  const params = getCountryParams();
+  const realHurdleRate = Math.max(0, params.nominalHurdleRate - params.inflationRate);
+  
+  // Components for corrected NPV calculation:
+  const netEquity = property.netEquity || (property.currentValue - (property.outstandingBalance || 0));
+  const annualNetYield = (monthlyRent - monthlyExpenses) * 12;
+  const annualMortgage = monthlyMortgage * 12;
+  
+  // Calculate IRR using traditional cash flows
+  const irr = calculateIRR(cashFlows);
+  
+  // Calculate NPV using corrected formula
+  const npv = calculateNPV(netEquity, annualNetYield, annualMortgage, realHurdleRate, projectionYears);
+  const npvIndex = netEquity > 0 ? npv / netEquity : 0;
+  
+  // NPV calculation breakdown with corrected formula
+  const npvDetails = [
+    {
+      component: 'A) Net Equity (Today\'s Dollars)',
+      value: netEquity,
+      presentValue: netEquity,
+      description: 'Current market value minus outstanding loan balance'
+    },
+    {
+      component: 'B) Annual Net Yield PV (10 years)',
+      value: annualNetYield,
+      presentValue: 0,
+      description: `${formatCurrency(annualNetYield)} annual net yield discounted at ${(realHurdleRate * 100).toFixed(1)}% real hurdle rate`
+    },
+    {
+      component: 'C) Annual Mortgage PV (10 years)',
+      value: annualMortgage,
+      presentValue: 0,
+      description: `${formatCurrency(annualMortgage)} annual mortgage payments discounted at ${(realHurdleRate * 100).toFixed(1)}% real hurdle rate`
+    }
+  ];
+  
+  // Calculate present values for components B and C
+  for (let i = 1; i <= projectionYears; i++) {
+    npvDetails[1].presentValue += annualNetYield / Math.pow(1 + realHurdleRate, i);
+    npvDetails[2].presentValue += annualMortgage / Math.pow(1 + realHurdleRate, i);
+  }
 
   return (
     <div className="space-y-6">
@@ -275,28 +387,47 @@ function CalculationExample({ property }: { property: RealEstateInvestmentWithCa
         {/* NPV Calculation */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">NPV Calculation (8% Discount Rate)</CardTitle>
+            <CardTitle className="text-lg">
+              Corrected NPV Calculation 
+              <span className="text-sm font-normal text-muted-foreground ml-2">
+                ({(params.nominalHurdleRate * 100).toFixed(1)}% Nominal - {(params.inflationRate * 100).toFixed(1)}% Inflation = {(realHurdleRate * 100).toFixed(1)}% Real Hurdle Rate)
+              </span>
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2 text-sm max-h-96 overflow-y-auto">
+            <div className="space-y-3 text-sm">
+              <div className="p-3 bg-yellow-50 rounded border border-yellow-200">
+                <div className="font-semibold text-yellow-800 mb-2">Formula: NPV = A + B - C</div>
+                <div className="text-xs space-y-1">
+                  <div>A) Net Equity (Present Value - Today's Dollars)</div>
+                  <div>B) Annual Net Yield excluding Mortgage Payment (discounted)</div>
+                  <div>C) Annual Mortgage payments (discounted)</div>
+                </div>
+              </div>
+              
               {npvDetails.map((detail, i) => (
-                <div key={i} className="p-2 bg-gray-50 rounded">
-                  <div className="font-mono text-xs">
-                    Year {detail.year}: {formatCurrency(detail.presentValue)} = {formatCurrency(detail.cashFlow)} ÷ {detail.discountFactor.toFixed(3)}
+                <div key={i} className="p-3 bg-gray-50 rounded border">
+                  <div className="font-semibold text-gray-800">
+                    {detail.component}
                   </div>
-                  {i > 0 && (
-                    <div className="font-mono text-xs text-gray-600 mt-1">
-                      Real value: {formatCurrency(detail.realCashFlow)} (inflation-adjusted)
-                    </div>
-                  )}
+                  <div className="font-mono text-lg text-blue-600">
+                    {formatCurrency(detail.presentValue)}
+                  </div>
+                  <div className="text-xs text-gray-600 mt-1">
+                    {detail.description}
+                  </div>
                 </div>
               ))}
-              <div className="mt-3 p-3 bg-blue-100 rounded border-2 border-blue-300">
-                <div className="font-semibold text-blue-800">
-                  Total NPV: {formatCurrency(npv)} = Sum of all present values
+              
+              <div className="mt-4 p-4 bg-blue-100 rounded border-2 border-blue-300">
+                <div className="font-semibold text-blue-800 text-lg">
+                  Total NPV: {formatCurrency(npv)}
                 </div>
                 <div className="text-sm text-blue-700 mt-1">
-                  NPV Index: {npvIndex.toFixed(3)} = NPV ÷ Initial Investment ({formatCurrency(Math.abs(cashFlows[0]))})
+                  = {formatCurrency(npvDetails[0].presentValue)} + {formatCurrency(npvDetails[1].presentValue)} - {formatCurrency(npvDetails[2].presentValue)}
+                </div>
+                <div className="text-sm text-blue-700 mt-2">
+                  NPV Index: {npvIndex.toFixed(3)} = NPV ÷ Net Equity ({formatCurrency(netEquity)})
                 </div>
               </div>
             </div>
@@ -327,12 +458,13 @@ function CalculationExample({ property }: { property: RealEstateInvestmentWithCa
                 <strong>Forward-Looking Analysis:</strong> Current investment of {formatCurrency(Math.abs(cashFlows[0]))}, then {projectionYears} years of inflation-adjusted cash flows including final sale.
               </div>
               <div className="p-2 bg-blue-50 rounded mt-2">
-                <strong>Key Assumptions:</strong>
+                <strong>Key Assumptions for NPV:</strong>
                 <div className="text-xs mt-1 space-y-1">
-                  <div>• Real cash flows remain constant (purchasing power preserved)</div>
-                  <div>• Nominal cash flows grow at 3% inflation rate</div>
-                  <div>• Real discount rate: 8% (reflects real opportunity cost)</div>
-                  <div>• Property appreciates at 3.5% real + 3% inflation = 6.6% nominal</div>
+                  <div>• Net Equity reflects current market value (today's dollars)</div>
+                  <div>• Annual Net Yield: {formatCurrency(annualNetYield)} (rent - expenses, excluding mortgage)</div>
+                  <div>• Annual Mortgage: {formatCurrency(annualMortgage)} (principal + interest payments)</div>
+                  <div>• Real Hurdle Rate: {(realHurdleRate * 100).toFixed(1)}% ({(params.nominalHurdleRate * 100).toFixed(1)}% nominal - {(params.inflationRate * 100).toFixed(1)}% inflation)</div>
+                  <div>• Projection Period: {projectionYears} years</div>
                 </div>
               </div>
             </div>

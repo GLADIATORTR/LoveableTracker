@@ -10,6 +10,7 @@ export interface EconomicParameters {
   capitalGainsTax: number;
   inflationRate: number;
   sellingCosts: number;
+  nominalHurdleRate: number;
 }
 
 export interface CountrySpecificParameters {
@@ -24,6 +25,7 @@ const DEFAULT_COUNTRY_SETTINGS = {
     sellingCosts: 6.0,
     capitalGainsTax: 25.0,
     currentMortgageRate: 6.5,
+    nominalHurdleRate: 8.0,
   },
   Turkey: {
     realEstateAppreciationRate: 3.5,
@@ -31,6 +33,7 @@ const DEFAULT_COUNTRY_SETTINGS = {
     sellingCosts: 2.0,
     capitalGainsTax: 0.0,
     currentMortgageRate: 6.5,
+    nominalHurdleRate: 8.0,
   },
   Canada: {
     realEstateAppreciationRate: 4.2,
@@ -38,6 +41,7 @@ const DEFAULT_COUNTRY_SETTINGS = {
     sellingCosts: 5.5,
     capitalGainsTax: 50.0,
     currentMortgageRate: 5.8,
+    nominalHurdleRate: 8.0,
   },
   UK: {
     realEstateAppreciationRate: 2.8,
@@ -45,6 +49,7 @@ const DEFAULT_COUNTRY_SETTINGS = {
     sellingCosts: 3.0,
     capitalGainsTax: 28.0,
     currentMortgageRate: 5.2,
+    nominalHurdleRate: 8.0,
   },
 };
 
@@ -82,6 +87,7 @@ export function EconomicScenarioSliders({
             capitalGainsTax: countrySettings.capitalGainsTax,
             inflationRate: countrySettings.inflationRate,
             sellingCosts: countrySettings.sellingCosts,
+            nominalHurdleRate: countrySettings.nominalHurdleRate || 8.0,
           };
         }
       }
@@ -97,6 +103,7 @@ export function EconomicScenarioSliders({
         capitalGainsTax: defaultCountrySettings.capitalGainsTax,
         inflationRate: defaultCountrySettings.inflationRate,
         sellingCosts: defaultCountrySettings.sellingCosts,
+        nominalHurdleRate: defaultCountrySettings.nominalHurdleRate,
       };
     }
     
@@ -106,6 +113,7 @@ export function EconomicScenarioSliders({
       capitalGainsTax: DEFAULT_COUNTRY_SETTINGS.USA.capitalGainsTax,
       inflationRate: DEFAULT_COUNTRY_SETTINGS.USA.inflationRate,
       sellingCosts: DEFAULT_COUNTRY_SETTINGS.USA.sellingCosts,
+      nominalHurdleRate: DEFAULT_COUNTRY_SETTINGS.USA.nominalHurdleRate,
     };
   };
   
@@ -250,6 +258,33 @@ export function EconomicScenarioSliders({
             <div className="flex justify-between text-xs text-muted-foreground">
               <span>0%</span>
               <span>15%</span>
+            </div>
+          </div>
+
+          {/* Nominal Hurdle Rate */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-medium">
+                Nominal Hurdle Rate
+              </label>
+              <span className="text-sm text-muted-foreground">
+                {formatPercent(parameters.nominalHurdleRate)}
+              </span>
+            </div>
+            <Slider
+              value={[parameters.nominalHurdleRate]}
+              onValueChange={(value) => updateParameter('nominalHurdleRate', value)}
+              max={15}
+              min={2}
+              step={0.1}
+              className="w-full"
+            />
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span>2%</span>
+              <span>15%</span>
+            </div>
+            <div className="text-xs text-muted-foreground mt-1">
+              Real Hurdle Rate: {formatPercent(Math.max(0, parameters.nominalHurdleRate - parameters.inflationRate))}
             </div>
           </div>
         </div>
