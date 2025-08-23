@@ -1,7 +1,12 @@
 {
-  "version": "AB101",
-  "lastUpdated": "2025-08-18T08:54:00.000Z",
+  "version": "PreLaunch_beta_001",
+  "lastUpdated": "2025-08-23T22:17:00.000Z",
   "changes": [
+    {
+      "version": "PreLaunch_beta_001",
+      "date": "2025-08-23",
+      "description": "Implemented corrected NPV calculation using A+B-C formula with Net Equity, Annual Net Yield excluding mortgage, and Annual Mortgage payments discounted at Real Hurdle Rate. Added user-adjustable Nominal Hurdle Rate slider (2%-15%)"
+    },
     {
       "version": "AB101",
       "date": "2025-08-18",
